@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "dependencies": {
+    "net10.0-windows7.0": {
+      "MaterialDesignThemes": {
+        "type": "Direct",
+        "requested": "[5.4.0, )",
+        "resolved": "5.4.0",
+        "contentHash": "dOX3vBToKGe3tA/zMrtvz7BSnP+Omk0SL0IgAqLQgh3k92Qwm0GLPRip0xVTY0rwTYH3lTdPIhFh8x0J+KN27w==",
+        "dependencies": {
+          "MaterialDesignColors": "5.4.0",
+          "Microsoft.Xaml.Behaviors.Wpf": "1.1.142"
+        }
+      },
+      "Microsoft.NET.ILLink.Tasks": {
+        "type": "Direct",
+        "requested": "[10.0.15, )",
+        "resolved": "10.0.15",
+        "contentHash": "u0WnRcZgBZYHlVFpbe/3Adpmb9rmNJ8/fmEwqc/xjB7fFppq+gfaLJd3Sdaw+J02zV0eP/T9dneQ3Dv5jWw6bw=="
+      },
+      "MaterialDesignColors": {
+        "type": "Transitive",
+        "resolved": "5.4.0",
+        "contentHash": "L6PxatCc/LeqSmUVqCqFl7UcNgaI/AgEIHGAgFneAX6MjoHWeERBP7lHEpJagKjyOHn2MAavuz9wGKOc2p0yIQ=="
+      },
+      "Microsoft.Xaml.Behaviors.Wpf": {
+        "type": "Transitive",
+        "resolved": "1.1.142",
+        "contentHash": "c47wA/8GHiQ9w+O6+mdqrZhZrxHogx2/fSZyRKL9tz0k+ypoTiwOx6fID0X3jr5LnCazJbCk7KiAcL0zVnNgNA=="
+      },
+      "sinh.core": {
+        "type": "Project"
+      },
+      "sinh.settings": {
+        "type": "Project"
+      }
+    },
+    "net10.0-windows7.0/win-x64": {}
+  }
+}

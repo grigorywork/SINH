@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+ <PropertyGroup>
+  <OutputType>WinExe</OutputType><TargetFramework>net10.0-windows</TargetFramework>
+  <UseWPF>true</UseWPF><UseWindowsForms>true</UseWindowsForms><EnableWindowsTargeting>true</EnableWindowsTargeting>
+  <ApplicationManifest>app.manifest</ApplicationManifest><ApplicationIcon>Assets/glass.ico</ApplicationIcon>
+  <AssemblyName>SINH</AssemblyName><RootNamespace>Sinh.App</RootNamespace>
+  <PublishSingleFile>true</PublishSingleFile><SelfContained>true</SelfContained>
+  <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+  <RuntimeIdentifier>win-x64</RuntimeIdentifier><PublishTrimmed>false</PublishTrimmed>
+  <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+ </PropertyGroup>
+ <ItemGroup><ProjectReference Include="../Sinh.Core/Sinh.Core.csproj"/><ProjectReference Include="../Sinh.Settings/Sinh.Settings.csproj"/></ItemGroup>
+ <ItemGroup><PackageReference Include="MaterialDesignThemes" Version="5.4.0"/></ItemGroup>
+ <ItemGroup><Resource Include="Assets/*.png"/><Resource Include="Assets/*.ico"/></ItemGroup>
+ <ItemGroup><Using Remove="System.Windows.Forms"/><Using Remove="System.Drawing"/></ItemGroup>
+</Project>

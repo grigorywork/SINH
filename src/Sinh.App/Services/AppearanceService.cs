@@ -59,7 +59,7 @@ internal sealed class AppearanceService : IDisposable
             // Text is never blurred. This lightweight surface is the fallback on Windows 10 / unsupported GPUs.
             var baseColor = (Color)ColorConverter.ConvertFromString(IsDark(a) ? "#171923" : "#F5F6FA");
             var factor = (100 - a.Transparency) / 100 * .65;
-            Color Mix(Color c) => Color.FromRgb((byte)(baseColor.R * (1-factor) + c.R*factor), (byte)(baseColor.G * (1-factor) + c.G*factor), (byte)(baseColor.B * (1-factor) + c.B*factor));
+            Color Mix(Color c) => Color.FromRgb((byte)(baseColor.R * (1 - factor) + c.R * factor), (byte)(baseColor.G * (1 - factor) + c.G * factor), (byte)(baseColor.B * (1 - factor) + c.B * factor));
             w.Background = a.Background == "Solid" ? new SolidColorBrush(Mix(color)) : new LinearGradientBrush(Mix(color), baseColor, a.Background == "Stripes" ? 0 : 35);
         }
         else w.SetResourceReference(Window.BackgroundProperty, "Surface");

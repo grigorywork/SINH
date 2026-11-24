@@ -1,0 +1,85 @@
+using System.Windows;
+using Sinh.Core;
+
+namespace Sinh.App;
+
+internal sealed class SyncCoordinator : IDisposable
+{
+    private readonly MainViewModel model;
+    private readonly StateStore stateStore = new(App.DataDirectory);
+    private TaskCompletionSource completion = Completed();
+    public Task Completion => completion.Task;
+    private static TaskCompletionSource Completed() { var source = new TaskCompletionSource(); source.SetResult(); return source; }
+    private CancellationTokenSource? cancellation;
+    public SyncCoordinator(MainViewModel model)
+    {
+        this.model = model; model.RunPair = (pair, apply) => RunAsync(pair, apply); model.CancelRun = () => cancellation?.Cancel(); model.RefreshCommands();
+        model.Store.Changed += SettingsChanged;
+    }
+    private void SettingsChanged(object? sender, Sinh.Settings.AppSettings settings)
+    {
+        System.Windows.Application.Current.Dispatcher.InvokeAsync(()=>
+        {
+            if(model.ActivePairId is { } id && model.Store.Current.Pairs.FirstOrDefault(p=>p.Id==id)?.Paused==true)cancellation?.Cancel();
+        });
+    }
+    internal async Task<bool> RunAutomaticAsync(Sinh.Settings.FolderPair resolved)
+    {
+        if (model.Busy || model.DialogOpen) return false;
+        var pair = model.Pairs.FirstOrDefault(p => p.Pair.Id == resolved.Id);
+        if (pair == null || pair.Pair.Paused) return false;
+        await RunAsync(pair, true, true, resolved); return true;
+    }
+    private async Task RunAsync(PairViewModel pair, bool apply, bool automatic = false, Sinh.Settings.FolderPair? resolved = null)
+    {
+        if (model.Busy) return;
+        using var cts = new CancellationTokenSource(); cancellation = cts; completion = new(TaskCreationOptions.RunContinuationsAsynchronously); model.ActivePairId=pair.Pair.Id; model.Busy = true;
+        try
+        {
+            pair.Status = "Сравнение…";
+            resolved ??= await Task.Run(() => WindowsVolumes.Resolve(pair.Pair));
+            if (resolved == null) throw new System.IO.IOException("Настроенный носитель отключён.");
+            var request = new SyncRequest(resolved.Id, resolved.Source, resolved.Destination, (SyncMode)(int)resolved.Mode, resolved.AllowDeletes, resolved.Exclusions, DestinationIdentity: WindowsVolumes.StableDestination(resolved));
+            if (automatic && pair.Pair.ApprovedRoots != SyncPlanner.Fingerprint(request)) { pair.Status = "Нужен ручной запуск после изменения настроек"; return; }
+            var progress = new Progress<SyncProgress>(p => model.Status = p.Stage + " · " + p.Path);
+            var baseline = await Task.Run(() => stateStore.LoadAsync(request.PairId, cts.Token));
+            var plan = await Task.Run(() => new ComparisonService().CompareAsync(request, baseline, progress, cts.Token));
+            pair.Status = $"Изменений: {plan.Operations.Count}"; model.Status = "Сравнение завершено. Пользовательские файлы не изменялись.";
+            if (!apply) { new PlanWindow(plan, false) { Owner = System.Windows.Application.Current.MainWindow }.ShowDialog(); return; }
+            var reversed = false;
+            if (plan.DestinationChanged && request.Mode != SyncMode.TwoWay)
+            {
+                ((App)System.Windows.Application.Current).ShowMain();
+                ((App)System.Windows.Application.Current).Notify("Изменения в копии", pair.Name, "conflict");
+                var direction = new DirectionWindow() { Owner = System.Windows.Application.Current.MainWindow };
+                if (direction.ShowDialog() != true) return;
+                if (direction.UseDestination)
+                {
+                    reversed = true;
+                    var reverse = request with { Source = request.Destination, Destination = request.Source, SourceIdentity = request.DestinationIdentity, DestinationIdentity = request.SourceIdentity };
+                    plan = await Task.Run(() => new ComparisonService().CompareAsync(reverse, progress: progress, cancellationToken: cts.Token));
+                }
+            }
+            var massDeletes = plan.Deletes >= 10 || (plan.Deletes >= 3 && plan.Deletes >= Math.Max(1, plan.Destination.Entries.Count) * .2);
+            var review = !automatic || pair.Pair.ApprovedRoots != SyncPlanner.Fingerprint(request) || plan.DestinationChanged || plan.Conflicts.Count > 0 || massDeletes;
+            if (plan.Operations.Count > 0 && review)
+            {
+                ((App)System.Windows.Application.Current).ShowMain();
+                if (new PlanWindow(plan, true) { Owner = System.Windows.Application.Current.MainWindow }.ShowDialog() != true) return;
+            }
+            pair.Status = "Копирование…";
+            var settings = model.Store.Current;
+            Func<bool>? mounted=resolved.UsbId is { } volumeId?()=>WindowsVolumes.IsStillMounted(volumeId,resolved.Destination):null;
+            var state = await Task.Run(() => new SyncExecutor(stateStore).ApplyAsync(plan, new(pair.Pair.History, settings.HistoryLimitMiB * 1048576, settings.SpeedLimitMiB,mounted), progress, cts.Token));
+            if (reversed) await stateStore.SaveAsync(request.PairId, new(SyncPlanner.Fingerprint(request), state.Destination, state.Source, state.ConfirmedAt), cts.Token);
+            await model.Store.UpdateAsync(s => s with { Pairs = s.Pairs.Select(p => p.Id == request.PairId ? p with { LastSuccess = state.ConfirmedAt, ApprovedRoots = SyncPlanner.Fingerprint(request) } : p).ToArray() });
+            model.Status = $"Синхронизация завершена · {plan.Operations.Count} операций.";
+            pair.Status="Готово";
+            if (plan.Operations.Count > 0) ((App)System.Windows.Application.Current).Notify("Готово", pair.Name + " · операций: " + plan.Operations.Count, "success");
+        }
+        catch (OperationCanceledException) { pair.Status = pair.Pair.Paused?"На паузе":"Остановлено"; model.Status = "Операция отменена."; }
+        catch (Exception ex) { pair.Status = "Ошибка"; model.Status = ex.Message; ((App)System.Windows.Application.Current).Notify("Ошибка", ex.Message, "error"); if (!automatic) MessageBox.Show(System.Windows.Application.Current.MainWindow, ex.Message, "SINH — операция остановлена"); }
+        finally { cancellation = null; model.ActivePairId=null; model.Busy = false; completion.TrySetResult(); }
+    }
+    public void Dispose() {model.Store.Changed-=SettingsChanged; cancellation?.Cancel(); model.RunPair = null; model.CancelRun = null; }
+}

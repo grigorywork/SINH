@@ -7,6 +7,8 @@ public sealed class SettingsStore : IDisposable
 {
     private readonly string path;
     private readonly SemaphoreSlim gate = new(1);
+    private readonly object pendingLock = new();
+    private readonly List<Task> pending = [];
     private AppSettings current = new();
     public AppSettings Current => Volatile.Read(ref current);
     public string? RecoveryMessage { get; private set; }
@@ -46,7 +48,20 @@ public sealed class SettingsStore : IDisposable
         finally { gate.Release(); }
         Changed?.Invoke(this, Current);
     }
-    public async Task UpdateAsync(Func<AppSettings, AppSettings> update)
+    public bool HasPendingSaves { get { lock (pendingLock) return pending.Any(t => !t.IsCompleted); } }
+    public Task FlushAsync() { lock (pendingLock) return Task.WhenAll(pending.ToArray()); }
+    public Task UpdateAsync(Func<AppSettings, AppSettings> update)
+    {
+        // Even small synchronous filesystem operations execute on a worker, never on the WPF caller.
+        lock (pendingLock)
+        {
+            pending.RemoveAll(t => t.IsCompleted);
+            var task = Task.Run(() => UpdateCoreAsync(update));
+            pending.Add(task);
+            return task;
+        }
+    }
+    private async Task UpdateCoreAsync(Func<AppSettings, AppSettings> update)
     {
         await gate.WaitAsync().ConfigureAwait(false);
         AppSettings next;
@@ -89,8 +104,10 @@ public sealed class SettingsStore : IDisposable
             Pairs = (x.Pairs ?? []).Where(p => p != null && p.Id != Guid.Empty).DistinctBy(p => p.Id).Select(p => p with { Exclusions = p.Exclusions ?? [], IntervalMinutes = Math.Clamp(p.IntervalMinutes, 0, 10080) }).ToArray(),
             MaxParallelFiles = 1, // This release applies operations sequentially.
             SpeedLimitMiB = Math.Clamp(x.SpeedLimitMiB, 0, 10240),
-            ScanMinutes = Math.Clamp(x.ScanMinutes, 1, 1440), LogDays = Math.Clamp(x.LogDays, 1, 3650),
-            HistoryDays = Math.Clamp(x.HistoryDays, 1, 3650), HistoryLimitMiB = Math.Clamp(x.HistoryLimitMiB, 16, 1048576)
+            ScanMinutes = Math.Clamp(x.ScanMinutes, 1, 1440),
+            LogDays = Math.Clamp(x.LogDays, 1, 3650),
+            HistoryDays = Math.Clamp(x.HistoryDays, 1, 3650),
+            HistoryLimitMiB = Math.Clamp(x.HistoryLimitMiB, 16, 1048576)
         };
     }
     public void Dispose() { Changed = null; gate.Dispose(); }

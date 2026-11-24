@@ -33,22 +33,32 @@ public sealed class PairWindow : Window
         panel.Children.Add(mode);
         var deletes = new CheckBox { Content = "Разрешить перенос удалений (потребуется план)", IsChecked = pair.AllowDeletes }; panel.Children.Add(deletes);
         var history = new CheckBox { Content = "Сохранять заменённые и удалённые версии", IsChecked = pair.History }; panel.Children.Add(history);
+        var connect = new CheckBox { Content = "Автоматически при подключении USB / внешнего носителя", IsChecked = pair.AutoOnConnect }; panel.Children.Add(connect);
+        var watch = new CheckBox { Content = "Сверять после изменений файлов (пакетно)", IsChecked = pair.WatchChanges }; panel.Children.Add(watch);
+        var interval = Field("Расписание · интервал в минутах, 0 — выключено", pair.IntervalMinutes.ToString());
         var exclusions = Field("Исключения · по одному шаблону на строку, например *.tmp", string.Join(Environment.NewLine, pair.Exclusions));
         exclusions.AcceptsReturn = true; exclusions.Height = 65;
-        var note = new TextBlock { Text = "Новая пара запускается вручную. Удаления по умолчанию выключены. Корни должны существовать. Настройка автоматизации станет доступна после проверки ядра.", TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 12, 0, 12) }; panel.Children.Add(note);
+        var note = new TextBlock { Text = "Сначала выполните один ручной запуск. Для копии выберите отдельную папку на флешке: остальные файлы носителя останутся вне пары. Для работы после извлечения флешки включите помощник в настройках автозапуска Windows.", TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 12, 0, 12) }; panel.Children.Add(note);
         var actions = new WrapPanel(); var save = new Button { Content = "Сохранить", IsDefault = true }; var cancel = new Button { Content = "Отмена", IsCancel = true };
         actions.Children.Add(save); actions.Children.Add(cancel); panel.Children.Add(actions);
-        save.Click += (_, _) =>
+        save.Click += async (_, _) =>
         {
             try
             {
                 if (string.IsNullOrWhiteSpace(name.Text) || string.IsNullOrWhiteSpace(source.Text) || string.IsNullOrWhiteSpace(target.Text)) throw new ArgumentException("Заполните название и оба пути.");
                 var a = System.IO.Path.GetFullPath(source.Text.Trim()); var b = System.IO.Path.GetFullPath(target.Text.Trim());
+                if (!int.TryParse(interval.Text, out var minutes) || minutes < 0 || minutes > 10080) throw new ArgumentException("Интервал: целое число от 0 до 10080 минут.");
+                save.IsEnabled = false;
+                await Task.Run(() => Sinh.Core.PathRules.ValidatePair(a, b));
+                var usbId = pair.UsbId; var usbRelative = pair.UsbRelativePath;
+                if (connect.IsChecked == true) { var binding = await Task.Run(() => WindowsVolumes.Bind(b)); usbId = binding.Id; usbRelative = binding.Relative; }
+                else if (b != pair.Destination) { usbId = null; usbRelative = null; }
                 var changed = a != pair.Source || b != pair.Destination || (SyncMode)mode.SelectedIndex != pair.Mode || deletes.IsChecked != pair.AllowDeletes;
-                Result = pair with { Name = name.Text.Trim(), Source = a, Destination = b, Mode = (SyncMode)mode.SelectedIndex, AllowDeletes = deletes.IsChecked == true, History = history.IsChecked == true, Exclusions = exclusions.Text.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries), ApprovedRoots = changed ? null : pair.ApprovedRoots };
+                Result = pair with { Name = name.Text.Trim(), Source = a, Destination = b, Mode = (SyncMode)mode.SelectedIndex, AllowDeletes = deletes.IsChecked == true, History = history.IsChecked == true, Exclusions = exclusions.Text.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries), ApprovedRoots = changed ? null : pair.ApprovedRoots, AutoOnConnect = connect.IsChecked == true, WatchChanges = watch.IsChecked == true, IntervalMinutes = minutes, UsbId = usbId, UsbRelativePath = usbRelative };
                 DialogResult = true;
             }
             catch (Exception ex) { MessageBox.Show(this, ex.Message, "SINH"); }
+            finally { save.IsEnabled = true; }
         };
     }
     private void Pick(TextBox field)

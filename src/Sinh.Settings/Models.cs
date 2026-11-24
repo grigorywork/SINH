@@ -31,6 +31,7 @@ public sealed record FolderPair
     public bool History { get; init; } = true;
     public bool Paused { get; init; }
     public bool AutoOnConnect { get; init; }
+    public bool WatchChanges { get; init; }
     public int IntervalMinutes { get; init; }
     public string[] Exclusions { get; init; } = [];
     public Guid? UsbId { get; init; }

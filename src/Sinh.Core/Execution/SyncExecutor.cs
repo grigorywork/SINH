@@ -2,7 +2,7 @@ using System.Text.Json;
 
 namespace Sinh.Core;
 
-public sealed record ExecutionOptions(bool History = true, long HistoryLimitBytes = 4L * 1024 * 1024 * 1024, int SpeedLimitMiB = 0);
+public sealed record ExecutionOptions(bool History = true, long HistoryLimitBytes = 4L * 1024 * 1024 * 1024, int SpeedLimitMiB = 0, Func<bool>? ContextAvailable = null);
 public sealed record JournalState(Guid PairId, string Source, string Destination, string Stage, int Completed, int Total, string? TemporaryPath, string? Error = null);
 
 public sealed class SyncExecutor(StateStore store)
@@ -11,6 +11,8 @@ public sealed class SyncExecutor(StateStore store)
     public async Task<ConfirmedState> ApplyAsync(SyncPlan plan, ExecutionOptions? options = null, IProgress<SyncProgress>? progress = null, CancellationToken token = default)
     {
         options ??= new(); var request = plan.Request;
+        void CheckContext() { if(options.ContextAvailable?.Invoke()==false)throw new IOException("Носитель отключён или на его месте появился другой диск. Операция остановлена."); }
+        CheckContext();
         PathRules.ValidatePair(request.Source, request.Destination);
         if (PathRules.Contains(request.Source, store.DirectoryPath) || PathRules.Contains(request.Destination, store.DirectoryPath)) throw new IOException("Служебная область SINH находится внутри выбранной пары. Выберите более узкую папку.");
         if (plan.Fingerprint != SyncPlanner.Fingerprint(request)) throw new IOException("План не соответствует настройкам пары.");
@@ -42,6 +44,7 @@ public sealed class SyncExecutor(StateStore store)
             foreach (var operation in plan.Operations)
             {
                 token.ThrowIfCancellationRequested(); PathRules.Root(request.Source); PathRules.Root(request.Destination);
+                CheckContext();
                 if (operation.Root != plan.Source.Root && operation.Root != plan.Destination.Root) throw new IOException("Операция вне разрешённых корней.");
                 var target = PathRules.Under(operation.Root, operation.RelativePath);
                 await VerifyEntryAsync(target, operation.Before, token).ConfigureAwait(false);
@@ -58,13 +61,13 @@ public sealed class SyncExecutor(StateStore store)
                     if (!entry.SameContent(check)) throw new IOException("Целевая копия не прошла проверку SHA256.");
                     if (options.History && operation.Before is { Directory: false } old) await history.ArchiveAsync(request.PairId, target, old, options.HistoryLimitBytes, token).ConfigureAwait(false);
                     await VerifyEntryAsync(target, operation.Before, token).ConfigureAwait(false); PathRules.RejectLinks(target);
-                    token.ThrowIfCancellationRequested(); File.Move(temporary, target, true); temporary = null;
+                    token.ThrowIfCancellationRequested(); CheckContext(); File.Move(temporary, target, true); temporary = null;
                     File.SetLastWriteTimeUtc(target, entry.LastWriteUtc);
                 }
                 else if (operation.Kind == OperationKind.DeleteFile)
                 {
                     if (options.History) await history.ArchiveAsync(request.PairId, target, operation.Before!, options.HistoryLimitBytes, token).ConfigureAwait(false);
-                    await VerifyEntryAsync(target, operation.Before, token).ConfigureAwait(false); token.ThrowIfCancellationRequested(); File.Delete(target);
+                    await VerifyEntryAsync(target, operation.Before, token).ConfigureAwait(false); token.ThrowIfCancellationRequested(); CheckContext(); File.Delete(target);
                 }
                 else if (operation.Kind == OperationKind.DeleteDirectory) Directory.Delete(target, false);
                 else Directory.CreateDirectory(target);
@@ -72,6 +75,7 @@ public sealed class SyncExecutor(StateStore store)
                 await StateStore.AtomicJsonAsync(journalPath, journal, token).ConfigureAwait(false);
                 progress?.Report(new("Применение", operation.RelativePath, journal.Completed, journal.Total));
             }
+            CheckContext();
             var a = await scanner.ScanAsync(request.Source, request.Exclusions, progress, token).ConfigureAwait(false);
             var b = await scanner.ScanAsync(request.Destination, request.Exclusions, progress, token).ConfigureAwait(false);
             // Replanning must be empty. Otherwise do not advance the confirmed baseline.

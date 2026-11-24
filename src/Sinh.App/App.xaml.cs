@@ -1,6 +1,7 @@
 using System.IO;
 using System.Windows;
 using Sinh.Settings;
+using System.Diagnostics;
 
 namespace Sinh.App;
 
@@ -10,11 +11,27 @@ public partial class App : System.Windows.Application
     internal static string DataDirectory => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "SINH");
     internal SettingsStore Store { get; private set; } = null!;
     private AppearanceService? appearance;
+    private InstanceGuard? instance;
+    private TrayService? tray;
+    internal bool ExitRequested { get; private set; }
+    internal void ShowMain() { if (MainWindow == null) return; MainWindow.Show(); MainWindow.WindowState = WindowState.Normal; MainWindow.Activate(); }
+    internal void RequestExit() { ExitRequested = true; if (MainWindow != null) MainWindow.Close(); else Shutdown(); }
+    internal void Notify(string title, string message, string kind) => tray?.Notify(title, message, kind);
     protected override async void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
         try
         {
+            ShutdownMode = ShutdownMode.OnExplicitShutdown;
+            var handoff = e.Args.FirstOrDefault(a => a.StartsWith("--handoff=", StringComparison.Ordinal));
+            if (handoff != null && int.TryParse(handoff[10..], out var previousId))
+            {
+                try { using var previous = Process.GetProcessById(previousId); using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(60)); await previous.WaitForExitAsync(timeout.Token); }
+                catch (ArgumentException) { }
+            }
+            instance = new InstanceGuard();
+            if (!instance.IsPrimary) { Shutdown(); return; }
+            instance.Listen(() => Dispatcher.InvokeAsync(ShowMain));
             Directory.CreateDirectory(DataDirectory);
             NativeIdentity.SetIdentity();
             Store = new SettingsStore(Path.Combine(DataDirectory, "settings.json"));
@@ -25,10 +42,13 @@ public partial class App : System.Windows.Application
             if (recovered > 0) model.Status = $"Незавершённых запусков: {recovered}. Временные файлы убраны; выполните новое сравнение.";
             var window = new MainWindow(model);
             MainWindow = window;
+            tray = new TrayService(Store);
             window.Show();
+            ShutdownMode = ShutdownMode.OnMainWindowClose;
+            if (e.Args.Contains("--background") || (e.Args.Contains("--startup") && Store.Current.StartMinimized)) window.Hide();
             if (Store.RecoveryMessage != null) MessageBox.Show(window, Store.RecoveryMessage, "SINH");
         }
         catch (Exception ex) { MessageBox.Show(ex.Message, "SINH — ошибка запуска"); Shutdown(1); }
     }
-    protected override void OnExit(ExitEventArgs e) { appearance?.Dispose(); Store?.Dispose(); base.OnExit(e); }
+    protected override void OnExit(ExitEventArgs e) { tray?.Dispose(); appearance?.Dispose(); Store?.Dispose(); instance?.Dispose(); base.OnExit(e); }
 }

@@ -59,5 +59,5 @@ try
     await BoundaryChecks.Run(Check, Require, temp);
 }
 finally { Directory.Delete(temp, true); }
-Console.WriteLine($"{count-failures}/{count} passed");
+Console.WriteLine($"{count - failures}/{count} passed");
 return failures == 0 ? 0 : 1;

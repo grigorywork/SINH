@@ -20,7 +20,9 @@ public sealed class DeveloperSignature : UserControl
         {
             Content = caption,
             Style = (Style)FindResource("MaterialDesignFlatButton"),
-            MinHeight = 40, MinWidth = 96, Padding = new Thickness(12, 8, 12, 8),
+            MinHeight = 40,
+            MinWidth = 96,
+            Padding = new Thickness(12, 8, 12, 8),
             ToolTip = "Разработчик MSS9LN"
         };
         System.Windows.Automation.AutomationProperties.SetName(button, "Разработчик MSS9LN");

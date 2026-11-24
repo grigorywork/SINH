@@ -13,7 +13,7 @@
     <StackPanel Grid.Column="1" Margin="16,0,0,0"><TextBlock Text="{Binding Status}" TextWrapping="Wrap" FontWeight="SemiBold"/><TextBlock Text="Последний успех" Foreground="{DynamicResource Muted}" Margin="0,12,0,3"/><TextBlock Text="{Binding Last}"/></StackPanel>
    </Grid></DataTemplate></ListBox.ItemTemplate>
   </ListBox>
-  <WrapPanel Grid.Row="3" Margin="0,16,0,12"><Button Content="Сравнить" Command="{Binding Compare}"/><Button Content="Синхронизировать" Command="{Binding Sync}"/><Button Content="Пауза / продолжить" Command="{Binding Pause}"/><Button Content="Остановить" Command="{Binding Stop}"/><Button Content="Изменить" Command="{Binding Edit}"/></WrapPanel>
+  <WrapPanel Grid.Row="3" Margin="0,16,0,12"><Button Content="Сравнить" Command="{Binding Compare}"/><Button Content="Синхронизировать" Command="{Binding Sync}"/><Button Content="Пауза / продолжить" Command="{Binding Pause}"/><Button Content="Остановить" Command="{Binding Stop}"/><Button Content="Изменить" Command="{Binding Edit}"/><Button Content="История" Command="{Binding History}"/></WrapPanel>
   <DockPanel Grid.Row="4"><local:DeveloperSignature DockPanel.Dock="Right"/><TextBlock Text="{Binding Status}" TextWrapping="Wrap" VerticalAlignment="Center" Foreground="{DynamicResource Muted}" AutomationProperties.LiveSetting="Polite"/></DockPanel>
  </Grid>
 </Window>

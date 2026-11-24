@@ -6,6 +6,12 @@ public partial class MainWindow : Window
     public MainWindow(MainViewModel model)
     {
         InitializeComponent(); DataContext = model; coordinator = new SyncCoordinator(model);
+        Closing += async (_, e) =>
+        {
+            if (!model.Busy) return;
+            e.Cancel = true; model.CancelRun?.Invoke();
+            await coordinator.Completion; Close();
+        };
         Closed += (_, _) => { coordinator.Dispose(); model.Dispose(); };
     }
 }

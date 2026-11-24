@@ -20,7 +20,7 @@ public sealed class MainViewModel : Observable, IDisposable
     internal readonly SettingsStore Store;
     public ObservableCollection<PairViewModel> Pairs { get; } = [];
     private PairViewModel? selected;
-    public PairViewModel? Selected { get => selected; set { Set(ref selected, value); Edit.Refresh(); Pause.Refresh(); Compare.Refresh(); Sync.Refresh(); } }
+    public PairViewModel? Selected { get => selected; set { Set(ref selected, value); RefreshCommands(); } }
     public AsyncCommand Add { get; }
     public AsyncCommand Edit { get; }
     public AsyncCommand Pause { get; }
@@ -28,12 +28,13 @@ public sealed class MainViewModel : Observable, IDisposable
     public AsyncCommand Sync { get; }
     public AsyncCommand Stop { get; }
     public AsyncCommand Settings { get; }
+    public AsyncCommand History { get; }
     public Func<PairViewModel, bool, Task>? RunPair { get; set; }
     public Action? CancelRun { get; set; }
     private bool busy;
     public bool Busy { get => busy; set { Set(ref busy, value); RefreshCommands(); } }
-    public void RefreshCommands() { Add.Refresh(); Edit.Refresh(); Pause.Refresh(); Compare.Refresh(); Sync.Refresh(); Stop.Refresh(); }
-    private string status = "SINH 0.1 · Создайте пару папок. Новые пары запускаются вручную.";
+    public void RefreshCommands() { Add.Refresh(); Edit.Refresh(); Pause.Refresh(); Compare.Refresh(); Sync.Refresh(); Stop.Refresh(); History.Refresh(); }
+    private string status = "Создайте пару папок. Новые пары запускаются вручную.";
     public string Status { get => status; set => Set(ref status, value); }
     public MainViewModel(SettingsStore store)
     {
@@ -45,6 +46,7 @@ public sealed class MainViewModel : Observable, IDisposable
         Sync = new(async () => { if (RunPair != null) await RunPair(Selected!, true); }, () => Selected != null && RunPair != null && !Busy && Selected.Pair.Paused == false);
         Stop = new(() => { CancelRun?.Invoke(); return Task.CompletedTask; }, () => Busy);
         Settings = new(() => { new SettingsWindow(Store) { Owner = System.Windows.Application.Current.MainWindow }.ShowDialog(); return Task.CompletedTask; });
+        History = new(() => { new HistoryWindow(Selected!.Pair, Store.Current.HistoryLimitMiB * 1048576) { Owner = System.Windows.Application.Current.MainWindow }.ShowDialog(); return Task.CompletedTask; }, () => Selected != null && !Busy);
         Store.Changed += OnChanged;
         Load(store.Current);
     }

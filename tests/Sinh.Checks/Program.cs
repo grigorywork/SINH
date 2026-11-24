@@ -53,6 +53,7 @@ try
         catch (IOException) { }
         Require(store.Current.NotifySuccess, "Unpersisted state published");
     });
+    await ComparisonChecks.Run(Check, Require, temp);
 }
 finally { Directory.Delete(temp, true); }
 Console.WriteLine($"{count-failures}/{count} passed");

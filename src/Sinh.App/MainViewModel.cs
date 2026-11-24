@@ -30,17 +30,20 @@ public sealed class MainViewModel : Observable, IDisposable
     public AsyncCommand Settings { get; }
     public Func<PairViewModel, bool, Task>? RunPair { get; set; }
     public Action? CancelRun { get; set; }
+    private bool busy;
+    public bool Busy { get => busy; set { Set(ref busy, value); RefreshCommands(); } }
+    public void RefreshCommands() { Add.Refresh(); Edit.Refresh(); Pause.Refresh(); Compare.Refresh(); Sync.Refresh(); Stop.Refresh(); }
     private string status = "SINH 0.1 · Создайте пару папок. Новые пары запускаются вручную.";
     public string Status { get => status; set => Set(ref status, value); }
     public MainViewModel(SettingsStore store)
     {
         Store = store;
-        Add = new(() => EditPair(null));
-        Edit = new(() => EditPair(Selected?.Pair), () => Selected != null);
-        Pause = new(async () => { var id = Selected!.Pair.Id; await Store.UpdateAsync(s => s with { Pairs = s.Pairs.Select(p => p.Id == id ? p with { Paused = !p.Paused } : p).ToArray() }); }, () => Selected != null);
-        Compare = new(async () => { if (RunPair != null) await RunPair(Selected!, false); }, () => Selected != null && RunPair != null);
-        Sync = new(async () => { if (RunPair != null) await RunPair(Selected!, true); }, () => Selected != null && RunPair != null);
-        Stop = new(() => { CancelRun?.Invoke(); return Task.CompletedTask; }, () => CancelRun != null);
+        Add = new(() => EditPair(null), () => !Busy);
+        Edit = new(() => EditPair(Selected?.Pair), () => Selected != null && !Busy);
+        Pause = new(async () => { var id = Selected!.Pair.Id; CancelRun?.Invoke(); await Store.UpdateAsync(s => s with { Pairs = s.Pairs.Select(p => p.Id == id ? p with { Paused = !p.Paused } : p).ToArray() }); }, () => Selected != null && !Busy);
+        Compare = new(async () => { if (RunPair != null) await RunPair(Selected!, false); }, () => Selected != null && RunPair != null && !Busy);
+        Sync = new(async () => { if (RunPair != null) await RunPair(Selected!, true); }, () => Selected != null && RunPair != null && !Busy && Selected.Pair.Paused == false);
+        Stop = new(() => { CancelRun?.Invoke(); return Task.CompletedTask; }, () => Busy);
         Settings = new(() => { new SettingsWindow(Store) { Owner = System.Windows.Application.Current.MainWindow }.ShowDialog(); return Task.CompletedTask; });
         Store.Changed += OnChanged;
         Load(store.Current);

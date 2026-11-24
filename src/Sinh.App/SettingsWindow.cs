@@ -30,7 +30,13 @@ public sealed class SettingsWindow : Window
         Section("История и восстановление", HistoryPanel);
         Section("Производительность", () => Text("Один файловый поток. Сканирование и хеширование выполняются вне UI-потока. Параллельная запись в первом ядре не используется."));
         Section("Уведомления и трей", () => Text("Этап 5. Автозапуск Windows выключен. Сейчас закрытие окна завершает приложение."));
-        Section("О программе", () => Text("SINH 0.1.0 · Windows 10/11 x64 (целевые ОС).\nОтдельная программа; протокол NoteLS не используется.\nОформление: NoteLS 1.10.58, b1f4b1f8…\nСборка не подписана. Windows-запуск и DPI-проверки ещё не выполнены."));
+        Section("О программе", () =>
+        {
+            var about = new StackPanel();
+            about.Children.Add(Text("SINH 0.1.0 · Windows 10/11 x64 (целевые ОС).\nОтдельная программа; протокол NoteLS не используется.\nОформление: NoteLS 1.10.58, b1f4b1f8…\nСборка не подписана. Windows-запуск и DPI-проверки ещё не выполнены."));
+            about.Children.Add(new DeveloperSignature { HorizontalAlignment = HorizontalAlignment.Left });
+            return about;
+        });
         stack.Children.Add(status);
         var close = new Button { Content = "Закрыть", IsCancel = true, HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(0, 12, 0, 0) }; stack.Children.Add(close);
     }

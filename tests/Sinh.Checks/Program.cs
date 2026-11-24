@@ -55,6 +55,8 @@ try
     });
     await ComparisonChecks.Run(Check, Require, temp);
     await ExecutionChecks.Run(Check, Require, temp);
+    await TwoWayChecks.Run(Check, Require, temp);
+    await BoundaryChecks.Run(Check, Require, temp);
 }
 finally { Directory.Delete(temp, true); }
 Console.WriteLine($"{count-failures}/{count} passed");

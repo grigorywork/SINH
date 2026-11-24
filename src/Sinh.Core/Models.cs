@@ -14,7 +14,7 @@ public sealed record TreeSnapshot(string Root, IReadOnlyDictionary<string, Entry
     public Entry? Find(string path) => Entries.GetValueOrDefault(path);
     public bool SameContent(TreeSnapshot other) => Entries.Count == other.Entries.Count && Entries.All(e => e.Value.SameContent(other.Find(e.Key)));
 }
-public sealed record SyncRequest(Guid PairId, string Source, string Destination, SyncMode Mode = SyncMode.Updates, bool AllowDeletes = false, string[]? Exclusions = null);
+public sealed record SyncRequest(Guid PairId, string Source, string Destination, SyncMode Mode = SyncMode.Updates, bool AllowDeletes = false, string[]? Exclusions = null, string? SourceIdentity = null, string? DestinationIdentity = null);
 public sealed record Operation(OperationKind Kind, string Root, string RelativePath, Entry? Before, Entry? After, string? SourceRoot = null, string? SourceRelativePath = null)
 {
     public string Action => Kind switch { OperationKind.CopyFile => Before == null ? "Добавить" : "Обновить", OperationKind.CreateDirectory => "Создать папку", OperationKind.DeleteDirectory => "Удалить папку", _ => "Удалить файл" };

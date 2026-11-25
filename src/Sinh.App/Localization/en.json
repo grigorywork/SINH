@@ -255,5 +255,15 @@
   "Аврора": "Aurora",
   "Полосы": "Stripes",
   "Однотонный": "Solid",
-  "Сведения о подписи файла смотрите в свойствах Windows.": "See the file properties in Windows for signature information."
+  "Сведения о подписи файла смотрите в свойствах Windows.": "See the file properties in Windows for signature information.",
+  "Roboto · встроенный": "Roboto · bundled",
+  "Open Sans · встроенный": "Open Sans · bundled",
+  "Montserrat · встроенный": "Montserrat · bundled",
+  "Inter · встроенный": "Inter · bundled",
+  "PT Sans · встроенный": "PT Sans · bundled",
+  "Nunito · встроенный": "Nunito · bundled",
+  "Rubik · встроенный": "Rubik · bundled",
+  "Manrope · встроенный": "Manrope · bundled",
+  "Playfair Display · встроенный": "Playfair Display · bundled",
+  "Merriweather · встроенный": "Merriweather · bundled"
 }

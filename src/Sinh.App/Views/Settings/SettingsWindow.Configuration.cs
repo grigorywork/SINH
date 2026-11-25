@@ -55,7 +55,7 @@ public sealed partial class SettingsWindow
             await StartupManager.SetEnabledAsync(false);
             try { await store.UpdateAsync(_ => snapshot); }
             catch { await StartupManager.SetEnabledAsync(previous); throw; }
-            status.Text = Localizer.T("Импортировано. Проверьте пути каждой пары перед запуском.");
+            status.Text = Localizer.T("Импортировано. Проверьте пути каждой пары перед запуском."); Close();
         });
         return panel;
     }

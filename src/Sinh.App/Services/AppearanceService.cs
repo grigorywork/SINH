@@ -29,9 +29,15 @@ internal sealed class AppearanceService : IDisposable
     {
         if (active == null || !active.TryGetTarget(out var service)) return;
         var window = (Window)sender;
+        if (!(bool)window.GetValue(DpiHookedProperty))
+        {
+            window.SetValue(DpiHookedProperty, true);
+            window.DpiChanged += (_, _) => window.Dispatcher.InvokeAsync(() => NativeAppearance.FitInitialWindow(window));
+        }
         NativeAppearance.Apply(window, service.store.Current.Appearance, service.IsDark(service.store.Current.Appearance));
         NativeAppearance.FitInitialWindow(window);
     }
+    private static readonly DependencyProperty DpiHookedProperty = DependencyProperty.RegisterAttached("DpiHooked", typeof(bool), typeof(AppearanceService), new PropertyMetadata(false));
     private void Changed(object? sender, AppSettings settings) => System.Windows.Application.Current.Dispatcher.InvokeAsync(Apply);
     private void SystemChanged(object sender, UserPreferenceChangedEventArgs e) => System.Windows.Application.Current.Dispatcher.InvokeAsync(Apply);
     private bool IsDark(Appearance a) => a.Theme == Theme.System

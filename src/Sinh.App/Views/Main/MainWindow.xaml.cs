@@ -8,6 +8,7 @@ public partial class MainWindow : Window
     public MainWindow(MainViewModel model)
     {
         InitializeComponent(); DataContext = model; coordinator = new SyncCoordinator(model);
+        LayoutUpdated += FitListViewport;
         scheduler = new BackgroundScheduler(model.Store, pair => Dispatcher.InvokeAsync(() => coordinator.RunAutomaticAsync(pair)).Task.Unwrap(), () => model.Busy || model.DialogOpen);
         Closing += async (_, e) =>
         {
@@ -19,6 +20,13 @@ public partial class MainWindow : Window
             try { await model.Store.FlushAsync(); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
             Close();
         };
-        Closed += (_, _) => { scheduler.Dispose(); coordinator.Dispose(); model.Dispose(); };
+        Closed += (_, _) => { LayoutUpdated -= FitListViewport; scheduler.Dispose(); coordinator.Dispose(); model.Dispose(); };
+    }
+    private void FitListViewport(object? sender, EventArgs args)
+    {
+        if (!IsLoaded || LayoutViewport.ViewportHeight <= 0) return;
+        var surrounding = MainGrid.DesiredSize.Height - PairsList.DesiredSize.Height;
+        var height = Math.Max(160, Math.Floor(LayoutViewport.ViewportHeight - surrounding - 1));
+        if (Math.Abs(PairsList.Height - height) > 1) PairsList.Height = height;
     }
 }

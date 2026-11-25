@@ -46,12 +46,12 @@ internal static class FontCatalog
     }
     internal static IEnumerable<FontChoice> Choices()
     {
-        yield return new("System", Localizer.T("Системный"));
-        foreach (var family in BuiltIns) yield return new("builtin:" + family.Id, family.Name + (Localizer.Current.Language == "en" ? " · bundled" : " · встроенный"));
-        yield return new("system:sans", Localizer.T("Гротеск · Segoe UI"));
-        yield return new("system:serif", Localizer.T("С засечками · Georgia"));
-        yield return new("system:mono", Localizer.T("Моноширинный · Consolas"));
-        yield return new("system:hand", Localizer.T("Рукописный · Segoe Print"));
+        yield return new("System", "Системный");
+        foreach (var family in BuiltIns) yield return new("builtin:" + family.Id, family.Name + " · встроенный");
+        yield return new("system:sans", "Гротеск · Segoe UI");
+        yield return new("system:serif", "С засечками · Georgia");
+        yield return new("system:mono", "Моноширинный · Consolas");
+        yield return new("system:hand", "Рукописный · Segoe Print");
         foreach (var family in Fonts.SystemFontFamilies.OrderBy(f => f.Source)) yield return new(family.Source, family.Source);
     }
 }

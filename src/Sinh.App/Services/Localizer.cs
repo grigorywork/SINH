@@ -52,7 +52,7 @@ internal sealed class Localizer : INotifyPropertyChanged
             "ImportSummary" => english ? "Replace settings? Profiles: {0}; unavailable or invalid paths: {1}. All profiles will be paused; automatic runs and deletions disabled. Current settings will be backed up." : "Заменить настройки? Пар: {0}; недоступных или недопустимых путей: {1}. Все пары будут на паузе; автоматика и удаления выключены. Текущие настройки сохранятся отдельной копией.",
             "About" => english ? "SINH {0} · Windows 10/11 x64 (target systems).\nIndependent application; does not use the NoteLS protocol.\nAppearance reference: NoteLS 1.10.58, b1f4b1f8…\nWindows runtime and DPI checks are pending. See Windows file properties for signature information." : "SINH {0} · Windows 10/11 x64 (целевые ОС).\nОтдельная программа; протокол NoteLS не используется.\nОформление: NoteLS 1.10.58, b1f4b1f8…\nWindows-запуск и DPI-проверки ещё не выполнены. Сведения о подписи файла смотрите в свойствах Windows.",
             "HistoryIntro" => english ? "History for “{0}” · shared limit {1} MiB. Stored on this computer. Versions are kept until manually deleted." : "История пары «{0}» · лимит всей истории {1} МиБ. Хранится на этом компьютере. Версии сохраняются до удаления вручную.",
-            "HistorySettings" => english ? "Replaced and deleted versions are stored on this computer, separately from synchronized folders. Shared limit: {0} MiB; synchronization stops when full. Versions are kept until manually deleted. Select a profile and click History to browse, restore or delete archived versions." : "Заменённые и удалённые версии сохраняются на этом компьютере отдельно от синхронизируемых папок. Лимит: {0} МиБ. При заполнении операция остановится. Версии сохраняются до удаления вручную. Просмотр, восстановление и удаление архивных версий: выберите пару на главной и нажмите «История».",
+            "HistorySettings" => english ? "Replaced and deleted versions are stored on this computer, separately from synchronized folders. Set the shared limit under Performance; synchronization stops when full. Versions are kept until manually deleted. Select a profile and click History to browse, restore or delete archived versions." : "Заменённые и удалённые версии сохраняются на этом компьютере отдельно от синхронизируемых папок. Общий лимит задаётся в разделе «Производительность». При заполнении операция остановится. Версии сохраняются до удаления вручную. Просмотр, восстановление и удаление архивных версий: выберите пару на главной и нажмите «История».",
             _ => T(key)
         };
         if (key == "StagePath" && args.Length > 0) args[0] = T(args[0]?.ToString() ?? "");
@@ -65,6 +65,21 @@ internal sealed class Localizer : INotifyPropertyChanged
         return JsonSerializer.Deserialize<Dictionary<string, string>>(stream) ?? [];
     }
     internal static Binding Translation(string key) => new(nameof(Language)) { Source = Current, Mode = BindingMode.OneWay, Converter = TranslationConverter.Instance, ConverterParameter = key };
+    private sealed record FormatKey(string Key, object?[] Args);
+    internal static Binding FormattedTranslation(string key, params object?[] args) => new(nameof(Language)) { Source = Current, Converter = FormatConverter.Instance, ConverterParameter = new FormatKey(key, args) };
+    private sealed class FormatConverter : IValueConverter
+    {
+        internal static readonly FormatConverter Instance = new();
+        public object Convert(object value, Type type, object parameter, CultureInfo culture) { var key = (FormatKey)parameter; return Format(key.Key, key.Args.ToArray()); }
+        public object ConvertBack(object value, Type type, object parameter, CultureInfo culture) => Binding.DoNothing;
+    }
+    internal static MultiBinding CaptionBinding(string path) => new() { Converter = CaptionMultiConverter.Instance, Bindings = { new Binding(nameof(Language)) { Source = Current }, new Binding(path) } };
+    private sealed class CaptionMultiConverter : IMultiValueConverter
+    {
+        internal static readonly CaptionMultiConverter Instance = new();
+        public object Convert(object[] values, Type type, object parameter, CultureInfo culture) => T(values.Length > 1 ? values[1]?.ToString() ?? "" : "");
+        public object[] ConvertBack(object value, Type[] types, object parameter, CultureInfo culture) => types.Select(_ => Binding.DoNothing).ToArray();
+    }
     internal static IValueConverter CaptionConverter { get; } = new CaptionTranslationConverter();
     private sealed class CaptionTranslationConverter : IValueConverter
     {

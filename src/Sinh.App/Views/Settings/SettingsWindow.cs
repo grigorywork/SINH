@@ -36,7 +36,7 @@ public sealed partial class SettingsWindow : Window
         Section("О программе", () =>
         {
             var about = new StackPanel();
-            about.Children.Add(Text(Localizer.Format("About", App.DisplayVersion)));
+            var description = Text(""); description.SetBinding(TextBlock.TextProperty, Localizer.FormattedTranslation("About", App.DisplayVersion)); about.Children.Add(description);
             about.Children.Add(new DeveloperSignature { HorizontalAlignment = HorizontalAlignment.Left });
             return about;
         });
@@ -58,7 +58,7 @@ public sealed partial class SettingsWindow : Window
     }
     private UIElement HistoryPanel()
     {
-        var p = new StackPanel(); p.Children.Add(Text(Localizer.Format("HistorySettings", store.Current.HistoryLimitMiB))); return p;
+        var p = new StackPanel(); var description = Text(""); description.SetBinding(TextBlock.TextProperty, Localizer.FormattedTranslation("HistorySettings")); p.Children.Add(description); return p;
     }
 }
 

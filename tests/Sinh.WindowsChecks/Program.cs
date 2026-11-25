@@ -88,6 +88,19 @@ internal static class Program
         Require(Children<Button>(window).Any(b => b.Content?.ToString() == "Compare"), "English captions did not update");
         Capture(window, "main-en-dark");
         Console.WriteLine("PASS interface font scales, discarded glass draft and English captions");
+        var viewport = (ScrollViewer)window.FindName("LayoutViewport");
+        var pairsList = (ListBox)window.FindName("PairsList");
+        window.MinHeight = 300; window.Height = 420;
+        await Dispatcher.Yield(DispatcherPriority.ApplicationIdle); window.UpdateLayout();
+        viewport.ScrollToEnd(); await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+        Require(pairsList.ActualHeight >= 150 && !double.IsInfinity(pairsList.Height) && VirtualizingPanel.GetIsVirtualizing(pairsList), "Small window lost its bounded virtualized list");
+        var footer = Children<DeveloperSignature>(window).First();
+        var footerBounds = footer.TransformToAncestor(viewport).TransformBounds(new Rect(footer.RenderSize));
+        Require(footerBounds.Bottom <= viewport.ActualHeight + 2, "Bottom actions cannot be scrolled into view");
+        Capture(window, "main-small-large-font");
+        window.Height = 740; window.MinHeight = 500; viewport.ScrollToHome();
+        await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+        Console.WriteLine("PASS small-window scrolling and finite virtualized list viewport");
         foreach (var font in FontCatalog.BuiltIns)
         {
             var family = FontCatalog.Resolve("builtin:" + font.Id);

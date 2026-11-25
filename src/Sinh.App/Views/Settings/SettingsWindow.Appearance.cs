@@ -27,7 +27,9 @@ public sealed partial class SettingsWindow
         Choices("Размер шрифта", new[] { ("Компактный", .85), ("Обычный", 1d), ("Крупный", 1.15) }, a.Scale, v => Save(s => s with { Appearance = s.Appearance with { Scale = v } }));
         Choices("Акцент", new[] { ("Системный", "System"), ("Фиолетовый", "Purple"), ("Синий", "Blue"), ("Зелёный", "Green"), ("Оранжевый", "Orange"), ("Розовый", "Pink"), ("Бирюзовый", "Teal") }, a.Accent, v => Save(s => s with { Appearance = s.Appearance with { Accent = v } }));
         panel.Children.Add(Text("Шрифт · встроенные и системные семейства"));
-        var font = new ComboBox { ItemsSource = FontCatalog.Choices().ToArray(), DisplayMemberPath = "Label", SelectedValuePath = "Key", SelectedValue = a.Font, IsTextSearchEnabled = true };
+        var fontLabel = new FrameworkElementFactory(typeof(TextBlock)); fontLabel.SetBinding(TextBlock.TextProperty, Localizer.CaptionBinding("Label"));
+        var font = new ComboBox { ItemsSource = FontCatalog.Choices().ToArray(), ItemTemplate = new DataTemplate { VisualTree = fontLabel }, SelectedValuePath = "Key", SelectedValue = a.Font, IsTextSearchEnabled = true };
+        TextSearch.SetTextPath(font, "Label");
         font.SelectionChanged += (_, _) => { if (font.SelectedValue is string f) Save(s => s with { Appearance = s.Appearance with { Font = f } }); }; panel.Children.Add(font);
         panel.Children.Add(Text("Шрифты доступны без интернета; загружается выбранное семейство. Лицензии находятся в пакете приложения."));
         var glass = new Button { Content = "Редактор стекла…", HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(0, 8, 0, 0) };

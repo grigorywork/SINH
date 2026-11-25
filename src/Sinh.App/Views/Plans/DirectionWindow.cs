@@ -9,7 +9,7 @@ public sealed class DirectionWindow : Window
     public DirectionWindow()
     {
         Title = "SINH — изменения на USB / в назначении"; Width = 620; Height = 320; MinWidth = 480; MinHeight = 280; WindowStartupLocation = WindowStartupLocation.CenterOwner;
-        var p = new StackPanel { Margin = new Thickness(24) }; Content = p;
+        var p = new StackPanel { Margin = new Thickness(24) }; Content = new ScrollViewer { Content = p, VerticalScrollBarVisibility = ScrollBarVisibility.Auto };
         var heading = new TextBlock { Text = "В копии обнаружены изменения", TextWrapping = TextWrapping.Wrap }; heading.SetResourceReference(TextBlock.FontSizeProperty, "SectionFontSize"); p.Children.Add(heading);
         p.Children.Add(new TextBlock { Text = "Синхронизировать папку согласно USB-носителю (B → A) или обновить копию по компьютеру (A → B)? Сначала будет показан конкретный план. Правила удаления выбранной пары сохраняются.", TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 16, 0, 24) });
         var buttons = new WrapPanel(); p.Children.Add(buttons);

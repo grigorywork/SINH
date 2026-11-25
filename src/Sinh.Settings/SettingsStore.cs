@@ -113,6 +113,7 @@ public sealed class SettingsStore : IDisposable
             SpeedLimitMiB = Math.Clamp(x.SpeedLimitMiB, 0, 10240),
             ScanMinutes = Math.Clamp(x.ScanMinutes, 1, 1440),
             LogDays = Math.Clamp(x.LogDays, 1, 3650),
+            ConfigurationBackupDays = x.ConfigurationBackupDays is 0 or 1 or 3 or 10 or 30 ? x.ConfigurationBackupDays : 0,
             HistoryDays = Math.Clamp(x.HistoryDays, 1, 3650),
             HistoryLimitMiB = Math.Clamp(x.HistoryLimitMiB, 16, 1048576)
         };

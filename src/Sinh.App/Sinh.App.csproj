@@ -2,7 +2,7 @@
  <PropertyGroup>
   <OutputType>WinExe</OutputType><TargetFramework>net10.0-windows</TargetFramework>
   <UseWPF>true</UseWPF><UseWindowsForms>true</UseWindowsForms><EnableWindowsTargeting>true</EnableWindowsTargeting>
-  <ApplicationManifest>app.manifest</ApplicationManifest><ApplicationIcon>Assets/glass.ico</ApplicationIcon>
+  <ApplicationManifest>app.manifest</ApplicationManifest><ApplicationIcon>Assets/mirror.ico</ApplicationIcon>
   <AssemblyName>SINH</AssemblyName><RootNamespace>Sinh.App</RootNamespace>
   <PublishSingleFile>true</PublishSingleFile><SelfContained>true</SelfContained>
   <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>

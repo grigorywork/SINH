@@ -14,6 +14,7 @@ public partial class App : System.Windows.Application
     private LocalizationService? localization;
     private InstanceGuard? instance;
     private TrayService? tray;
+    private ConfigurationBackups? configurationBackups;
     internal bool ExitRequested { get; private set; }
     internal void ShowMain() { if (MainWindow == null) return; MainWindow.Show(); MainWindow.WindowState = WindowState.Normal; MainWindow.Activate(); }
     internal void RequestExit() { ExitRequested = true; if (MainWindow != null) MainWindow.Close(); else Shutdown(); }
@@ -48,6 +49,7 @@ public partial class App : System.Windows.Application
             var window = new MainWindow(model);
             MainWindow = window;
             tray = new TrayService(Store);
+            configurationBackups = new ConfigurationBackups(Store);
             window.Show();
             ShutdownMode = ShutdownMode.OnMainWindowClose;
             if (e.Args.Contains("--background") || (e.Args.Contains("--startup") && Store.Current.StartMinimized)) window.Hide();
@@ -55,5 +57,5 @@ public partial class App : System.Windows.Application
         }
         catch (Exception ex) { MessageBox.Show(ex.Message, "SINH — ошибка запуска"); Shutdown(1); }
     }
-    protected override void OnExit(ExitEventArgs e) { tray?.Dispose(); appearance?.Dispose(); localization?.Dispose(); Store?.Dispose(); instance?.Dispose(); base.OnExit(e); }
+    protected override void OnExit(ExitEventArgs e) { configurationBackups?.Dispose(); tray?.Dispose(); appearance?.Dispose(); localization?.Dispose(); Store?.Dispose(); instance?.Dispose(); base.OnExit(e); }
 }

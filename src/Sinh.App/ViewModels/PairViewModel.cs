@@ -1,0 +1,28 @@
+using Sinh.Settings;
+
+namespace Sinh.App;
+
+public sealed class PairViewModel(FolderPair pair) : Observable
+{
+    public FolderPair Pair { get; private set; } = pair;
+    public void Update(FolderPair value)
+    {
+        var wasPaused = Pair.Paused;
+        if (Pair.Source != value.Source || Pair.Destination != value.Destination) effectiveSource = effectiveDestination = null;
+        Pair = value;
+        Raise(nameof(Name)); Raise(nameof(Paths)); Raise(nameof(Mode)); Raise(nameof(Last));
+        if (value.Paused) Status = "На паузе"; else if (wasPaused) Status = "Готова к запуску";
+    }
+    public string Name => Pair.Name;
+    private string? effectiveSource,effectiveDestination;
+    public string Paths => (effectiveSource??Pair.Source) + (Pair.Mode==SyncMode.TwoWay?"\n↔\n":"\n↓\n") + (effectiveDestination??Pair.Destination);
+    public void SetResolvedPaths(string a,string b){effectiveSource=a;effectiveDestination=b;Raise(nameof(Paths));}
+    public string Mode => Localizer.T(Pair.Mode switch { SyncMode.Mirror => "Зеркало A → B", SyncMode.TwoWay => "Двусторонний обмен", _ => "Копирование обновлений A → B" });
+    public string Last => Pair.LastSuccess?.ToLocalTime().ToString("g") ?? Localizer.T("Ещё не запускалась");
+    private string status = pair.Paused ? "На паузе" : "Ручной запуск";
+    private object?[] statusArgs = [];
+    public string Status { get => Localizer.Format(status, statusArgs.ToArray()); set { statusArgs = []; Set(ref status, value); } }
+    public void SetStatus(string key, params object?[] args) { status = key; statusArgs = args; Raise(nameof(Status)); }
+    public void RefreshLanguage() { Raise(nameof(Mode)); Raise(nameof(Last)); Raise(nameof(Status)); }
+}
+

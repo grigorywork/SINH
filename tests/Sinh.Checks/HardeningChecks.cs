@@ -60,5 +60,12 @@ internal static class HardeningChecks
             try{await history.DeleteAsync(forged);throw new Exception("Forged archive accepted");}catch(IOException){}
             require(File.Exists(forged.ArchivePath),"History cleanup deleted unrelated file");await history.DeleteAsync(entry);require(!File.Exists(entry.ArchivePath),"Selected history not deleted");
         });
+        await check("configuration export roundtrip and safe import reset automation",async()=>
+        {
+            var path=Path.Combine(temp,"export-"+Guid.NewGuid()+".json");var original=new AppSettings{AutoStart=true,ConfigurationBackupDays=1,Pairs=[new(){Name="Русский English",Source="A",Destination="B",AllowDeletes=true,AutoOnConnect=true,WatchChanges=true,IntervalMinutes=1,ApprovedRoots="approved",UsbId=Guid.NewGuid(),SourceVolumeId=Guid.NewGuid()}]};
+            await ConfigurationTransfer.ExportAsync(original,path);var imported=await ConfigurationTransfer.ReadImportAsync(path);var pair=imported.Pairs.Single();
+            require(!imported.AutoStart&&imported.ConfigurationBackupDays==0&&pair.Name=="Русский English"&&pair.Paused&&!pair.AllowDeletes&&!pair.WatchChanges&&!pair.AutoOnConnect&&pair.IntervalMinutes==0&&pair.ApprovedRoots==null&&pair.UsbId==null&&pair.SourceVolumeId==null&&pair.Id!=original.Pairs[0].Id,"Imported config enabled unattended mutation");
+            require(original.AutoStart&&original.Pairs[0].AllowDeletes,"Export mutated active settings");await File.WriteAllTextAsync(path,"{\"SchemaVersion\":999}");try{await ConfigurationTransfer.ReadImportAsync(path);throw new Exception("Future schema accepted");}catch(IOException){}
+        });
     }
 }

@@ -34,7 +34,7 @@ internal sealed class BackgroundScheduler : IDisposable
         {
             if (isBusy()) return;
             var settings = store.Current;
-            var mounts=WindowsVolumes.Mounts();
+            var mounts=settings.Pairs.Any(p=>!p.Paused&&(p.AutoOnConnect||p.WatchChanges||p.IntervalMinutes>0))?WindowsVolumes.Mounts():new Dictionary<Guid,string>();
             foreach (var removed in schedules.Keys.Except(settings.Pairs.Select(p => p.Id)).ToArray()) { schedules[removed].Dispose(); schedules.Remove(removed); }
             foreach (var pair in settings.Pairs)
             {

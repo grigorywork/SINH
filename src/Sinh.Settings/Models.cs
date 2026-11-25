@@ -2,7 +2,7 @@ namespace Sinh.Settings;
 
 public enum SyncMode { Updates, Mirror, TwoWay }
 public enum Theme { System, Light, Dark }
-public enum IconStyle { Glass, Frosted, Paper }
+public enum IconStyle { Glass, Frosted, Paper, Mirror }
 public enum CloseBehavior { Exit, Tray }
 
 public sealed record Appearance
@@ -17,7 +17,7 @@ public sealed record Appearance
     public double Frost { get; init; }
     public string Tint { get; init; } = "Theme";
     public string Background { get; init; } = "Aurora";
-    public IconStyle Icon { get; init; }
+    public IconStyle Icon { get; init; } = IconStyle.Mirror;
 }
 
 public sealed record FolderPair
@@ -58,6 +58,7 @@ public sealed record AppSettings
     public int SpeedLimitMiB { get; init; }
     public int ScanMinutes { get; init; } = 10;
     public int LogDays { get; init; } = 30;
+    public int ConfigurationBackupDays { get; init; }
     public int HistoryDays { get; init; } = 30;
     public long HistoryLimitMiB { get; init; } = 4096;
 }

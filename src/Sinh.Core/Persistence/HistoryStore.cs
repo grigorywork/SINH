@@ -8,6 +8,7 @@ public sealed class HistoryStore(string dataDirectory)
 {
     public string Root { get; } = Path.Combine(Path.GetFullPath(dataDirectory), "history");
     private readonly List<string> warnings = [];
+    private long? usedBytes;
     public IReadOnlyList<string> Warnings => warnings.AsReadOnly();
     private void Validate(HistoryEntry entry)
     {
@@ -19,7 +20,8 @@ public sealed class HistoryStore(string dataDirectory)
     public async Task<HistoryEntry> ArchiveAsync(Guid pairId, string originalPath, Entry version, long limitBytes, CancellationToken token,string? rootIdentity=null)
     {
         Directory.CreateDirectory(Root);
-        long used = Directory.EnumerateFiles(Root, "*.data", SearchOption.AllDirectories).Sum(p => new FileInfo(p).Length);
+        // A store is scoped to one serialized application run. Measure once, account for each committed archive.
+        long used = usedBytes ??= Directory.EnumerateFiles(Root, "*.data", SearchOption.AllDirectories).Sum(p => new FileInfo(p).Length);
         if (used + version.Length > limitBytes) throw new IOException("История заполнена. Освободите место в разделе восстановления; текущий файл не заменён.");
         var id = Guid.NewGuid(); var folder = Path.Combine(Root, pairId.ToString("N")); Directory.CreateDirectory(folder);
         var archive = Path.Combine(folder, id.ToString("N") + ".data");
@@ -29,9 +31,10 @@ public sealed class HistoryStore(string dataDirectory)
             await VerifiedCopy.CopyAsync(originalPath, archive, version, 0, null, "История", token,()=>{owned=true;return Task.CompletedTask;}).ConfigureAwait(false);
             var entry = new HistoryEntry(id, pairId, originalPath, archive, version, DateTimeOffset.UtcNow,rootIdentity);
             await StateStore.AtomicJsonAsync(Path.ChangeExtension(archive, ".json"), entry, token).ConfigureAwait(false);
+            usedBytes = used + version.Length;
             return entry;
         }
-        catch { if (owned&&File.Exists(archive)) File.Delete(archive); throw; }
+        catch { usedBytes = null; if (owned&&File.Exists(archive)) File.Delete(archive); throw; }
     }
     public async Task<IReadOnlyList<HistoryEntry>> ListAsync(Guid pairId, CancellationToken token = default)
     {
@@ -91,5 +94,6 @@ public sealed class HistoryStore(string dataDirectory)
         token.ThrowIfCancellationRequested(); Validate(entry);
         if (File.Exists(entry.ArchivePath)) File.Delete(entry.ArchivePath);
         File.Delete(Path.ChangeExtension(entry.ArchivePath, ".json"));
+        usedBytes = null;
     }, token);
 }

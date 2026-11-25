@@ -39,6 +39,7 @@ internal sealed class SyncCoordinator : IDisposable
             pair.Status = "Сравнение…";
             resolved ??= await Task.Run(() => WindowsVolumes.Resolve(pair.Pair));
             if (resolved == null) throw new System.IO.IOException("Настроенный носитель отключён.");
+            await Task.Run(() => PairBoundaries.Validate(resolved, model.Store.Current.Pairs));
             pair.SetResolvedPaths(resolved.Source,resolved.Destination);
             var request = await Task.Run(()=>SyncScope.ExcludeInternalDirectory(new SyncRequest(resolved.Id, resolved.Source, resolved.Destination, (SyncMode)(int)resolved.Mode, resolved.AllowDeletes, resolved.Exclusions.ToArray(),SourceIdentity:WindowsVolumes.StableSource(resolved), DestinationIdentity: WindowsVolumes.StableDestination(resolved)),stateStore.DirectoryPath));
             if (automatic && pair.Pair.ApprovedRoots != SyncPlanner.Fingerprint(request)) { pair.Status = "Нужен ручной запуск после изменения настроек"; return; }

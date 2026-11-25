@@ -49,6 +49,7 @@ internal sealed class Localizer : INotifyPropertyChanged
             "ProgressScan" => english ? "Read: {0:N1} MiB" : "Прочитано: {0:N1} МиБ",
             "ProgressOperations" => english ? "{0:N0} / {1:N0} operations" : "{0:N0} / {1:N0} операций",
             "PlanSummary" => english ? "Operations: {0} · Deletions: {1} · Copy: {2:F1} MiB · Conflicts: {3}\nSource: {4}\nDestination: {5}" : "Операций: {0} · Удалений: {1} · Копирование: {2:F1} МиБ · Конфликтов: {3}\nИсточник: {4}\nНазначение: {5}",
+            "ImportSummary" => english ? "Replace settings? Profiles: {0}; unavailable or invalid paths: {1}. All profiles will be paused; automatic runs and deletions disabled. Current settings will be backed up." : "Заменить настройки? Пар: {0}; недоступных или недопустимых путей: {1}. Все пары будут на паузе; автоматика и удаления выключены. Текущие настройки сохранятся отдельной копией.",
             _ => T(key)
         };
         if (key == "StagePath" && args.Length > 0) args[0] = T(args[0]?.ToString() ?? "");
@@ -61,6 +62,12 @@ internal sealed class Localizer : INotifyPropertyChanged
         return JsonSerializer.Deserialize<Dictionary<string, string>>(stream) ?? [];
     }
     internal static Binding Translation(string key) => new(nameof(Language)) { Source = Current, Mode = BindingMode.OneWay, Converter = TranslationConverter.Instance, ConverterParameter = key };
+    internal static IValueConverter CaptionConverter { get; } = new CaptionTranslationConverter();
+    private sealed class CaptionTranslationConverter : IValueConverter
+    {
+        public object Convert(object value, Type type, object parameter, CultureInfo culture) => T(value?.ToString() ?? "");
+        public object ConvertBack(object value, Type type, object parameter, CultureInfo culture) => Binding.DoNothing;
+    }
     internal static void Attach(DependencyObject parent)
     {
         void Label(DependencyObject target, DependencyProperty property)

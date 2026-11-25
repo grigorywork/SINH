@@ -3,6 +3,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
+using System.Windows.Media.Imaging;
 using Sinh.App;
 using Sinh.Settings;
 
@@ -32,6 +33,15 @@ internal static class Program
         }
     }
     private static void Require(bool condition, string message) { if (!condition) throw new Exception(message); }
+    private static void Capture(Window window, string name)
+    {
+        window.UpdateLayout();
+        var image = new RenderTargetBitmap((int)Math.Ceiling(window.ActualWidth), (int)Math.Ceiling(window.ActualHeight), 96, 96, PixelFormats.Pbgra32);
+        image.Render(window);
+        var encoder = new PngBitmapEncoder(); encoder.Frames.Add(BitmapFrame.Create(image));
+        System.IO.Directory.CreateDirectory("artifacts/windows-ui");
+        using var file = System.IO.File.Create("artifacts/windows-ui/" + name + ".png"); encoder.Save(file);
+    }
     private static async Task<int> RunAsync(Sinh.App.App app)
     {
         var directory = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "sinh-wpf-" + Guid.NewGuid().ToString("N"));
@@ -47,11 +57,13 @@ internal static class Program
         Require(window.Icon != null, "Window icon missing");
         Require(window.FindResource("MaterialDesignOutlinedButton") is Style, "Material Design resources missing");
         Console.WriteLine("PASS WPF main XAML, icon and Material Design runtime resources");
+        Capture(window, "main-ru");
         var settings = new SettingsWindow(store) { Owner = window }; settings.Show(); await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
         foreach (var expander in Children<Expander>(settings).ToArray()) expander.IsExpanded = true;
         await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
         Require(Children<Expander>(settings).All(e => e.Content != null), "Lazy settings panel failed");
         Console.WriteLine("PASS lazy settings sections and three icon previews");
+        Capture(settings, "settings-ru");
         GC.Collect(); GC.WaitForPendingFinalizers();
         foreach (var theme in new[] { Theme.Dark, Theme.Light, Theme.Dark })
         {
@@ -63,6 +75,19 @@ internal static class Program
         settings.Close();
         var recreated = new SettingsWindow(store) { Owner = window }; recreated.Show(); await Dispatcher.Yield(DispatcherPriority.ApplicationIdle); recreated.Close();
         Console.WriteLine("PASS theme updates after GC and settings-window recreation");
+        foreach (var scale in new[] { .85, 1d, 1.15 })
+        {
+            await store.UpdateAsync(s => s with { Appearance = s.Appearance with { Scale = scale } }); await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+            Require(Math.Abs((double)app.Resources["AppFontSize"] - 14 * scale) < .01, "Font scale resource did not update");
+        }
+        var original = store.Current.Appearance;
+        var glass = new GlassWindow(original) { Owner = window }; glass.Show(); await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+        Children<Slider>(glass).First().Value = 17; glass.Close();
+        Require(glass.Result == null && store.Current.Appearance == original, "Closing glass draft saved settings");
+        await store.UpdateAsync(s => s with { Appearance = s.Appearance with { Language = "en" } }); await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+        Require(Children<Button>(window).Any(b => b.Content?.ToString() == "Compare"), "English captions did not update");
+        Capture(window, "main-en-dark");
+        Console.WriteLine("PASS interface font scales, discarded glass draft and English captions");
         foreach (var font in FontCatalog.BuiltIns)
         {
             var family = FontCatalog.Resolve("builtin:" + font.Id);

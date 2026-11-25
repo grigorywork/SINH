@@ -11,6 +11,7 @@ internal static class TwoWayMerge
         var desired = new Dictionary<string, DesiredVersion>(StringComparer.Ordinal);
         var conflicts = new List<Conflict>();
         var names = ai.Keys.Concat(bi.Keys).Concat(ba.Keys).Concat(bb.Keys).Distinct(StringComparer.OrdinalIgnoreCase).OrderBy(p => p.Length).ToArray();
+        var reserved = names.ToHashSet(StringComparer.OrdinalIgnoreCase);
         string Alternative(string path, string hash)
         {
             var ext = Path.GetExtension(path); var stem = path[..^ext.Length];
@@ -21,10 +22,10 @@ internal static class TwoWayMerge
             if (Path.GetFileName(candidate).Length > 240)
             {
                 candidate = Path.Combine(Path.GetDirectoryName(path) ?? "", "SINH conflicts USB", tag, Path.GetFileName(path));
-                while (names.Contains(candidate, StringComparer.OrdinalIgnoreCase) || desired.Keys.Contains(candidate, StringComparer.OrdinalIgnoreCase)) candidate = Path.Combine(Path.GetDirectoryName(path) ?? "", "SINH conflicts USB", tag + "-" + n++, Path.GetFileName(path));
+                while (!reserved.Add(candidate)) candidate = Path.Combine(Path.GetDirectoryName(path) ?? "", "SINH conflicts USB", tag + "-" + n++, Path.GetFileName(path));
                 return candidate;
             }
-            while (names.Contains(candidate, StringComparer.OrdinalIgnoreCase) || desired.Keys.Contains(candidate, StringComparer.OrdinalIgnoreCase)) candidate = stem + " (USB-" + tag + "-" + n++ + ")" + ext;
+            while (!reserved.Add(candidate)) candidate = stem + " (USB-" + tag + "-" + n++ + ")" + ext;
             return candidate;
         }
         var redirects = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -74,12 +75,13 @@ internal static class TwoWayMerge
         // Retain necessary parents when a child was edited while its parent was removed on the other side.
         TreePolicy.PreserveContainers(desired,a,b);
         var directories = desired.Values.Where(v => v.Entry.Directory).ToDictionary(v => v.Entry.RelativePath, StringComparer.OrdinalIgnoreCase);
+        var files = desired.Values.Where(v => !v.Entry.Directory).Select(v => v.Entry.RelativePath).ToHashSet(StringComparer.OrdinalIgnoreCase);
         foreach (var value in desired.Values.ToArray())
         {
             var parent = Path.GetDirectoryName(value.Entry.RelativePath);
             while (!string.IsNullOrEmpty(parent))
             {
-                if (desired.Values.Any(v => !v.Entry.Directory && string.Equals(v.Entry.RelativePath, parent, StringComparison.OrdinalIgnoreCase))) throw new IOException("Неоднозначный конфликт структуры папок: " + parent);
+                if (files.Contains(parent)) throw new IOException("Неоднозначный конфликт структуры папок: " + parent);
                 if (!directories.ContainsKey(parent))
                 {
                     var dir = new DesiredVersion(new(parent, true, 0, "", DateTime.UtcNow), a.Root, parent);

@@ -40,6 +40,12 @@ internal static class PolicyAndFaultChecks
             try { await new SyncExecutor(new(data)).ApplyAsync(plan, new(ContextAvailable: () => Interlocked.Increment(ref calls) < 3)); } catch (IOException) { failed = true; }
             require(failed && await File.ReadAllTextAsync(Path.Combine(b, "file")) == "old", "Wrong/disconnected drive was modified");
         });
+        await check("a file appearing at the final create boundary is not overwritten", async () =>
+        {
+            var (a, b, data) = Setup(); await File.WriteAllTextAsync(Path.Combine(a, "new.txt"), "source"); var target = Path.Combine(b, "new.txt"); var plan = await new ComparisonService().CompareAsync(new(Guid.NewGuid(), a, b)); var calls = 0; var rejected = false;
+            try { await new SyncExecutor(new(data)).ApplyAsync(plan, new(ContextAvailable: () => { if (++calls == 3) File.WriteAllText(target, "external new file"); return true; })); } catch (IOException) { rejected = true; }
+            require(rejected && await File.ReadAllTextAsync(target) == "external new file", "A concurrent newly created file was overwritten");
+        });
         if (OperatingSystem.IsWindows())
         {
             await check("Windows file sharing lock aborts comparison without deletion", async () =>

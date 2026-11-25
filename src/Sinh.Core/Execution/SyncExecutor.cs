@@ -63,7 +63,7 @@ public sealed class SyncExecutor(StateStore store)
                     if (!entry.SameContent(check)) throw new IOException("Целевая копия не прошла проверку SHA256.");
                     if (options.History && operation.Before is { Directory: false } old) await history.ArchiveAsync(request.PairId, target, old, options.HistoryLimitBytes, token, operation.Root == plan.Source.Root ? request.SourceIdentity : request.DestinationIdentity).ConfigureAwait(false);
                     await VerifyEntryAsync(target, operation.Before, token).ConfigureAwait(false); PathRules.RejectLinks(target);
-                    token.ThrowIfCancellationRequested(); CheckContext(); File.Move(temporary, target, true); temporary = null; temporaryOwned = false;
+                    token.ThrowIfCancellationRequested(); CheckContext(); File.Move(temporary, target, operation.Before != null); temporary = null; temporaryOwned = false;
                     File.SetLastWriteTimeUtc(target, entry.LastWriteUtc);
                 }
                 else if (operation.Kind == OperationKind.DeleteFile)

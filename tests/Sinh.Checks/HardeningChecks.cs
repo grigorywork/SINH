@@ -68,5 +68,11 @@ internal static class HardeningChecks
             require(!imported.AutoStart && imported.ConfigurationBackupDays == 0 && pair.Name == "Русский English" && pair.Paused && !pair.AllowDeletes && !pair.WatchChanges && !pair.AutoOnConnect && pair.IntervalMinutes == 0 && pair.ApprovedRoots == null && pair.UsbId == null && pair.SourceVolumeId == null && pair.Id != original.Pairs[0].Id, "Imported config enabled unattended mutation");
             require(original.AutoStart && original.Pairs[0].AllowDeletes, "Export mutated active settings"); await File.WriteAllTextAsync(path, "{\"SchemaVersion\":999}"); try { await ConfigurationTransfer.ReadImportAsync(path); throw new Exception("Future schema accepted"); } catch (IOException) { }
         });
+        await check("restoration does not overwrite a newly appearing file", async () =>
+        {
+            var (a, _, data) = Setup(); var path = Path.Combine(a, "restore.txt"); await File.WriteAllTextAsync(path, "archived"); var version = await TreeScanner.ReadFileAsync(path, "restore.txt"); var history = new HistoryStore(data); var entry = await history.ArchiveAsync(Guid.NewGuid(), path, version, 100000, default); File.Delete(path); var calls = 0; var refused = false;
+            try { await history.RestoreAsync(entry, [a], 100000, contextAvailable: () => { if (++calls == 2) File.WriteAllText(path, "created concurrently"); return true; }); } catch (IOException) { refused = true; }
+            require(refused && await File.ReadAllTextAsync(path) == "created concurrently", "Restoration overwrote a newly created file");
+        });
     }
 }

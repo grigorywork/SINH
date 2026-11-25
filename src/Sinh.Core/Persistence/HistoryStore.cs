@@ -83,7 +83,7 @@ public sealed class HistoryStore(string dataDirectory)
             if (!entry.Version.SameContent(verified)) throw new IOException("История повреждена; восстановление отменено.");
             if (before != null) await ArchiveAsync(entry.PairId, entry.OriginalPath, before, limitBytes, token, entry.RootIdentity).ConfigureAwait(false);
             await SyncExecutor.VerifyEntryAsync(entry.OriginalPath, before, token).ConfigureAwait(false);
-            token.ThrowIfCancellationRequested(); if (contextAvailable?.Invoke() == false) throw new IOException("Носитель для восстановления изменился."); File.Move(temporary, entry.OriginalPath, true); owned = false;
+            token.ThrowIfCancellationRequested(); if (contextAvailable?.Invoke() == false) throw new IOException("Носитель для восстановления изменился."); File.Move(temporary, entry.OriginalPath, before != null); owned = false;
             File.SetLastWriteTimeUtc(entry.OriginalPath, entry.Version.LastWriteUtc);
             await StateStore.AtomicJsonAsync(journalPath, journal with { Stage = "Завершено", Completed = 1, TemporaryPath = null, TemporaryOwned = false }, CancellationToken.None).ConfigureAwait(false);
         }

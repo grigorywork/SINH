@@ -37,3 +37,5 @@ Windows run45687751429: **61/61 ядра PASS**, включая длинные U
 Windows run45688434617: engine61/61; WPF достиг настоящего MainWindow и выявил TwoWay по умолчанию у ProgressBar.Value для read-only ProgressValue. Явно задан Mode=OneWay. Следующий прогон обязателен перед публичной сборкой.
 
 Windows run45688690683: engine61/61, WPF MainWindow открылся; найден пропавший icon, потому что implicit Style TargetType=Window не наследуется производными Window-классами. WindowLoaded теперь явно присоединяет общий window style, сохраняя локально выбранный style.
+
+Windows run45689082987: MainWindow/theme/icons/lazy sections/GC/scales/glass draft/English/small window/cancel-dialog PASS. Выявлено WPF имя семейства Merriweather: pinned static TTF содержит legacy name ID1 «Merriweather Light», weight400/700. URI ссылается на legacy имя, UI-имя сохраняется Merriweather; файлы и OFL Reserved Font Name не менялись.

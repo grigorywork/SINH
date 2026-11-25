@@ -1,0 +1,15 @@
+{
+  "Version": "0.5.1-preview.1",
+  "CodeCommit": "a691eafedfd3fbc39a7709cf51cabf9c3abc551e",
+  "ValidationRun": 45704557590,
+  "LinuxCore": "62/62 PASS",
+  "WindowsServer2025Core": "65/65 PASS",
+  "WPF": "All groups PASS including root report/fallback and clipboard lifecycle",
+  "UserReportedIssue": "Folder opens in Explorer but SINH says unavailable after deleting one file",
+  "Reproduced": false,
+  "IssueFixed": false,
+  "Purpose": "Precise root checks and local diagnostic preview; no automatic creation of unavailable roots",
+  "Windows10Client": "NOT TESTED",
+  "Windows11Client": "NOT TESTED",
+  "PhysicalUSB": "NOT TESTED"
+}

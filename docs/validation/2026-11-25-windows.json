@@ -1,0 +1,24 @@
+{
+  "OS": "Windows Server 2025 / 10.0.26100 x64",
+  "SDK": "10.0.404",
+  "Version": "0.4.0-preview.3",
+  "Commit": "6b07e481a3fef09cc3492ab88749095c32387647",
+  "Run": 45690034185,
+  "URL": "https://github.com/grigorywork/SINH/actions/runs/45690034185",
+  "Build": "PASS; 0 warnings/errors",
+  "Core": "61/61 PASS",
+  "WPF": [
+    "main XAML/icon/Material Design",
+    "lazy settings and four icon previews",
+    "theme after GC and window recreation",
+    "font scales/glass cancel/English",
+    "small window and bounded virtualized list",
+    "cancel closes modal review",
+    "ten font families Cyrillic/Latin",
+    "MSS9LN bounce/ninth activation/Escape"
+  ],
+  "Windows10Client": "NOT TESTED",
+  "Windows11Client": "NOT TESTED",
+  "PhysicalUSB_SMB_DPI_Narrator": "NOT TESTED",
+  "PackagedExe": "Pending separate publisher smoke test"
+}

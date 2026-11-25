@@ -52,7 +52,7 @@ jobs:
           $hash = (Get-FileHash -LiteralPath $exe -Algorithm SHA256).Hash
           if ($hash -ne $meta.ExecutableSHA256) { throw 'EXE checksum mismatch.' }
           $signature = Get-AuthenticodeSignature -LiteralPath $exe
-          if ($signature.Status -notin @('Valid', 'NotTrusted') -or $null -eq $signature.SignerCertificate) { throw "Invalid Authenticode signature: $($signature.Status)" }
+          if ($signature.Status -notin @('Valid', 'NotTrusted', 'UnknownError') -or $null -eq $signature.SignerCertificate) { throw "Invalid Authenticode signature: $($signature.Status)" }
           $certificateHash = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($signature.SignerCertificate.RawData))
           if ($certificateHash -ne $meta.Signature.CertificateSHA256) { throw 'Unexpected signing certificate.' }
           $process = Start-Process -FilePath $exe -PassThru
@@ -66,6 +66,7 @@ jobs:
             }
             if (-not $ready) { throw "SINH main window did not appear; title: $($process.MainWindowTitle)" }
             if (-not $process.CloseMainWindow() -or -not $process.WaitForExit(15000)) { throw 'Packaged EXE did not close normally.' }
+            if ($process.ExitCode -ne 0) { throw 'Packaged EXE returned an error on normal exit.' }
             $report = @{ OS = [Environment]::OSVersion.VersionString; Architecture = 'x64'; PackagedExe = 'Launched SINH window and closed normally'; ExecutableSHA256 = $hash; Authenticode = $signature.Status.ToString(); TrustStoreModified = $false; ValidationRun = $meta.ValidationRun; AtUTC = [DateTime]::UtcNow.ToString('o') } | ConvertTo-Json -Compress
             "report=$report" | Add-Content $env:GITHUB_OUTPUT
             Write-Output $report
@@ -97,11 +98,13 @@ jobs:
           assert os.environ['RELEASE_TAG']=='v'+meta['Version']
           archive=next(Path('.').glob('*-win-x64-portable.zip'))
           with zipfile.ZipFile(archive) as z:
-              for name in ('SINH.exe','MSS9LN-preview.cer'):
+              for name in ('SINH.exe','MSS9LN-preview.cer','MSS9LN-preview.pem'):
                   Path(name).write_bytes(z.read(name))
           assert hashlib.sha256(Path('SINH.exe').read_bytes()).hexdigest()==meta['ExecutableSHA256']
           Path('windows-packaged-smoke.json').write_text(os.environ['SMOKE_REPORT']+'\n')
           PY
+          if ! command -v osslsigncode >/dev/null; then sudo apt-get update -qq; sudo apt-get install -y -qq osslsigncode; fi
+          osslsigncode verify -CAfile MSS9LN-preview.pem -in SINH.exe
           source_commit=$(python3 -c 'import json; print(json.load(open("RELEASE.json"))["SourceArchiveCommit"])')
           if gh release view "$RELEASE_TAG" --repo "$REPOSITORY" --json isDraft >/dev/null 2>&1; then
             test "$(gh release view "$RELEASE_TAG" --repo "$REPOSITORY" --json isDraft --jq .isDraft)" = true

@@ -1,6 +1,6 @@
-# Проверка Windows — ещё не выполнена
+# Проверка Windows — Server CI пройден, клиентская матрица ожидается
 
-Цели: Windows 10 22H2 x64 и Windows 11 x64. Фактически ядро запускалось на Debian 13 x64. Кросс-сборка WPF, тесты ядра, WPF runtime и запуск portable-пакета — разные результаты. GitHub Windows CI пока не запущен из-за запрета создания репозитория подключённой интеграцией. Даже успешный Windows Server runner не подтверждает Windows 10/11 клиента.
+Цели: Windows 10 22H2 x64 и Windows 11 x64. Фактически ядро запускалось на Debian 13 x64. Кросс-сборка WPF, тесты ядра, WPF runtime и запуск portable-пакета — разные результаты. GitHub Windows Server 2025 CI пройден: run45690034185, ядро61/61 и все WPF runtime-проверки. Даже успешный Windows Server runner не подтверждает Windows 10/11 клиента.
 
 ## Автоматически на Windows
 

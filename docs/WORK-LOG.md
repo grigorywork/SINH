@@ -37,3 +37,6 @@ Fix hour3600.038с/62921/0. Optimization3605.204с/69111/0 прерван пос
 
 ### Публикация и Windows
 Public main загружен с объединением истории владельца. Первый Windows Server2025 CI: build0 warnings/errors, 60/61 engine, WPF ещё не запущен из-за отказа engine. Найден и исправляется native long-path prefix, version0.4.0-preview.2.
+
+### Windows runtime CI SUCCESS
+0.4.0-preview.3 /6b07e48 /run45690034185: build0 warnings/errors, engine61/61, все WPF-группы PASS. Исправлены native long-path prefix, read-only ProgressBar binding, component URI, shared style derived windows; Merriweather upstream static2.002 с оригинальной OFL. Публичный исходник на GitHub; пакет готовится к публикации через GitHub Actions (Cloud upload-host credential401), закрытый ключ остаётся локально.

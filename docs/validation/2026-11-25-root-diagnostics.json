@@ -11,5 +11,19 @@
   "Purpose": "Precise root checks and local diagnostic preview; no automatic creation of unavailable roots",
   "Windows10Client": "NOT TESTED",
   "Windows11Client": "NOT TESTED",
-  "PhysicalUSB": "NOT TESTED"
+  "PhysicalUSB": "NOT TESTED",
+  "PublisherRun": 45705129278,
+  "PublicExeHEAD": 200,
+  "PublicAssetDigests": "MATCH",
+  "PackagedSmoke": {
+    "ExecutableSHA256": "C15302362C780D196D1C852EB96ACAA6D5CACC6515F244275978CDC46ECD0F25",
+    "AtUTC": "2026-11-25T21:31:50.5406440Z",
+    "TrustStoreModified": false,
+    "Authenticode": "UnknownError",
+    "Architecture": "x64",
+    "PackagedExe": "Launched SINH window and closed normally",
+    "ValidationRun": 45704557590,
+    "OS": "Microsoft Windows NT 10.0.26100.0"
+  },
+  "ReleaseURL": "https://github.com/grigorywork/SINH/releases/tag/v0.5.1-preview.1"
 }

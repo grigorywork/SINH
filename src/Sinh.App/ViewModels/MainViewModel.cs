@@ -34,7 +34,8 @@ public sealed class MainViewModel : Observable, IDisposable
     public void SetError(Exception value) { error = value; Raise(nameof(Status)); }
     private Sinh.Core.SyncProgress progress = new("", "");
     public double ProgressValue => progress.Total > 0 ? Math.Clamp(progress.Completed * 100d / progress.Total, 0, 100) : 0;
-    public bool ProgressIndeterminate => progress.Total <= 0;
+    public bool ProgressIndeterminate => progress.Total <= 0 && WindowMotion.Enabled;
+    internal void RefreshMotion() => Raise(nameof(ProgressIndeterminate));
     public string ProgressInfo => progress.Stage == "Применение" ? Localizer.Format("ProgressOperations", progress.Completed, progress.Total) : progress.Total > 0 ? Localizer.Format("ProgressBytes", progress.Completed / 1048576d, progress.Total / 1048576d) : Localizer.Format("ProgressScan", progress.Completed / 1048576d);
     public void ReportProgress(Sinh.Core.SyncProgress value) { progress = value; SetStatus("StagePath", value.Stage, value.Path); Raise(nameof(ProgressValue)); Raise(nameof(ProgressIndeterminate)); Raise(nameof(ProgressInfo)); }
     public MainViewModel(SettingsStore store)

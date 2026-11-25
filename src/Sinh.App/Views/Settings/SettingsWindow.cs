@@ -21,7 +21,7 @@ public sealed partial class SettingsWindow : Window
         void Section(string title, Func<UIElement> build)
         {
             var expander = new Expander { Header = title };
-            expander.Expanded += (_, _) => { if (expander.Content == null) expander.Content = build(); if (expander.Content is DependencyObject content) Localizer.Attach(content); };
+            expander.Expanded += (_, _) => { if (expander.Content == null) expander.Content = build(); if (expander.Content is DependencyObject content) Localizer.Attach(content); if (expander.Content is UIElement element) WindowMotion.Reveal(element); };
             stack.Children.Add(expander);
         }
         Section("Внешний вид", AppearancePanel);

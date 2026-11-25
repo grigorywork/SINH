@@ -6,6 +6,8 @@ using System.Windows.Threading;
 using System.Windows.Media.Imaging;
 using Sinh.App;
 using Sinh.Settings;
+using MaterialDesignThemes.Wpf;
+using Theme = Sinh.Settings.Theme;
 
 internal static class Program
 {
@@ -57,6 +59,7 @@ internal static class Program
         Require(window.Icon != null, "Window icon missing");
         Require(window.FindResource("MaterialDesignOutlinedButton") is Style, "Material Design resources missing");
         Console.WriteLine("PASS WPF main XAML, icon and Material Design runtime resources");
+        Require(TransitionAssist.GetDisableTransitions(window) == !WindowMotion.Enabled && RippleAssist.GetIsDisabled(window) == !WindowMotion.Enabled, "Reduced-motion policy did not reach Material Design controls");
         Capture(window, "main-ru");
         var settings = new SettingsWindow(store) { Owner = window }; settings.Show(); await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
         foreach (var expander in Children<Expander>(settings).ToArray()) expander.IsExpanded = true;
@@ -123,7 +126,7 @@ internal static class Program
             button.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
             Require(!app.Windows.OfType<EasterEggWindow>().Any(w => w.IsVisible), "Easter egg opened before ninth activation");
-            if (count == 2 && SystemParameters.ClientAreaAnimation)
+            if (count == 2 && WindowMotion.Enabled)
             {
                 await Task.Delay(90);
                 var text = (TextBlock)button.Content;

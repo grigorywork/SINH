@@ -33,7 +33,7 @@ public sealed class DeveloperSignature : UserControl
     private void Activate(object sender, RoutedEventArgs e)
     {
         var count = Interlocked.Increment(ref activations);
-        if (count % 2 == 0 && SystemParameters.ClientAreaAnimation)
+        if (count % 2 == 0 && WindowMotion.Enabled)
         {
             var animation = new DoubleAnimationUsingKeyFrames { Duration = TimeSpan.FromMilliseconds(280), FillBehavior = FillBehavior.Stop };
             animation.KeyFrames.Add(new EasingDoubleKeyFrame(0, KeyTime.FromPercent(0)));

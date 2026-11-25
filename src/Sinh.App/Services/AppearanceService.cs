@@ -15,6 +15,7 @@ internal sealed class AppearanceService : IDisposable
     private Appearance? applied;
     private bool appliedDark;
     private Color appliedAccent;
+    private bool appliedHighContrast;
 
     static AppearanceService() => EventManager.RegisterClassHandler(typeof(Window), FrameworkElement.LoadedEvent, new RoutedEventHandler(WindowLoaded));
     public AppearanceService(SettingsStore store)
@@ -23,6 +24,7 @@ internal sealed class AppearanceService : IDisposable
         active = new(this);
         store.Changed += Changed;
         SystemEvents.UserPreferenceChanged += SystemChanged;
+        SystemParameters.StaticPropertyChanged += MotionChanged;
         Apply();
     }
     private static void WindowLoaded(object sender, RoutedEventArgs e)
@@ -36,10 +38,16 @@ internal sealed class AppearanceService : IDisposable
         }
         NativeAppearance.Apply(window, service.store.Current.Appearance, service.IsDark(service.store.Current.Appearance));
         NativeAppearance.FitInitialWindow(window);
+        WindowMotion.Apply(window);
     }
     private static readonly DependencyProperty DpiHookedProperty = DependencyProperty.RegisterAttached("DpiHooked", typeof(bool), typeof(AppearanceService), new PropertyMetadata(false));
     private void Changed(object? sender, AppSettings settings) => System.Windows.Application.Current.Dispatcher.InvokeAsync(Apply);
     private void SystemChanged(object sender, UserPreferenceChangedEventArgs e) => System.Windows.Application.Current.Dispatcher.InvokeAsync(Apply);
+    private void MotionChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName is not (nameof(SystemParameters.ClientAreaAnimation) or nameof(SystemParameters.HighContrast))) return;
+        System.Windows.Application.Current.Dispatcher.InvokeAsync(() => { Apply(); foreach (Window window in System.Windows.Application.Current.Windows) WindowMotion.ApplyPolicy(window); });
+    }
     private bool IsDark(Appearance a) => a.Theme == Theme.System
         ? Registry.GetValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize", "AppsUseLightTheme", 1) is 0
         : a.Theme == Theme.Dark;
@@ -58,7 +66,7 @@ internal sealed class AppearanceService : IDisposable
             "Teal" => ColorOf("#299FAD"),
             _ => SystemParameters.WindowGlassColor
         };
-        if (applied == a && appliedDark == dark && appliedAccent == accent) return;
+        if (applied == a && appliedDark == dark && appliedAccent == accent && appliedHighContrast == SystemParameters.HighContrast) return;
         var surface = ColorOf(dark ? "#171923" : "#F5F6FA");
         app.Resources["Surface"] = Frozen(new SolidColorBrush(surface));
         app.Resources["Panel"] = Brush(dark ? "#222533" : "#FFFFFF");
@@ -88,6 +96,7 @@ internal sealed class AppearanceService : IDisposable
         applied = a;
         appliedDark = dark;
         appliedAccent = accent;
+        appliedHighContrast = SystemParameters.HighContrast;
         foreach (Window window in app.Windows) NativeAppearance.Apply(window, a, dark);
     }
     private static Color Tint(Appearance a, bool dark) => ColorOf(a.Tint switch
@@ -120,6 +129,7 @@ internal sealed class AppearanceService : IDisposable
     {
         store.Changed -= Changed;
         SystemEvents.UserPreferenceChanged -= SystemChanged;
+        SystemParameters.StaticPropertyChanged -= MotionChanged;
         if (active?.TryGetTarget(out var service) == true && ReferenceEquals(service, this)) active = null;
     }
 }

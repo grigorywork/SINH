@@ -46,7 +46,7 @@ public sealed partial class SettingsWindow
         var icons = new WrapPanel();
         foreach (var (kind, label) in new[] { (IconStyle.Mirror, "Зеркальность SINH"), (IconStyle.Glass, "Розовое стекло (1Б)"), (IconStyle.Frosted, "Матовый (3)"), (IconStyle.Paper, "Лист с галочкой") })
         {
-            var content = new StackPanel(); content.Children.Add(new Image { Source = new BitmapImage(new Uri($"pack://application:,,,/Assets/{kind.ToString().ToLowerInvariant()}.png")), Width = 64, Height = 64 }); content.Children.Add(Text(label));
+            var content = new StackPanel(); content.Children.Add(new Image { Source = new BitmapImage(AssetUris.For($"Assets/{kind.ToString().ToLowerInvariant()}.png")), Width = 64, Height = 64 }); content.Children.Add(Text(label));
             var radio = new RadioButton { Content = content, GroupName = "Icons", IsChecked = a.Icon == kind, Margin = new Thickness(0, 0, 12, 8), Padding = new Thickness(8) };
             radio.Checked += (_, _) => Save(s => s with { Appearance = s.Appearance with { Icon = kind } }); icons.Children.Add(radio);
         }

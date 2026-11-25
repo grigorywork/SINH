@@ -31,3 +31,5 @@ GitHub creation заблокирована правами интеграции (
 
 ## Первый Windows CI
 Исходники успешно опубликованы в public grigorywork/SINH, main36e0076. Run45687215216 на Windows Server2025/10.0.26100 собрал все проекты без warning, но ядро60/61: восстановление пути>500 упало в P/Invoke CreateFileW без extended prefix. Исправлено добавлением \\?\ / \\?\UNC\ до native CreateFile; существующая регрессия проверяет реальный случай. Кандидат повышен до0.4.0-preview.2, старыйv1 остаётся draft. Нужен повтор Windows CI и новый подписанный portable.
+
+Windows run45687751429: **61/61 ядра PASS**, включая длинные Unicode пути и restore. WPF harness упал до окон из-за запрещённой смены Application.ResourceAssembly при существующей entry assembly. Убрано присваивание; URI ресурсов App теперь явно SINH;component через AssetUris, чтобы работать и из тест-хоста, и из EXE.

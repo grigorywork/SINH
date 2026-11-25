@@ -14,7 +14,6 @@ internal static class Program
     [STAThread]
     private static int Main()
     {
-        System.Windows.Application.ResourceAssembly = typeof(Sinh.App.App).Assembly;
         var app = new Sinh.App.App { ShutdownMode = ShutdownMode.OnExplicitShutdown };
         app.InitializeComponent();
         var task = RunAsync(app);

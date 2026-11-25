@@ -25,7 +25,7 @@ internal static class FontCatalog
                 var id = key[8..];
                 var entry = BuiltIns.FirstOrDefault(f => f.Id == id);
                 family = entry.Id != null
-                    ? new FontFamily(new Uri("pack://application:,,,/"), $"./Assets/Fonts/{entry.Id}/#{entry.Name}")
+                    ? new FontFamily(AssetUris.Base, $"./Assets/Fonts/{entry.Id}/#{entry.Name}")
                     : System.Windows.SystemFonts.MessageFontFamily;
             }
             else family = key switch

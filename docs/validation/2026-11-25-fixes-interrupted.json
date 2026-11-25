@@ -1,0 +1,862 @@
+{
+  "StartedAt": "2026-11-25T06:22:13.8067346+00:00",
+  "UpdatedAt": "2026-11-25T07:14:47.9538514+00:00",
+  "Completed": false,
+  "DurationSeconds": 3154.1471112,
+  "RequestedSeconds": 3600,
+  "Seed": 1000000,
+  "Iterations": 63659,
+  "Cancellations": 9870,
+  "Guarded": 14797,
+  "FailureCount": 0,
+  "Failures": [],
+  "Samples": [
+    {
+      "ElapsedSeconds": 30.0622747,
+      "Iterations": 583,
+      "Cancellations": 90,
+      "Guarded": 140,
+      "Failures": 0,
+      "WorkingSetBytes": 68337664
+    },
+    {
+      "ElapsedSeconds": 60.1062656,
+      "Iterations": 1176,
+      "Cancellations": 191,
+      "Guarded": 267,
+      "Failures": 0,
+      "WorkingSetBytes": 69066752
+    },
+    {
+      "ElapsedSeconds": 90.1449991,
+      "Iterations": 1829,
+      "Cancellations": 267,
+      "Guarded": 435,
+      "Failures": 0,
+      "WorkingSetBytes": 69132288
+    },
+    {
+      "ElapsedSeconds": 120.1539326,
+      "Iterations": 2430,
+      "Cancellations": 352,
+      "Guarded": 578,
+      "Failures": 0,
+      "WorkingSetBytes": 69193728
+    },
+    {
+      "ElapsedSeconds": 150.1990801,
+      "Iterations": 3064,
+      "Cancellations": 447,
+      "Guarded": 710,
+      "Failures": 0,
+      "WorkingSetBytes": 69238784
+    },
+    {
+      "ElapsedSeconds": 180.2457915,
+      "Iterations": 3717,
+      "Cancellations": 541,
+      "Guarded": 853,
+      "Failures": 0,
+      "WorkingSetBytes": 69263360
+    },
+    {
+      "ElapsedSeconds": 210.2941423,
+      "Iterations": 4372,
+      "Cancellations": 622,
+      "Guarded": 1009,
+      "Failures": 0,
+      "WorkingSetBytes": 69345280
+    },
+    {
+      "ElapsedSeconds": 240.2981489,
+      "Iterations": 5008,
+      "Cancellations": 712,
+      "Guarded": 1157,
+      "Failures": 0,
+      "WorkingSetBytes": 69402624
+    },
+    {
+      "ElapsedSeconds": 270.3211061,
+      "Iterations": 5548,
+      "Cancellations": 797,
+      "Guarded": 1271,
+      "Failures": 0,
+      "WorkingSetBytes": 69406720
+    },
+    {
+      "ElapsedSeconds": 300.3706099,
+      "Iterations": 6194,
+      "Cancellations": 913,
+      "Guarded": 1407,
+      "Failures": 0,
+      "WorkingSetBytes": 69046272
+    },
+    {
+      "ElapsedSeconds": 330.4540405,
+      "Iterations": 6825,
+      "Cancellations": 994,
+      "Guarded": 1596,
+      "Failures": 0,
+      "WorkingSetBytes": 69111808
+    },
+    {
+      "ElapsedSeconds": 360.4971196,
+      "Iterations": 7358,
+      "Cancellations": 1067,
+      "Guarded": 1720,
+      "Failures": 0,
+      "WorkingSetBytes": 69152768
+    },
+    {
+      "ElapsedSeconds": 390.5545083,
+      "Iterations": 7863,
+      "Cancellations": 1142,
+      "Guarded": 1846,
+      "Failures": 0,
+      "WorkingSetBytes": 68825088
+    },
+    {
+      "ElapsedSeconds": 420.602529,
+      "Iterations": 8479,
+      "Cancellations": 1233,
+      "Guarded": 1979,
+      "Failures": 0,
+      "WorkingSetBytes": 68837376
+    },
+    {
+      "ElapsedSeconds": 450.6481483,
+      "Iterations": 9117,
+      "Cancellations": 1324,
+      "Guarded": 2122,
+      "Failures": 0,
+      "WorkingSetBytes": 68825088
+    },
+    {
+      "ElapsedSeconds": 480.6790727,
+      "Iterations": 9732,
+      "Cancellations": 1435,
+      "Guarded": 2279,
+      "Failures": 0,
+      "WorkingSetBytes": 68595712
+    },
+    {
+      "ElapsedSeconds": 510.6982408,
+      "Iterations": 10346,
+      "Cancellations": 1545,
+      "Guarded": 2418,
+      "Failures": 0,
+      "WorkingSetBytes": 68734976
+    },
+    {
+      "ElapsedSeconds": 540.7085855,
+      "Iterations": 10857,
+      "Cancellations": 1626,
+      "Guarded": 2528,
+      "Failures": 0,
+      "WorkingSetBytes": 68714496
+    },
+    {
+      "ElapsedSeconds": 570.7423449,
+      "Iterations": 11507,
+      "Cancellations": 1727,
+      "Guarded": 2677,
+      "Failures": 0,
+      "WorkingSetBytes": 68759552
+    },
+    {
+      "ElapsedSeconds": 600.7557633,
+      "Iterations": 12135,
+      "Cancellations": 1814,
+      "Guarded": 2826,
+      "Failures": 0,
+      "WorkingSetBytes": 68763648
+    },
+    {
+      "ElapsedSeconds": 630.8218166,
+      "Iterations": 12715,
+      "Cancellations": 1914,
+      "Guarded": 2964,
+      "Failures": 0,
+      "WorkingSetBytes": 68648960
+    },
+    {
+      "ElapsedSeconds": 660.8466238,
+      "Iterations": 13337,
+      "Cancellations": 2023,
+      "Guarded": 3111,
+      "Failures": 0,
+      "WorkingSetBytes": 68648960
+    },
+    {
+      "ElapsedSeconds": 690.8849183,
+      "Iterations": 13942,
+      "Cancellations": 2125,
+      "Guarded": 3245,
+      "Failures": 0,
+      "WorkingSetBytes": 68689920
+    },
+    {
+      "ElapsedSeconds": 720.9212009,
+      "Iterations": 14552,
+      "Cancellations": 2205,
+      "Guarded": 3386,
+      "Failures": 0,
+      "WorkingSetBytes": 68603904
+    },
+    {
+      "ElapsedSeconds": 750.9644167,
+      "Iterations": 15173,
+      "Cancellations": 2314,
+      "Guarded": 3522,
+      "Failures": 0,
+      "WorkingSetBytes": 68624384
+    },
+    {
+      "ElapsedSeconds": 781.028313,
+      "Iterations": 15782,
+      "Cancellations": 2406,
+      "Guarded": 3659,
+      "Failures": 0,
+      "WorkingSetBytes": 68075520
+    },
+    {
+      "ElapsedSeconds": 811.0367014,
+      "Iterations": 16413,
+      "Cancellations": 2490,
+      "Guarded": 3808,
+      "Failures": 0,
+      "WorkingSetBytes": 67690496
+    },
+    {
+      "ElapsedSeconds": 841.0582307,
+      "Iterations": 17074,
+      "Cancellations": 2571,
+      "Guarded": 4004,
+      "Failures": 0,
+      "WorkingSetBytes": 67411968
+    },
+    {
+      "ElapsedSeconds": 871.1226547,
+      "Iterations": 17744,
+      "Cancellations": 2687,
+      "Guarded": 4164,
+      "Failures": 0,
+      "WorkingSetBytes": 67461120
+    },
+    {
+      "ElapsedSeconds": 901.1979238,
+      "Iterations": 18369,
+      "Cancellations": 2800,
+      "Guarded": 4291,
+      "Failures": 0,
+      "WorkingSetBytes": 67833856
+    },
+    {
+      "ElapsedSeconds": 931.2686648,
+      "Iterations": 18930,
+      "Cancellations": 2885,
+      "Guarded": 4404,
+      "Failures": 0,
+      "WorkingSetBytes": 66510848
+    },
+    {
+      "ElapsedSeconds": 961.2719588,
+      "Iterations": 19551,
+      "Cancellations": 2985,
+      "Guarded": 4562,
+      "Failures": 0,
+      "WorkingSetBytes": 67977216
+    },
+    {
+      "ElapsedSeconds": 991.324497,
+      "Iterations": 19908,
+      "Cancellations": 3042,
+      "Guarded": 4639,
+      "Failures": 0,
+      "WorkingSetBytes": 68050944
+    },
+    {
+      "ElapsedSeconds": 1021.3554021,
+      "Iterations": 20480,
+      "Cancellations": 3125,
+      "Guarded": 4771,
+      "Failures": 0,
+      "WorkingSetBytes": 68050944
+    },
+    {
+      "ElapsedSeconds": 1051.3720999,
+      "Iterations": 21050,
+      "Cancellations": 3193,
+      "Guarded": 4877,
+      "Failures": 0,
+      "WorkingSetBytes": 68046848
+    },
+    {
+      "ElapsedSeconds": 1081.3866474,
+      "Iterations": 21620,
+      "Cancellations": 3273,
+      "Guarded": 5001,
+      "Failures": 0,
+      "WorkingSetBytes": 68067328
+    },
+    {
+      "ElapsedSeconds": 1111.3967086,
+      "Iterations": 22301,
+      "Cancellations": 3376,
+      "Guarded": 5174,
+      "Failures": 0,
+      "WorkingSetBytes": 68071424
+    },
+    {
+      "ElapsedSeconds": 1141.3993794,
+      "Iterations": 22961,
+      "Cancellations": 3499,
+      "Guarded": 5321,
+      "Failures": 0,
+      "WorkingSetBytes": 68108288
+    },
+    {
+      "ElapsedSeconds": 1171.4538516,
+      "Iterations": 23618,
+      "Cancellations": 3599,
+      "Guarded": 5473,
+      "Failures": 0,
+      "WorkingSetBytes": 68091904
+    },
+    {
+      "ElapsedSeconds": 1201.468104,
+      "Iterations": 24221,
+      "Cancellations": 3693,
+      "Guarded": 5610,
+      "Failures": 0,
+      "WorkingSetBytes": 68087808
+    },
+    {
+      "ElapsedSeconds": 1231.4894088,
+      "Iterations": 24833,
+      "Cancellations": 3794,
+      "Guarded": 5762,
+      "Failures": 0,
+      "WorkingSetBytes": 68100096
+    },
+    {
+      "ElapsedSeconds": 1261.5229719,
+      "Iterations": 25454,
+      "Cancellations": 3890,
+      "Guarded": 5909,
+      "Failures": 0,
+      "WorkingSetBytes": 68145152
+    },
+    {
+      "ElapsedSeconds": 1291.5551583,
+      "Iterations": 26088,
+      "Cancellations": 3987,
+      "Guarded": 6045,
+      "Failures": 0,
+      "WorkingSetBytes": 66490368
+    },
+    {
+      "ElapsedSeconds": 1321.6280826,
+      "Iterations": 26737,
+      "Cancellations": 4107,
+      "Guarded": 6205,
+      "Failures": 0,
+      "WorkingSetBytes": 66535424
+    },
+    {
+      "ElapsedSeconds": 1351.6507517,
+      "Iterations": 27377,
+      "Cancellations": 4193,
+      "Guarded": 6370,
+      "Failures": 0,
+      "WorkingSetBytes": 66531328
+    },
+    {
+      "ElapsedSeconds": 1381.6912966,
+      "Iterations": 27992,
+      "Cancellations": 4280,
+      "Guarded": 6507,
+      "Failures": 0,
+      "WorkingSetBytes": 66555904
+    },
+    {
+      "ElapsedSeconds": 1411.7010257,
+      "Iterations": 28450,
+      "Cancellations": 4347,
+      "Guarded": 6619,
+      "Failures": 0,
+      "WorkingSetBytes": 66592768
+    },
+    {
+      "ElapsedSeconds": 1441.7228006,
+      "Iterations": 29013,
+      "Cancellations": 4438,
+      "Guarded": 6742,
+      "Failures": 0,
+      "WorkingSetBytes": 66306048
+    },
+    {
+      "ElapsedSeconds": 1471.7669387,
+      "Iterations": 29703,
+      "Cancellations": 4540,
+      "Guarded": 6933,
+      "Failures": 0,
+      "WorkingSetBytes": 66306048
+    },
+    {
+      "ElapsedSeconds": 1501.7795275,
+      "Iterations": 30334,
+      "Cancellations": 4647,
+      "Guarded": 7086,
+      "Failures": 0,
+      "WorkingSetBytes": 66310144
+    },
+    {
+      "ElapsedSeconds": 1531.7849195,
+      "Iterations": 30977,
+      "Cancellations": 4743,
+      "Guarded": 7222,
+      "Failures": 0,
+      "WorkingSetBytes": 66334720
+    },
+    {
+      "ElapsedSeconds": 1561.8339892,
+      "Iterations": 31626,
+      "Cancellations": 4860,
+      "Guarded": 7369,
+      "Failures": 0,
+      "WorkingSetBytes": 66134016
+    },
+    {
+      "ElapsedSeconds": 1591.9429638,
+      "Iterations": 32293,
+      "Cancellations": 4955,
+      "Guarded": 7529,
+      "Failures": 0,
+      "WorkingSetBytes": 66138112
+    },
+    {
+      "ElapsedSeconds": 1621.9684967,
+      "Iterations": 32939,
+      "Cancellations": 5047,
+      "Guarded": 7684,
+      "Failures": 0,
+      "WorkingSetBytes": 66121728
+    },
+    {
+      "ElapsedSeconds": 1652.0596898,
+      "Iterations": 33505,
+      "Cancellations": 5135,
+      "Guarded": 7819,
+      "Failures": 0,
+      "WorkingSetBytes": 66113536
+    },
+    {
+      "ElapsedSeconds": 1682.1612286,
+      "Iterations": 33994,
+      "Cancellations": 5219,
+      "Guarded": 7923,
+      "Failures": 0,
+      "WorkingSetBytes": 66121728
+    },
+    {
+      "ElapsedSeconds": 1712.2134048,
+      "Iterations": 34652,
+      "Cancellations": 5314,
+      "Guarded": 8092,
+      "Failures": 0,
+      "WorkingSetBytes": 66080768
+    },
+    {
+      "ElapsedSeconds": 1742.2292759,
+      "Iterations": 35248,
+      "Cancellations": 5415,
+      "Guarded": 8228,
+      "Failures": 0,
+      "WorkingSetBytes": 66125824
+    },
+    {
+      "ElapsedSeconds": 1772.2726456,
+      "Iterations": 35861,
+      "Cancellations": 5508,
+      "Guarded": 8363,
+      "Failures": 0,
+      "WorkingSetBytes": 66125824
+    },
+    {
+      "ElapsedSeconds": 1802.3548103,
+      "Iterations": 36494,
+      "Cancellations": 5630,
+      "Guarded": 8506,
+      "Failures": 0,
+      "WorkingSetBytes": 66809856
+    },
+    {
+      "ElapsedSeconds": 1832.3870917,
+      "Iterations": 37129,
+      "Cancellations": 5719,
+      "Guarded": 8683,
+      "Failures": 0,
+      "WorkingSetBytes": 66957312
+    },
+    {
+      "ElapsedSeconds": 1862.7090679,
+      "Iterations": 37651,
+      "Cancellations": 5798,
+      "Guarded": 8798,
+      "Failures": 0,
+      "WorkingSetBytes": 67608576
+    },
+    {
+      "ElapsedSeconds": 1892.7744557,
+      "Iterations": 38090,
+      "Cancellations": 5862,
+      "Guarded": 8889,
+      "Failures": 0,
+      "WorkingSetBytes": 67612672
+    },
+    {
+      "ElapsedSeconds": 1922.8183106,
+      "Iterations": 38703,
+      "Cancellations": 5963,
+      "Guarded": 9010,
+      "Failures": 0,
+      "WorkingSetBytes": 67608576
+    },
+    {
+      "ElapsedSeconds": 1952.9328988,
+      "Iterations": 39280,
+      "Cancellations": 6038,
+      "Guarded": 9153,
+      "Failures": 0,
+      "WorkingSetBytes": 67616768
+    },
+    {
+      "ElapsedSeconds": 1982.9516258,
+      "Iterations": 39856,
+      "Cancellations": 6134,
+      "Guarded": 9294,
+      "Failures": 0,
+      "WorkingSetBytes": 67555328
+    },
+    {
+      "ElapsedSeconds": 2012.9693221,
+      "Iterations": 40422,
+      "Cancellations": 6222,
+      "Guarded": 9417,
+      "Failures": 0,
+      "WorkingSetBytes": 67350528
+    },
+    {
+      "ElapsedSeconds": 2043.0698157,
+      "Iterations": 41001,
+      "Cancellations": 6330,
+      "Guarded": 9549,
+      "Failures": 0,
+      "WorkingSetBytes": 67350528
+    },
+    {
+      "ElapsedSeconds": 2073.077126,
+      "Iterations": 41592,
+      "Cancellations": 6410,
+      "Guarded": 9695,
+      "Failures": 0,
+      "WorkingSetBytes": 67305472
+    },
+    {
+      "ElapsedSeconds": 2103.1198144,
+      "Iterations": 42207,
+      "Cancellations": 6503,
+      "Guarded": 9853,
+      "Failures": 0,
+      "WorkingSetBytes": 66846720
+    },
+    {
+      "ElapsedSeconds": 2133.1435842,
+      "Iterations": 42814,
+      "Cancellations": 6588,
+      "Guarded": 10000,
+      "Failures": 0,
+      "WorkingSetBytes": 65568768
+    },
+    {
+      "ElapsedSeconds": 2163.1589463,
+      "Iterations": 43399,
+      "Cancellations": 6694,
+      "Guarded": 10121,
+      "Failures": 0,
+      "WorkingSetBytes": 66826240
+    },
+    {
+      "ElapsedSeconds": 2193.1737065,
+      "Iterations": 44010,
+      "Cancellations": 6790,
+      "Guarded": 10244,
+      "Failures": 0,
+      "WorkingSetBytes": 66850816
+    },
+    {
+      "ElapsedSeconds": 2223.1839451,
+      "Iterations": 44624,
+      "Cancellations": 6877,
+      "Guarded": 10387,
+      "Failures": 0,
+      "WorkingSetBytes": 66891776
+    },
+    {
+      "ElapsedSeconds": 2253.1995965,
+      "Iterations": 45271,
+      "Cancellations": 6975,
+      "Guarded": 10547,
+      "Failures": 0,
+      "WorkingSetBytes": 66719744
+    },
+    {
+      "ElapsedSeconds": 2283.2224312,
+      "Iterations": 45663,
+      "Cancellations": 7042,
+      "Guarded": 10628,
+      "Failures": 0,
+      "WorkingSetBytes": 66678784
+    },
+    {
+      "ElapsedSeconds": 2313.230523,
+      "Iterations": 46282,
+      "Cancellations": 7147,
+      "Guarded": 10759,
+      "Failures": 0,
+      "WorkingSetBytes": 66678784
+    },
+    {
+      "ElapsedSeconds": 2343.2422559,
+      "Iterations": 46920,
+      "Cancellations": 7250,
+      "Guarded": 10924,
+      "Failures": 0,
+      "WorkingSetBytes": 66707456
+    },
+    {
+      "ElapsedSeconds": 2373.2912601,
+      "Iterations": 47490,
+      "Cancellations": 7327,
+      "Guarded": 11070,
+      "Failures": 0,
+      "WorkingSetBytes": 66703360
+    },
+    {
+      "ElapsedSeconds": 2403.2944581,
+      "Iterations": 48073,
+      "Cancellations": 7417,
+      "Guarded": 11201,
+      "Failures": 0,
+      "WorkingSetBytes": 67293184
+    },
+    {
+      "ElapsedSeconds": 2433.4204908,
+      "Iterations": 48673,
+      "Cancellations": 7506,
+      "Guarded": 11330,
+      "Failures": 0,
+      "WorkingSetBytes": 66248704
+    },
+    {
+      "ElapsedSeconds": 2463.4604319,
+      "Iterations": 49256,
+      "Cancellations": 7605,
+      "Guarded": 11460,
+      "Failures": 0,
+      "WorkingSetBytes": 66252800
+    },
+    {
+      "ElapsedSeconds": 2493.4895019,
+      "Iterations": 49854,
+      "Cancellations": 7700,
+      "Guarded": 11614,
+      "Failures": 0,
+      "WorkingSetBytes": 66252800
+    },
+    {
+      "ElapsedSeconds": 2523.4937142,
+      "Iterations": 50470,
+      "Cancellations": 7800,
+      "Guarded": 11749,
+      "Failures": 0,
+      "WorkingSetBytes": 66285568
+    },
+    {
+      "ElapsedSeconds": 2553.5434027,
+      "Iterations": 51089,
+      "Cancellations": 7894,
+      "Guarded": 11880,
+      "Failures": 0,
+      "WorkingSetBytes": 66285568
+    },
+    {
+      "ElapsedSeconds": 2583.5707466,
+      "Iterations": 51715,
+      "Cancellations": 7979,
+      "Guarded": 12027,
+      "Failures": 0,
+      "WorkingSetBytes": 66281472
+    },
+    {
+      "ElapsedSeconds": 2613.6086528,
+      "Iterations": 52364,
+      "Cancellations": 8084,
+      "Guarded": 12202,
+      "Failures": 0,
+      "WorkingSetBytes": 64999424
+    },
+    {
+      "ElapsedSeconds": 2643.631263,
+      "Iterations": 52991,
+      "Cancellations": 8178,
+      "Guarded": 12348,
+      "Failures": 0,
+      "WorkingSetBytes": 64966656
+    },
+    {
+      "ElapsedSeconds": 2673.6542455,
+      "Iterations": 53631,
+      "Cancellations": 8289,
+      "Guarded": 12485,
+      "Failures": 0,
+      "WorkingSetBytes": 65007616
+    },
+    {
+      "ElapsedSeconds": 2703.664998,
+      "Iterations": 54277,
+      "Cancellations": 8381,
+      "Guarded": 12655,
+      "Failures": 0,
+      "WorkingSetBytes": 65007616
+    },
+    {
+      "ElapsedSeconds": 2733.7330907,
+      "Iterations": 54928,
+      "Cancellations": 8490,
+      "Guarded": 12816,
+      "Failures": 0,
+      "WorkingSetBytes": 64974848
+    },
+    {
+      "ElapsedSeconds": 2763.7642749,
+      "Iterations": 55555,
+      "Cancellations": 8579,
+      "Guarded": 12955,
+      "Failures": 0,
+      "WorkingSetBytes": 65007616
+    },
+    {
+      "ElapsedSeconds": 2793.8112138,
+      "Iterations": 56115,
+      "Cancellations": 8661,
+      "Guarded": 13058,
+      "Failures": 0,
+      "WorkingSetBytes": 64651264
+    },
+    {
+      "ElapsedSeconds": 2823.8758972,
+      "Iterations": 56743,
+      "Cancellations": 8764,
+      "Guarded": 13192,
+      "Failures": 0,
+      "WorkingSetBytes": 64667648
+    },
+    {
+      "ElapsedSeconds": 2853.8802909,
+      "Iterations": 57344,
+      "Cancellations": 8876,
+      "Guarded": 13327,
+      "Failures": 0,
+      "WorkingSetBytes": 64663552
+    },
+    {
+      "ElapsedSeconds": 2883.9250542,
+      "Iterations": 57997,
+      "Cancellations": 8997,
+      "Guarded": 13484,
+      "Failures": 0,
+      "WorkingSetBytes": 64667648
+    },
+    {
+      "ElapsedSeconds": 2913.9316553,
+      "Iterations": 58617,
+      "Cancellations": 9089,
+      "Guarded": 13627,
+      "Failures": 0,
+      "WorkingSetBytes": 64430080
+    },
+    {
+      "ElapsedSeconds": 2943.9469755,
+      "Iterations": 59203,
+      "Cancellations": 9173,
+      "Guarded": 13756,
+      "Failures": 0,
+      "WorkingSetBytes": 64552960
+    },
+    {
+      "ElapsedSeconds": 2973.9581178,
+      "Iterations": 59840,
+      "Cancellations": 9274,
+      "Guarded": 13924,
+      "Failures": 0,
+      "WorkingSetBytes": 61018112
+    },
+    {
+      "ElapsedSeconds": 3004.0254035,
+      "Iterations": 60460,
+      "Cancellations": 9372,
+      "Guarded": 14059,
+      "Failures": 0,
+      "WorkingSetBytes": 61018112
+    },
+    {
+      "ElapsedSeconds": 3034.0327,
+      "Iterations": 61099,
+      "Cancellations": 9471,
+      "Guarded": 14195,
+      "Failures": 0,
+      "WorkingSetBytes": 60923904
+    },
+    {
+      "ElapsedSeconds": 3064.0533219,
+      "Iterations": 61750,
+      "Cancellations": 9574,
+      "Guarded": 14353,
+      "Failures": 0,
+      "WorkingSetBytes": 63250432
+    },
+    {
+      "ElapsedSeconds": 3094.0651681,
+      "Iterations": 62369,
+      "Cancellations": 9675,
+      "Guarded": 14500,
+      "Failures": 0,
+      "WorkingSetBytes": 63664128
+    },
+    {
+      "ElapsedSeconds": 3124.1218063,
+      "Iterations": 63035,
+      "Cancellations": 9765,
+      "Guarded": 14660,
+      "Failures": 0,
+      "WorkingSetBytes": 63709184
+    },
+    {
+      "ElapsedSeconds": 3154.1470751,
+      "Iterations": 63659,
+      "Cancellations": 9870,
+      "Guarded": 14797,
+      "Failures": 0,
+      "WorkingSetBytes": 51077120
+    }
+  ],
+  "OS": "Debian GNU/Linux 13 (trixie)",
+  "Architecture": "X64",
+  "CoreVersion": "0.3.0.0",
+  "CoreSHA256": "DDBDFA1E19565BFFE9474D287B9EEFBEDF642BD89074364971E4260F673E6906",
+  "FixtureRoot": "/tmp/sinh-soak-61e3708d531f43cd80f9c56834bdb452",
+  "Interrupted": true,
+  "InterruptionReason": "Execution environment restart; process absent after recovery. Not a completed hour."
+}

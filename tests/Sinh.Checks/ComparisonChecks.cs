@@ -39,9 +39,12 @@ internal static class ComparisonChecks
         });
         await check("links and ancestor links do not escape roots", async () =>
         {
-            var (a, b) = Roots(); Directory.CreateSymbolicLink(Path.Combine(a, "link"), b); var failed = false;
-            try { await new ComparisonService().CompareAsync(new(Guid.NewGuid(), a, b)); } catch (IOException) { failed = true; }
-            require(failed, "Symlink traversed");
+            var (a, b) = Roots(); Directory.CreateSymbolicLink(Path.Combine(a, "link"), b);
+            var plan=await new ComparisonService().CompareAsync(new(Guid.NewGuid(),a,b));
+            require(plan.Operations.Count==0&&plan.SkippedPaths.Contains("link"),"Inner link was followed or not reported");
+            var failed=false;
+            try{await new ComparisonService().CompareAsync(new(Guid.NewGuid(),Path.Combine(a,"link"),a));}catch(IOException){failed=true;}
+            require(failed,"Configured root link accepted");
             require(!PathRules.Contains(a, Path.Combine(a + "other", "x")), "Sibling prefix treated as nested");
             failed = false; try { PathRules.Under(a, "../escape"); } catch (IOException) { failed = true; }
             require(failed, "Traversal accepted");

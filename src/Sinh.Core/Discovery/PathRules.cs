@@ -14,13 +14,34 @@ public static class PathRules
     {
         a = Root(a); b = Root(b);
         if (string.Equals(Path.TrimEndingDirectorySeparator(b), Path.TrimEndingDirectorySeparator(Path.GetPathRoot(b)!), Comparison)) throw new IOException("Для копии выберите отдельную папку на носителе, а не весь диск. Остальные файлы на флешке должны оставаться вне пары.");
-        if (Contains(a, b) || Contains(b, a)) throw new IOException("Корни совпадают или вложены друг в друга. Выберите независимые папки.");
+        if (ContainsLexical(a, b) || ContainsLexical(b, a)) throw new IOException("Корни совпадают или вложены друг в друга. Выберите независимые папки.");
         if (OperatingSystem.IsWindows()) WindowsPathIdentity.RejectOverlap(a, b);
     }
     public static bool Contains(string root, string path)
     {
-        root = Path.TrimEndingDirectorySeparator(Path.GetFullPath(root)); path = Path.GetFullPath(path);
+        if(ContainsLexical(root,path))return true;
+        return OperatingSystem.IsWindows()&&WindowsPathIdentity.TryRelative(root,path,out _);
+    }
+    private static string Logical(string path)
+    {
+        var full=Path.GetFullPath(path);
+        if(OperatingSystem.IsWindows())
+        {
+            if(full.StartsWith(@"\\?\UNC\",StringComparison.OrdinalIgnoreCase))return @"\\"+full[8..];
+            if(full.StartsWith(@"\\?\",StringComparison.Ordinal)&&full.Length>6&&full[5]==':')return full[4..];
+        }
+        return full;
+    }
+    private static bool ContainsLexical(string root,string path)
+    {
+        root = Path.TrimEndingDirectorySeparator(Logical(root)); path = Logical(path);
         return string.Equals(root, path, Comparison) || path.StartsWith(Path.EndsInDirectorySeparator(root) ? root : root + Path.DirectorySeparatorChar, Comparison);
+    }
+    public static string RelativeTo(string root,string path)
+    {
+        if(ContainsLexical(root,path))return Path.GetRelativePath(Logical(root),Logical(path));
+        if(OperatingSystem.IsWindows()&&WindowsPathIdentity.TryRelative(root,path,out var relative))return relative;
+        throw new IOException("Путь выходит за разрешённый корень.");
     }
     public static string Under(string root, string relative)
     {

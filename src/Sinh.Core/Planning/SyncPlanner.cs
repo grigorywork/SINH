@@ -9,6 +9,7 @@ public sealed class SyncPlanner
     public SyncPlan Build(SyncRequest request, TreeSnapshot a, TreeSnapshot b, ConfirmedState? baseline = null)
     {
         PathRules.ValidatePair(a.Root, b.Root);
+        (a,b)=TreePolicy.ProtectLinks(a,b);
         var fingerprint = Fingerprint(request);
         if (baseline?.Fingerprint != fingerprint) baseline = null;
         var desired = request.Mode switch

@@ -70,7 +70,7 @@ internal sealed class Localizer : INotifyPropertyChanged
         // Only whitelisted app captions are bound. User inputs and existing data bindings are untouched.
         if (parent is Window) Label(parent, Window.TitleProperty);
         if (parent is TextBlock) Label(parent, TextBlock.TextProperty);
-        if (parent is ContentControl) Label(parent, ContentControl.ContentProperty);
+        if (parent is System.Windows.Controls.Primitives.ButtonBase or System.Windows.Controls.Label) Label(parent, ContentControl.ContentProperty);
         if (parent is HeaderedContentControl) Label(parent, HeaderedContentControl.HeaderProperty);
         if(parent is FrameworkElement)Label(parent,FrameworkElement.ToolTipProperty);
         if (parent is DataGrid table) foreach (var column in table.Columns) Label(column, DataGridColumn.HeaderProperty);

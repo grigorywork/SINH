@@ -52,9 +52,10 @@ public sealed class PairWindow : Window
                 await Task.Run(() => Sinh.Core.PathRules.ValidatePair(a, b));
                 var usbId = pair.UsbId; var usbRelative = pair.UsbRelativePath;
                 if (connect.IsChecked == true) { var binding = await Task.Run(() => WindowsVolumes.Bind(b)); usbId = binding.Id; usbRelative = binding.Relative; }
-                else if (b != pair.Destination) { usbId = null; usbRelative = null; }
+                else {var binding=await Task.Run(()=>WindowsVolumes.BindLocal(b));usbId=binding?.Id;usbRelative=binding?.Relative;}
+                var sourceBinding=await Task.Run(()=>WindowsVolumes.BindLocal(a));
                 var changed = a != pair.Source || b != pair.Destination || (SyncMode)mode.SelectedIndex != pair.Mode || deletes.IsChecked != pair.AllowDeletes;
-                Result = pair with { Name = name.Text.Trim(), Source = a, Destination = b, Mode = (SyncMode)mode.SelectedIndex, AllowDeletes = deletes.IsChecked == true, History = history.IsChecked == true, Exclusions = exclusions.Text.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries), ApprovedRoots = changed ? null : pair.ApprovedRoots, AutoOnConnect = connect.IsChecked == true, WatchChanges = watch.IsChecked == true, IntervalMinutes = minutes, UsbId = usbId, UsbRelativePath = usbRelative };
+                Result = pair with { Name = name.Text.Trim(), Source = a, Destination = b, Mode = (SyncMode)mode.SelectedIndex, AllowDeletes = deletes.IsChecked == true, History = history.IsChecked == true, Exclusions = exclusions.Text.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries), ApprovedRoots = changed ? null : pair.ApprovedRoots, AutoOnConnect = connect.IsChecked == true, WatchChanges = watch.IsChecked == true, IntervalMinutes = minutes, UsbId = usbId, UsbRelativePath = usbRelative,SourceVolumeId=sourceBinding?.Id,SourceRelativePath=sourceBinding?.Relative,LastSuccess=changed?null:pair.LastSuccess };
                 DialogResult = true;
             }
             catch (Exception ex) { MessageBox.Show(this, ex.Message, "SINH"); }

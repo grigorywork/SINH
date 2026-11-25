@@ -18,6 +18,12 @@ public sealed class PlanWindow : Window
         table.Columns.Add(new DataGridTextColumn { Header = "Размер, байт", Binding = new Binding("Bytes"), Width = 130 });
         table.Columns.Add(new DataGridTextColumn { Header = "Корень назначения", Binding = new Binding("Root"), Width = 200 });
         var tabs = new TabControl(); tabs.Items.Add(new TabItem { Header = "Операции", Content = table });
+        if (plan.SkippedPaths.Count > 0)
+        {
+            var skipped = new ListBox { ItemsSource = plan.SkippedPaths };
+            VirtualizingPanel.SetIsVirtualizing(skipped, true);
+            tabs.Items.Add(new TabItem { Header = Localizer.T("Пропущены: исключения и ссылки") + " · " + plan.SkippedPaths.Count, Content = skipped });
+        }
         if (plan.Conflicts.Count > 0)
         {
             var conflicts = new DataGrid { IsReadOnly = true, AutoGenerateColumns = false, ItemsSource = plan.Conflicts, EnableRowVirtualization = true, CanUserAddRows = false };

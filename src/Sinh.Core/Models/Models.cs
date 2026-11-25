@@ -8,11 +8,12 @@ public sealed record Entry(string RelativePath, bool Directory, long Length, str
 {
     public bool SameContent(Entry? other) => other != null && Directory == other.Directory && (Directory || (Length == other.Length && Hash == other.Hash));
 }
-public sealed record TreeSnapshot(string Root, IReadOnlyDictionary<string, Entry> Entries)
+public sealed record TreeSnapshot(string Root, IReadOnlyDictionary<string, Entry> Entries,IReadOnlyList<string>? SkippedPaths=null,IReadOnlyList<string>? LinkPaths=null)
 {
-    public static TreeSnapshot Create(string root, IEnumerable<Entry> entries) => new(root, new ReadOnlyDictionary<string, Entry>(entries.ToDictionary(e => e.RelativePath, StringComparer.Ordinal)));
+    public static TreeSnapshot Create(string root, IEnumerable<Entry> entries,IEnumerable<string>? skipped=null,IEnumerable<string>? links=null) => new(root, new ReadOnlyDictionary<string, Entry>(entries.ToDictionary(e => e.RelativePath, StringComparer.Ordinal)),Array.AsReadOnly((skipped??[]).Distinct(StringComparer.Ordinal).ToArray()),Array.AsReadOnly((links??[]).Distinct(StringComparer.Ordinal).ToArray()));
     public Entry? Find(string path) => Entries.GetValueOrDefault(path);
     public bool SameContent(TreeSnapshot other) => Entries.Count == other.Entries.Count && Entries.All(e => e.Value.SameContent(other.Find(e.Key)));
+    public bool SameScan(TreeSnapshot other)=>SameContent(other)&&(SkippedPaths??[]).ToHashSet(StringComparer.Ordinal).SetEquals(other.SkippedPaths??[]);
 }
 public sealed record SyncRequest(Guid PairId, string Source, string Destination, SyncMode Mode = SyncMode.Updates, bool AllowDeletes = false, string[]? Exclusions = null, string? SourceIdentity = null, string? DestinationIdentity = null);
 public sealed record Operation(OperationKind Kind, string Root, string RelativePath, Entry? Before, Entry? After, string? SourceRoot = null, string? SourceRelativePath = null)
@@ -26,6 +27,7 @@ public sealed record SyncPlan(SyncRequest Request, TreeSnapshot Source, TreeSnap
 {
     public int Deletes => Operations.Count(o => o.Kind is OperationKind.DeleteFile or OperationKind.DeleteDirectory);
     public long CopyBytes => Operations.Where(o => o.Kind == OperationKind.CopyFile).Sum(o => o.Bytes);
+    public IReadOnlyList<string> SkippedPaths=>Source.SkippedPaths?.Concat(Destination.SkippedPaths??[]).Distinct(StringComparer.OrdinalIgnoreCase).ToArray()??Destination.SkippedPaths??[];
 }
 public sealed record ConfirmedState(string Fingerprint, TreeSnapshot Source, TreeSnapshot Destination, DateTimeOffset ConfirmedAt);
 public sealed record SyncProgress(string Stage, string Path, long Completed = 0, long Total = 0);

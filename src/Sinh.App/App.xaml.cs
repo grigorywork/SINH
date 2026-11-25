@@ -38,10 +38,13 @@ public partial class App : System.Windows.Application
             Store = new SettingsStore(Path.Combine(DataDirectory, "settings.json"));
             await Task.Run(Store.LoadAsync);
             localization = new LocalizationService(Store);
-            var recovered = await Task.Run(() => new Sinh.Core.SyncExecutor(new Sinh.Core.StateStore(DataDirectory)).RecoverAsync());
+            var recovery=new Sinh.Core.SyncExecutor(new Sinh.Core.StateStore(DataDirectory));
+            var recovered = await Task.Run(() => recovery.RecoverAsync(contextAvailable:j=>WindowsVolumes.CanRecover(j,Store.Current.Pairs)));
+            await recovery.PruneCompletedLogsAsync(Store.Current.LogDays);
             appearance = new AppearanceService(Store);
             var model = new MainViewModel(Store);
             if (recovered > 0) model.Status = $"Незавершённых запусков: {recovered}. Временные файлы убраны; выполните новое сравнение.";
+            if(recovery.RecoveryWarnings.Count>0)model.Status="Некоторые журналы требуют проверки; они сохранены в служебной папке SINH.";
             var window = new MainWindow(model);
             MainWindow = window;
             tray = new TrayService(Store);

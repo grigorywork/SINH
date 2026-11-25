@@ -1,5 +1,6 @@
 using System.IO;
 using Sinh.Settings;
+using Sinh.Core;
 
 namespace Sinh.App;
 
@@ -33,6 +34,7 @@ internal sealed class BackgroundScheduler : IDisposable
         {
             if (isBusy()) return;
             var settings = store.Current;
+            var mounts=WindowsVolumes.Mounts();
             foreach (var removed in schedules.Keys.Except(settings.Pairs.Select(p => p.Id)).ToArray()) { schedules[removed].Dispose(); schedules.Remove(removed); }
             foreach (var pair in settings.Pairs)
             {
@@ -40,7 +42,7 @@ internal sealed class BackgroundScheduler : IDisposable
                 if (!schedules.TryGetValue(pair.Id, out var schedule)) schedules[pair.Id] = schedule = new();
                 var automated = pair.AutoOnConnect || pair.WatchChanges || pair.IntervalMinutes > 0;
                 if (pair.Paused || !automated) { schedule.Dispose(); schedule.WatchKey = ""; continue; }
-                var resolved = WindowsVolumes.Resolve(pair);
+                var resolved = WindowsVolumes.Resolve(pair,mounts);
                 var online = resolved != null && Directory.Exists(resolved.Source) && Directory.Exists(resolved.Destination);
                 var connected = online && !schedule.Online; schedule.Online = online;
                 if (!online) { schedule.Dispose(); schedule.WatchKey = ""; continue; }
@@ -61,15 +63,25 @@ internal sealed class BackgroundScheduler : IDisposable
     }
     private void SetWatchers(Schedule schedule, FolderPair pair, bool enabled)
     {
-        var key = enabled ? pair.Source + "\n" + pair.Destination : "";
+        var key = enabled ? pair.Source + "\n" + pair.Destination+"\n"+string.Join('\n',pair.Exclusions) : "";
         if (schedule.WatchKey == key) return;
         schedule.Dispose(); schedule.WatchKey = key;
         if (!enabled) return;
         foreach (var path in new[] { pair.Source, pair.Destination })
         {
             var watcher = new FileSystemWatcher(path) { IncludeSubdirectories = true, NotifyFilter = NotifyFilters.FileName | NotifyFilters.DirectoryName | NotifyFilters.LastWrite | NotifyFilters.Size, InternalBufferSize = 16384 };
-            void Signal() { if (!disposed && !isBusy()) Interlocked.Exchange(ref schedule.DirtyAt, Environment.TickCount64); }
-            watcher.Changed += (_, _) => Signal(); watcher.Created += (_, _) => Signal(); watcher.Deleted += (_, _) => Signal(); watcher.Renamed += (_, _) => Signal(); watcher.Error += (_, _) => Signal();
+            var exclusions=new ExclusionRules(pair.Exclusions);
+            void Signal(string? fullPath)
+            {
+                if(disposed||isBusy())return;
+                try
+                {
+                    if(fullPath!=null&&(PathRules.Contains(App.DataDirectory,fullPath)||exclusions.MatchesPathOrParent(Path.GetRelativePath(path,fullPath))))return;
+                    Interlocked.Exchange(ref schedule.DirtyAt,Environment.TickCount64);
+                }
+                catch(IOException){Interlocked.Exchange(ref schedule.DirtyAt,Environment.TickCount64);}
+            }
+            watcher.Changed += (_, e) => Signal(e.FullPath); watcher.Created += (_, e) => Signal(e.FullPath); watcher.Deleted += (_, e) => Signal(e.FullPath); watcher.Renamed += (_, e) => {Signal(e.OldFullPath);Signal(e.FullPath);}; watcher.Error += (_, _) => Signal(null);
             schedule.Watchers.Add(watcher); watcher.EnableRaisingEvents = true;
         }
     }

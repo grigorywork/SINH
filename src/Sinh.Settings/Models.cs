@@ -33,9 +33,11 @@ public sealed record FolderPair
     public bool AutoOnConnect { get; init; }
     public bool WatchChanges { get; init; }
     public int IntervalMinutes { get; init; }
-    public string[] Exclusions { get; init; } = [];
+    public IReadOnlyList<string> Exclusions { get; init; } = [];
     public Guid? UsbId { get; init; }
     public string? UsbRelativePath { get; init; }
+    public Guid? SourceVolumeId { get; init; }
+    public string? SourceRelativePath { get; init; }
     public DateTimeOffset? LastSuccess { get; init; }
     public string? ApprovedRoots { get; init; }
 }
@@ -45,7 +47,7 @@ public sealed record AppSettings
     public const int CurrentSchema = 1;
     public int SchemaVersion { get; init; } = CurrentSchema;
     public Appearance Appearance { get; init; } = new();
-    public FolderPair[] Pairs { get; init; } = [];
+    public IReadOnlyList<FolderPair> Pairs { get; init; } = [];
     public bool AutoStart { get; init; }
     public bool StartMinimized { get; init; }
     public CloseBehavior CloseBehavior { get; init; }

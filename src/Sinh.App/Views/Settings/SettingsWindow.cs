@@ -39,6 +39,13 @@ public sealed partial class SettingsWindow : Window
         });
         stack.Children.Add(status);
         var close = new Button { Content = "Закрыть", IsCancel = true, HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(0, 12, 0, 0) }; stack.Children.Add(close);
+        Closing+=async(_,e)=>
+        {
+            if(!store.HasPendingSaves)return;
+            e.Cancel=true;IsEnabled=false;
+            try{await store.FlushAsync();IsEnabled=true;Close();}
+            catch(Exception ex){IsEnabled=true;status.Text=ex.Message;}
+        };
     }
     private static TextBlock Text(string text) => new() { Text = text, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 10, 0, 8) };
     private async void Save(Func<AppSettings, AppSettings> update)

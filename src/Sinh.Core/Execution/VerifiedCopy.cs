@@ -6,12 +6,13 @@ namespace Sinh.Core;
 
 internal static class VerifiedCopy
 {
-    public static async Task CopyAsync(string source, string target, Entry expected, int speedLimitMiB, IProgress<SyncProgress>? progress, string stage, CancellationToken token)
+    public static async Task CopyAsync(string source, string target, Entry expected, int speedLimitMiB, IProgress<SyncProgress>? progress, string stage, CancellationToken token,Func<Task>? created=null)
     {
         PathRules.RejectLinks(source); PathRules.RejectLinks(target);
         using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
         await using var input = new FileStream(source, FileMode.Open, FileAccess.Read, FileShare.Read, 131072, FileOptions.Asynchronous | FileOptions.SequentialScan);
         await using var output = new FileStream(target, FileMode.CreateNew, FileAccess.Write, FileShare.None, 131072, FileOptions.Asynchronous | FileOptions.WriteThrough);
+        if(created!=null)await created().ConfigureAwait(false);
         var buffer = ArrayPool<byte>.Shared.Rent(131072); var watch = Stopwatch.StartNew(); long copied = 0; long lastReport = 0;
         try
         {

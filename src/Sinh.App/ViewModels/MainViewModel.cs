@@ -9,12 +9,16 @@ public sealed class PairViewModel(FolderPair pair) : Observable
     public FolderPair Pair { get; private set; } = pair;
     public void Update(FolderPair value)
     {
-        var wasPaused = Pair.Paused; Pair = value;
+        var wasPaused = Pair.Paused;
+        if (Pair.Source != value.Source || Pair.Destination != value.Destination) effectiveSource = effectiveDestination = null;
+        Pair = value;
         Raise(nameof(Name)); Raise(nameof(Paths)); Raise(nameof(Mode)); Raise(nameof(Last));
         if (value.Paused) Status = "На паузе"; else if (wasPaused) Status = "Готова к запуску";
     }
     public string Name => Pair.Name;
-    public string Paths => Pair.Source + "\n↓\n" + Pair.Destination;
+    private string? effectiveSource,effectiveDestination;
+    public string Paths => (effectiveSource??Pair.Source) + (Pair.Mode==SyncMode.TwoWay?"\n↔\n":"\n↓\n") + (effectiveDestination??Pair.Destination);
+    public void SetResolvedPaths(string a,string b){effectiveSource=a;effectiveDestination=b;Raise(nameof(Paths));}
     public string Mode => Localizer.T(Pair.Mode switch { SyncMode.Mirror => "Зеркало A → B", SyncMode.TwoWay => "Двусторонний обмен", _ => "Копирование обновлений A → B" });
     public string Last => Pair.LastSuccess?.ToLocalTime().ToString("g") ?? Localizer.T("Ещё не запускалась");
     private string status = pair.Paused ? "На паузе" : "Ручной запуск";
@@ -80,7 +84,7 @@ public sealed class MainViewModel : Observable, IDisposable
         // Appearance changes do not rebuild pairs or schedule scans.
         if (Pairs.Select(p => p.Pair).SequenceEqual(s.Pairs)) return;
         foreach (var obsolete in Pairs.Where(row => !s.Pairs.Any(p => p.Id == row.Pair.Id)).ToArray()) Pairs.Remove(obsolete);
-        for (var index = 0; index < s.Pairs.Length; index++)
+        for (var index = 0; index < s.Pairs.Count; index++)
         {
             var p = s.Pairs[index]; var row = Pairs.FirstOrDefault(x => x.Pair.Id == p.Id);
             if (row == null) Pairs.Insert(index, new(p));

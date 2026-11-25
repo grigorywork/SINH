@@ -26,7 +26,7 @@ try
     await Check("safe defaults", async () =>
     {
         using var store = new SettingsStore(Path.Combine(temp, "defaults.json")); await store.LoadAsync();
-        Require(!store.Current.AutoStart && store.Current.Pairs.Length == 0, "Automatic start enabled");
+        Require(!store.Current.AutoStart && store.Current.Pairs.Count == 0, "Automatic start enabled");
         var p = new FolderPair(); Require(p.Mode == SyncMode.Updates && !p.AllowDeletes && !p.AutoOnConnect && p.IntervalMinutes == 0, "Unsafe pair defaults");
     });
     await Check("atomic settings roundtrip, Unicode, schema migration", async () =>
@@ -51,7 +51,7 @@ try
         EventHandler<AppSettings> handler = (_, _) => Interlocked.Increment(ref events); store.Changed += handler;
         GC.Collect(); GC.WaitForPendingFinalizers();
         await Task.WhenAll(Enumerable.Range(0, 25).Select(i => store.UpdateAsync(s => s with { Pairs = [.. s.Pairs, new() { Name = i.ToString() }] })));
-        Require(store.Current.Pairs.Length == 25 && events == 25, "Lost update or observer");
+        Require(store.Current.Pairs.Count == 25 && events == 25, "Lost update or observer");
         store.Changed -= handler; await store.UpdateAsync(s => s with { NotifySuccess = false }); Require(events == 25, "Observer not removed");
         Require(!Directory.GetFiles(temp, "*.tmp").Any(), "Staging settings leaked");
     });
@@ -68,6 +68,8 @@ try
     await TwoWayChecks.Run(Check, Require, temp);
     await BoundaryChecks.Run(Check, Require, temp);
     await PolicyAndFaultChecks.Run(Check,Require,temp);
+    await ExclusionSafetyChecks.Run(Check,Require,temp);
+    await HardeningChecks.Run(Check,Require,temp);
 }
 finally { Directory.Delete(temp, true); }
 Console.WriteLine($"{count - failures}/{count} passed");

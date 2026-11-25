@@ -8,5 +8,19 @@
   "WPF": "All groups PASS including multi-selection, ordered batch/stop/decline and USB source remapping",
   "Win10Client": "NOT TESTED",
   "Win11Client": "NOT TESTED",
-  "PhysicalUSB_SMB_DPI": "NOT TESTED"
+  "PhysicalUSB_SMB_DPI": "NOT TESTED",
+  "ReleaseURL": "https://github.com/grigorywork/SINH/releases/tag/v0.5.0-preview.1",
+  "PublisherRun": 45698199669,
+  "PublicAssetDigests": "MATCH",
+  "PublicExeHEAD": 200,
+  "PackagedSmoke": {
+    "ValidationRun": 45697650398,
+    "Architecture": "x64",
+    "ExecutableSHA256": "78B66212226B417AA1F53DE7738DBE4F96CE3353806CDBE116924E2F0A7184EA",
+    "AtUTC": "2026-11-25T20:47:10.9315669Z",
+    "OS": "Microsoft Windows NT 10.0.26100.0",
+    "Authenticode": "UnknownError",
+    "PackagedExe": "Launched SINH window and closed normally",
+    "TrustStoreModified": false
+  }
 }

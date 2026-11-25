@@ -1,0 +1,46 @@
+{
+  "Audit": {
+    "DurationSeconds": 3600.0358595,
+    "Cases": 72506,
+    "Failures": 1497,
+    "Result": "Original defect reproduced; not a passing run"
+  },
+  "Fixes": {
+    "DurationSeconds": 3600.0383768,
+    "Cases": 62921,
+    "Failures": 0,
+    "Completed": true,
+    "CoreSHA256": "97BAFE7B1114AA4E79EE4D21CFABDB9C57F7A668CA6A0002BB768AABC9DA3B33"
+  },
+  "Optimization": {
+    "HourDurationSeconds": 3605.2035723,
+    "HourCases": 69111,
+    "HourCompletedFlag": false,
+    "Interruption": "Process stopped after the hour before the additional 73000-case goal; original report retained unchanged",
+    "SupplementDurationSeconds": 268.5623974,
+    "SupplementCases": 3889,
+    "TotalActiveSeconds": 3873.7659697,
+    "TotalCases": 73000,
+    "ContinuousSeedRange": [
+      1000000,
+      1072999
+    ],
+    "Failures": 0,
+    "CoreSHA256": "8C9C2CA48E42D5FAB557DA64F8A1861BA3CF106230C84B6B9A78B81EA522C44F",
+    "InactiveGapNotCounted": true
+  },
+  "FinalSafety": {
+    "DurationSeconds": 327.9757617,
+    "Cases": 5000,
+    "Failures": 0,
+    "Completed": true,
+    "CoreSHA256": "8C299BAA497CF6993186BDA66DDF2F8EFFD14B9087F7CDAFE8A82527CDB473F8",
+    "HistoryDisabledStress": true,
+    "CodeCommit": "0845f11fea420363704c6bf5a6d57e718d9f2f45"
+  },
+  "Deterministic": "58/58 PASS on Debian 13 x64",
+  "WpfCrossBuild": "PASS",
+  "WindowsRuntime": "NOT RUN; target Windows 10/11 not verified",
+  "Signature": "Self-signed MSS9LN, untrusted publisher; system trust not modified",
+  "GitHub": "createRepository denied to connected integration; not published"
+}

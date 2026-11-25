@@ -1,0 +1,103 @@
+{
+  "StartedAt": "2026-11-25T19:08:51.0285283+00:00",
+  "UpdatedAt": "2026-11-25T19:14:19.0042952+00:00",
+  "Completed": true,
+  "DurationSeconds": 327.9757617,
+  "RequestedSeconds": 300,
+  "MinimumCases": 5000,
+  "OptionalHistory": false,
+  "Generator": "case-rename-and-pending-source-retention",
+  "Seed": 2000000,
+  "Iterations": 5000,
+  "Cancellations": 760,
+  "Guarded": 1206,
+  "FailureCount": 0,
+  "Failures": [],
+  "Samples": [
+    {
+      "ElapsedSeconds": 30.1199352,
+      "Iterations": 441,
+      "Cancellations": 79,
+      "Guarded": 97,
+      "Failures": 0,
+      "WorkingSetBytes": 70103040
+    },
+    {
+      "ElapsedSeconds": 60.1445692,
+      "Iterations": 868,
+      "Cancellations": 124,
+      "Guarded": 192,
+      "Failures": 0,
+      "WorkingSetBytes": 70778880
+    },
+    {
+      "ElapsedSeconds": 90.1491977,
+      "Iterations": 1239,
+      "Cancellations": 204,
+      "Guarded": 271,
+      "Failures": 0,
+      "WorkingSetBytes": 70905856
+    },
+    {
+      "ElapsedSeconds": 120.2428239,
+      "Iterations": 1716,
+      "Cancellations": 285,
+      "Guarded": 388,
+      "Failures": 0,
+      "WorkingSetBytes": 70971392
+    },
+    {
+      "ElapsedSeconds": 150.2503506,
+      "Iterations": 2162,
+      "Cancellations": 349,
+      "Guarded": 493,
+      "Failures": 0,
+      "WorkingSetBytes": 71041024
+    },
+    {
+      "ElapsedSeconds": 180.3226221,
+      "Iterations": 2537,
+      "Cancellations": 403,
+      "Guarded": 581,
+      "Failures": 0,
+      "WorkingSetBytes": 71069696
+    },
+    {
+      "ElapsedSeconds": 210.3700109,
+      "Iterations": 2962,
+      "Cancellations": 460,
+      "Guarded": 688,
+      "Failures": 0,
+      "WorkingSetBytes": 71077888
+    },
+    {
+      "ElapsedSeconds": 240.4395844,
+      "Iterations": 3350,
+      "Cancellations": 520,
+      "Guarded": 779,
+      "Failures": 0,
+      "WorkingSetBytes": 71176192
+    },
+    {
+      "ElapsedSeconds": 270.492921,
+      "Iterations": 3834,
+      "Cancellations": 591,
+      "Guarded": 902,
+      "Failures": 0,
+      "WorkingSetBytes": 71184384
+    },
+    {
+      "ElapsedSeconds": 300.5016363,
+      "Iterations": 4452,
+      "Cancellations": 689,
+      "Guarded": 1060,
+      "Failures": 0,
+      "WorkingSetBytes": 71184384
+    }
+  ],
+  "OS": "Debian GNU/Linux 13 (trixie)",
+  "Architecture": "X64",
+  "CoreVersion": "0.4.0.0",
+  "CoreSHA256": "8C299BAA497CF6993186BDA66DDF2F8EFFD14B9087F7CDAFE8A82527CDB473F8",
+  "FixtureRoot": "/tmp/sinh-soak-361bbaa164c24fd8ab4a1a1b59dbe8c8"
+}

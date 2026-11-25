@@ -1,0 +1,85 @@
+{
+  "StartedAt": "2026-11-25T19:08:46.5662047+00:00",
+  "UpdatedAt": "2026-11-25T19:13:15.128608+00:00",
+  "Completed": true,
+  "DurationSeconds": 268.5623974,
+  "RequestedSeconds": 1,
+  "MinimumCases": 3889,
+  "Seed": 1069111,
+  "Iterations": 3889,
+  "Cancellations": 588,
+  "Guarded": 924,
+  "FailureCount": 0,
+  "Failures": [],
+  "Samples": [
+    {
+      "ElapsedSeconds": 30.0054019,
+      "Iterations": 463,
+      "Cancellations": 63,
+      "Guarded": 124,
+      "Failures": 0,
+      "WorkingSetBytes": 69353472
+    },
+    {
+      "ElapsedSeconds": 60.018881,
+      "Iterations": 923,
+      "Cancellations": 141,
+      "Guarded": 249,
+      "Failures": 0,
+      "WorkingSetBytes": 70131712
+    },
+    {
+      "ElapsedSeconds": 90.039036,
+      "Iterations": 1331,
+      "Cancellations": 196,
+      "Guarded": 344,
+      "Failures": 0,
+      "WorkingSetBytes": 70209536
+    },
+    {
+      "ElapsedSeconds": 120.0511854,
+      "Iterations": 1777,
+      "Cancellations": 255,
+      "Guarded": 432,
+      "Failures": 0,
+      "WorkingSetBytes": 70275072
+    },
+    {
+      "ElapsedSeconds": 150.0997163,
+      "Iterations": 2224,
+      "Cancellations": 329,
+      "Guarded": 524,
+      "Failures": 0,
+      "WorkingSetBytes": 70381568
+    },
+    {
+      "ElapsedSeconds": 180.2403422,
+      "Iterations": 2667,
+      "Cancellations": 398,
+      "Guarded": 645,
+      "Failures": 0,
+      "WorkingSetBytes": 70406144
+    },
+    {
+      "ElapsedSeconds": 210.3673982,
+      "Iterations": 3091,
+      "Cancellations": 471,
+      "Guarded": 744,
+      "Failures": 0,
+      "WorkingSetBytes": 70422528
+    },
+    {
+      "ElapsedSeconds": 240.4562276,
+      "Iterations": 3494,
+      "Cancellations": 529,
+      "Guarded": 838,
+      "Failures": 0,
+      "WorkingSetBytes": 70524928
+    }
+  ],
+  "OS": "Debian GNU/Linux 13 (trixie)",
+  "Architecture": "X64",
+  "CoreVersion": "0.4.0.0",
+  "CoreSHA256": "8C9C2CA48E42D5FAB557DA64F8A1861BA3CF106230C84B6B9A78B81EA522C44F",
+  "FixtureRoot": "/tmp/sinh-soak-53b6778f79234c829a305ab568bd9542"
+}

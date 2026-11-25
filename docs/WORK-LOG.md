@@ -31,3 +31,6 @@
 
 ### Заключительное оформление
 Добавлены короткие fade для содержимого окон/ленивых разделов, без изменения размеров и файлового движка. Ripple/Transitions следуют Windows reduced-motion; пасхалка обновляет пульсацию при смене параметра, progress без движущегося индикатора при отключённых анимациях. Подписки снимаются при dispose. App-only cross-build успешен; Windows runtime остаётся pending. Core не пересобирается ради UI: финальный SHA 8c299baa497cf6993186bda66ddf2f8effd14b9087f7cdafe8a82527cdb473f8.
+
+### Фактическое завершение проверок и preview
+Fix hour3600.038с/62921/0. Optimization3605.204с/69111/0 прерван после часа до min73000; supplement268.562с/3889/0 на следующих seeds завершил цель. Пауза12:49–19:08 не включена. Финальный Core0845f11 отдельно58/58 и327.976с/5000/0 без обычной истории. App-only анимации и WindowsChecks собраны; Windows runtime не запускался. Authenticode self-signed MSS9LN проверена с явным CAfile, без изменения trust store. Финальный EXE SHA b6a9adc373b3e5c5ec5079d4c76f4ac7a1b42b33e05c6f4107fdc19a712bdc86. GitHub creation по-прежнему запрещено интеграцией.

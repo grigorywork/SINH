@@ -119,6 +119,7 @@ internal static class Program
         }
         Console.WriteLine("PASS ten embedded font families contain Cyrillic and Latin glyphs");
         await SelectionChecks.RunAsync(store, model, window, directory);
+        await FailureChecks.RunAsync(model, directory);
         var signature = Children<DeveloperSignature>(window).First();
         var button = Children<Button>(signature).First();
         Require(DeveloperSignature.Developer == "MSS9LN" && button.MinHeight >= 40, "Developer identity or hit area changed");

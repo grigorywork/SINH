@@ -65,6 +65,7 @@
       </WrapPanel>
       <DockPanel Grid.Row="5">
         <local:DeveloperSignature DockPanel.Dock="Right"/>
+        <Button DockPanel.Dock="Right" Content="{local:Tr 'Копировать ошибку'}" Command="{Binding CopyError}" Visibility="{Binding HasError, Converter={StaticResource BoolVisibility}}"/>
         <TextBlock Text="{Binding Status}" TextWrapping="Wrap" VerticalAlignment="Center" Foreground="{DynamicResource Muted}" AutomationProperties.LiveSetting="Polite"/>
       </DockPanel>
     </Grid>

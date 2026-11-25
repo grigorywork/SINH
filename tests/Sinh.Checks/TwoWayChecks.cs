@@ -26,6 +26,23 @@ internal static class TwoWayChecks
             r = r with { AllowDeletes = true }; state = await Apply(r, store); File.Delete(Path.Combine(a, "f")); await File.WriteAllTextAsync(Path.Combine(b, "f"), "edited USB"); var plan = await new ComparisonService().CompareAsync(r, state); require(plan.Conflicts.Count == 1, "Deletion/edit conflict missing"); state = await new SyncExecutor(store).ApplyAsync(plan); require(await File.ReadAllTextAsync(Path.Combine(a, "f")) == "edited USB", "Edited version lost");
             File.Delete(Path.Combine(a, "f")); await Apply(r, store, state); require(!File.Exists(Path.Combine(b, "f")), "Explicit deletion not propagated");
         });
+        await check("deleting the last file on either side preserves both roots and permits repeat sync", async () =>
+        {
+            foreach (var deletes in new[] { false, true }) foreach (var sourceSide in new[] { false, true })
+            {
+                var (a, b, store, request) = Setup(deletes);
+                var ar = Path.Combine(a, "Изображения", "Wallpapers"); var br = Path.Combine(b, "Обои");
+                Directory.CreateDirectory(ar); Directory.CreateDirectory(br);
+                var r = request with { Source = PathRules.StableRoot(ar), Destination = PathRules.StableRoot(br) };
+                await File.WriteAllTextAsync(Path.Combine(ar, "Последний English 🌊.txt"), "one file");
+                var state = await Apply(r, store);
+                File.Delete(Path.Combine(sourceSide ? ar : br, "Последний English 🌊.txt"));
+                state = await Apply(r, store, state);
+                require(Directory.Exists(ar) && Directory.Exists(br), "Deleting a file removed a configured root");
+                require(Directory.GetFiles(ar).Length == (deletes ? 0 : 1) && Directory.GetFiles(br).Length == (deletes ? 0 : 1), "Deletion policy changed");
+                require((await new ComparisonService().CompareAsync(r, state)).Operations.Count == 0, "Repeat after last-file deletion failed");
+            }
+        });
         await check("two-way file/directory conflict preserves whole subtree", async () =>
         {
             var (a, b, store, r) = Setup(); await File.WriteAllTextAsync(Path.Combine(a, "item"), "pc file"); Directory.CreateDirectory(Path.Combine(b, "item")); await File.WriteAllTextAsync(Path.Combine(b, "item", "child"), "usb child"); var state = await Apply(r, store);

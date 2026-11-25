@@ -34,12 +34,14 @@ internal sealed class SyncCoordinator : IDisposable
     {
         if (model.Busy || model.DialogOpen) return false;
         using var cts = new CancellationTokenSource(); cancellation = cts; completion = new(TaskCreationOptions.RunContinuationsAsynchronously); model.ActivePairId = pair.Pair.Id; model.Busy = true;
+        Sinh.Settings.FolderPair? configured = null, resolved = null;
+        var stage = "Подключение папок";
         try
         {
             pair.Status = "Сравнение…";
-            var configured = model.Store.Current.Pairs.FirstOrDefault(p => p.Id == pair.Pair.Id);
+            configured = model.Store.Current.Pairs.FirstOrDefault(p => p.Id == pair.Pair.Id);
             if (configured == null || (apply && configured.Paused)) { pair.Status = "На паузе"; return false; }
-            var resolved = await Task.Run(() => WindowsVolumes.Resolve(configured));
+            resolved = await Task.Run(() => WindowsVolumes.Resolve(configured));
             if (resolved == null) throw new System.IO.IOException("Настроенный носитель отключён.");
             await Task.Run(() => PairBoundaries.Validate(resolved, model.Store.Current.Pairs));
             pair.SetResolvedPaths(resolved.Source, resolved.Destination);
@@ -49,6 +51,7 @@ internal sealed class SyncCoordinator : IDisposable
             model.ReportProgress(new("Сравнение…", ""));
             var progress = new Progress<SyncProgress>(model.ReportProgress);
             var baseline = await Task.Run(() => stateStore.LoadAsync(request.PairId, cts.Token));
+            stage = "Сравнение";
             var plan = await Task.Run(() => new ComparisonService().CompareAsync(request, baseline, progress, cts.Token));
             pair.SetStatus("ChangeCount", plan.Operations.Count); model.Status = "Сравнение завершено. Пользовательские файлы не изменялись.";
             if (!apply) { CancelableDialog.Show(new PlanWindow(plan, false, resolved.Source, resolved.Destination), System.Windows.Application.Current.MainWindow, cts.Token); return true; }
@@ -72,6 +75,7 @@ internal sealed class SyncCoordinator : IDisposable
                 ((App)System.Windows.Application.Current).ShowMain();
                 if (CancelableDialog.Show(new PlanWindow(plan, true, reversed ? resolved.Destination : resolved.Source, reversed ? resolved.Source : resolved.Destination), System.Windows.Application.Current.MainWindow, cts.Token) != true) return false;
             }
+            stage = "Применение";
             pair.Status = "Копирование…";
             var settings = model.Store.Current;
             Func<bool> mounted = () => WindowsVolumes.ContextMatches(resolved);
@@ -86,7 +90,13 @@ internal sealed class SyncCoordinator : IDisposable
             return true;
         }
         catch (OperationCanceledException) { pair.Status = pair.Pair.Paused ? "На паузе" : "Остановлено"; model.Status = "Операция отменена."; }
-        catch (Exception ex) { pair.Status = "Ошибка"; model.SetError(ex); ((App)System.Windows.Application.Current).Notify("Ошибка", Localizer.Error(ex), "error"); }
+        catch (Exception ex)
+        {
+            pair.Status = "Ошибка";
+            var details = await SyncFailureReport.CaptureAsync(stateStore.DirectoryPath, configured ?? pair.Pair, resolved, stage, ex, model.Store.Current.LogDays);
+            model.SetError(ex, details);
+            ((App)System.Windows.Application.Current).Notify("Ошибка", Localizer.Error(ex), "error");
+        }
         finally { cancellation = null; model.ActivePairId = null; model.Busy = false; completion.TrySetResult(); }
         return false;
     }

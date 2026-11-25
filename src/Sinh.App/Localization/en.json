@@ -307,5 +307,10 @@
   "Выберите папки, а не весь диск.": "Select folders rather than an entire drive.",
   "У выбранных папок одинаковые имена. Добавьте их отдельно с разными назначениями.": "Selected folders have duplicate names. Add them separately with different destinations.",
   "По компьютеру · B → A": "Use computer · B → A",
-  "По USB · A → B": "Use USB · A → B"
+  "По USB · A → B": "Use USB · A → B",
+  "Папка не найдена": "Folder not found",
+  "Нет доступа к папке": "Access to folder denied",
+  "Путь указывает на файл, а не на папку": "Path points to a file rather than a folder",
+  "Не удалось проверить папку": "Could not check folder",
+  "Копировать ошибку": "Copy error"
 }

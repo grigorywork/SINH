@@ -37,6 +37,17 @@ internal static class ComparisonChecks
             try { await new ComparisonService().CompareAsync(new(Guid.NewGuid(), a, nested)); } catch (IOException) { failed = true; }
             require(failed, "Nested roots accepted");
         });
+        await check("missing root and file used as root have distinct errors and never produce a plan", async () =>
+        {
+            var (a, b) = Roots(); await File.WriteAllTextAsync(Path.Combine(a, "keep"), "original");
+            Directory.Delete(b);
+            try { await new ComparisonService().CompareAsync(new(Guid.NewGuid(), a, b, SyncMode.TwoWay, true)); throw new Exception("Missing root accepted"); }
+            catch (RootAccessException ex) { require(ex.Reason == RootFailure.Missing && ex.FolderPath == b && ex.InnerException != null, "Missing root detail lost"); }
+            await File.WriteAllTextAsync(b, "not a directory");
+            try { PathRules.Root(b); throw new Exception("File accepted as directory"); }
+            catch (RootAccessException ex) { require(ex.Reason == RootFailure.NotDirectory, "File misreported as missing root"); }
+            require(await File.ReadAllTextAsync(Path.Combine(a, "keep")) == "original", "Root failure changed source data");
+        });
         await check("links and ancestor links do not escape roots", async () =>
         {
             var (a, b) = Roots(); Directory.CreateSymbolicLink(Path.Combine(a, "link"), b);

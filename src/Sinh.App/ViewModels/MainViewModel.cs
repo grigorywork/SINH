@@ -18,6 +18,7 @@ public sealed class MainViewModel : Observable, IDisposable
     public AsyncCommand Stop { get; }
     public AsyncCommand Settings { get; }
     public AsyncCommand History { get; }
+    public AsyncCommand CopyError { get; }
     public Func<PairViewModel, bool, Task<bool>>? RunPair { get; set; }
     public Action? CancelRun { get; set; }
     private bool batchActive, stopBatch;
@@ -35,9 +36,12 @@ public sealed class MainViewModel : Observable, IDisposable
     private string status = "Создайте пару папок. Новые пары запускаются вручную.";
     private object?[] statusArgs = [];
     private Exception? error;
-    public string Status { get => error != null ? Localizer.Error(error) : Localizer.Format(status, statusArgs.ToArray()); set { error = null; statusArgs = []; Set(ref status, value); } }
-    public void SetStatus(string key, params object?[] args) { error = null; status = key; statusArgs = args; Raise(nameof(Status)); }
-    public void SetError(Exception value) { error = value; Raise(nameof(Status)); }
+    public bool HasError => error != null;
+    public string? ErrorDetails { get; private set; }
+    public string Status { get => error != null ? Localizer.Error(error) : Localizer.Format(status, statusArgs.ToArray()); set => SetStatus(value); }
+    private void RefreshError() { Raise(nameof(HasError)); CopyError.Refresh(); Raise(nameof(Status)); }
+    public void SetStatus(string key, params object?[] args) { error = null; ErrorDetails = null; status = key; statusArgs = args; RefreshError(); }
+    public void SetError(Exception value, string? details = null) { error = value; ErrorDetails = details ?? value.ToString(); RefreshError(); }
     private Sinh.Core.SyncProgress progress = new("", "");
     public double ProgressValue => progress.Total > 0 ? Math.Clamp(progress.Completed * 100d / progress.Total, 0, 100) : 0;
     public bool ProgressIndeterminate => progress.Total <= 0 && WindowMotion.Enabled;
@@ -47,6 +51,7 @@ public sealed class MainViewModel : Observable, IDisposable
     public MainViewModel(SettingsStore store)
     {
         Store = store;
+        CopyError = new(() => { System.Windows.Clipboard.SetText(ErrorDetails ?? Status); return Task.CompletedTask; }, () => HasError);
         Add = new(() => EditPair(null), () => !Busy && !BatchActive && !DialogOpen);
         Edit = new(() => EditPair(Selected?.Pair), () => Selected != null && !Busy && !BatchActive && !DialogOpen);
         Pause = new(async () => { var id = Selected!.Pair.Id; if (ActivePairId == id) CancelRun?.Invoke(); await Store.UpdateAsync(s => s with { Pairs = s.Pairs.Select(p => p.Id == id ? p with { Paused = !p.Paused } : p).ToArray() }); }, () => Selected != null && !DialogOpen && (!Busy || ActivePairId == Selected.Pair.Id));

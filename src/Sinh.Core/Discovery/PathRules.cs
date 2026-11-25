@@ -7,7 +7,13 @@ public static class PathRules
     {
         if (string.IsNullOrWhiteSpace(path)) throw new ArgumentException("Не указан путь папки.");
         var full = Path.TrimEndingDirectorySeparator(Path.GetFullPath(path));
-        if (!System.IO.Directory.Exists(full)) throw new IOException("Папка недоступна (диск отключён или нет доступа): " + full);
+        FileAttributes attributes;
+        // Exists() suppresses access/I/O errors and labels them all as a missing folder.
+        try { attributes = File.GetAttributes(full); }
+        catch (Exception ex) when (ex is FileNotFoundException or DirectoryNotFoundException) { throw new RootAccessException(full, RootFailure.Missing, ex); }
+        catch (UnauthorizedAccessException ex) { throw new RootAccessException(full, RootFailure.AccessDenied, ex); }
+        catch (IOException ex) { throw new RootAccessException(full, RootFailure.Unavailable, ex); }
+        if ((attributes & FileAttributes.Directory) == 0) throw new RootAccessException(full, RootFailure.NotDirectory);
         RejectLinks(full); return full;
     }
     /// <summary>Use a volume GUID or UNC path for Windows I/O so a reused drive letter cannot redirect a commit.</summary>

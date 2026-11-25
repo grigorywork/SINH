@@ -93,6 +93,34 @@ try
         catch (IOException) { }
         Require(store.Current.NotifySuccess, "Unpersisted state published");
     });
+    await Check("folder groups use common destination and stable volume identity without disk access", () =>
+    {
+        var volume = Guid.NewGuid();
+        var a = new FolderPair { Source = @"C:\Work", Destination = @"F:\Копии\Work", UsbId = volume, UsbRelativePath = @"Копии\Work" };
+        var b = a with { Id = Guid.NewGuid(), Source = @"D:\Other", Destination = @"G:\Копии\Other", UsbRelativePath = @"Копии\Other" };
+        Require(FolderGrouping.Describe(a).Key == FolderGrouping.Describe(b).Key, "Drive letter change split a common destination");
+        Require(FolderGrouping.Describe(a).Path == @"F:\Копии", "Exact displayed parent changed");
+        Require(FolderGrouping.Describe(b with { UsbId = Guid.NewGuid() }).Key != FolderGrouping.Describe(a).Key, "Different volumes grouped together");
+        Require(FolderGrouping.Parent(@"F:\Work") == @"F:\" && FolderGrouping.Parent(@"\\server\share\copy\folder") == @"\\server\share\copy", "Drive/UNC parent malformed");
+        var added = FolderSelection.Accumulate([Path.Combine(temp, "one", "A")], [Path.Combine(temp, "two", "B"), Path.Combine(temp, "one", "A")]);
+        Require(added.Count == 2, "Adding folders from different locations lost the selection or duplicated it");
+        return Task.CompletedTask;
+    });
+    await Check("view preferences persist without altering profiles and profile removal keeps files/history", async () =>
+    {
+        var a = Path.Combine(temp, "remove-A"); var b = Path.Combine(temp, "remove-B"); Directory.CreateDirectory(a); Directory.CreateDirectory(b);
+        var fileA = Path.Combine(a, "keep.txt"); var fileB = Path.Combine(b, "keep.txt"); var history = Path.Combine(temp, "keep-history.json");
+        await File.WriteAllTextAsync(fileA, "A"); await File.WriteAllTextAsync(fileB, "B"); await File.WriteAllTextAsync(history, "history");
+        var path = Path.Combine(temp, "list-view.json");
+        using var store = new SettingsStore(path); var first = new FolderPair { Source = a, Destination = b, ApprovedRoots = "approved" }; var second = first with { Id = Guid.NewGuid() };
+        await store.UpdateAsync(s => s with { Pairs = [first, second] }); var profiles = store.Current.Pairs;
+        await store.UpdateAsync(s => s with { CompactPairs = false, GroupPairs = false });
+        Require(ReferenceEquals(store.Current.Pairs, profiles) && store.Current.Pairs[0].ApprovedRoots == "approved", "View settings changed synchronization profiles");
+        await store.UpdateAsync(s => ProfileList.Remove(s, [first.Id]));
+        Require(store.Current.Pairs.Count == 1 && store.Current.Pairs[0].Id == second.Id, "Removing one profile affected another");
+        Require(await File.ReadAllTextAsync(fileA) == "A" && await File.ReadAllTextAsync(fileB) == "B" && await File.ReadAllTextAsync(history) == "history", "Removing a profile deleted files/history");
+        using var loaded = new SettingsStore(path); await loaded.LoadAsync(); Require(!loaded.Current.CompactPairs && !loaded.Current.GroupPairs, "View preferences did not persist");
+    });
     await ComparisonChecks.Run(Check, Require, temp);
     await ExecutionChecks.Run(Check, Require, temp);
     await TwoWayChecks.Run(Check, Require, temp);

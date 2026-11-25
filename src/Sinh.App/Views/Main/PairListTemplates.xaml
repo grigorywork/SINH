@@ -1,0 +1,51 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:Sinh.App">
+  <DataTemplate x:Key="CompactPairTemplate">
+    <Grid ToolTip="{Binding Details}" AutomationProperties.HelpText="{Binding Details}">
+      <Grid.ColumnDefinitions><ColumnDefinition Width="44"/><ColumnDefinition Width="*"/><ColumnDefinition Width="150"/></Grid.ColumnDefinitions>
+      <CheckBox IsChecked="{Binding Included, Mode=OneWay}" Command="{Binding Toggle}" AutomationProperties.Name="{Binding Name}" MinHeight="40" MinWidth="40"/>
+      <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,8,0">
+        <DockPanel>
+          <TextBlock DockPanel.Dock="Right" Text="{Binding ModeCaption}" Foreground="{DynamicResource Muted}" Margin="8,0,0,0"/>
+          <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
+        </DockPanel>
+        <TextBlock Text="{Binding InlinePaths}" Foreground="{DynamicResource Muted}" TextTrimming="CharacterEllipsis" Margin="0,3,0,0"/>
+      </StackPanel>
+      <StackPanel Grid.Column="2" VerticalAlignment="Center">
+        <TextBlock Text="{Binding Status}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
+        <TextBlock Text="{Binding Last}" Foreground="{DynamicResource Muted}" ToolTip="{local:Tr 'Последний успех'}" Margin="0,3,0,0"/>
+      </StackPanel>
+    </Grid>
+  </DataTemplate>
+  <DataTemplate x:Key="DetailedPairTemplate">
+    <Grid>
+      <Grid.ColumnDefinitions><ColumnDefinition Width="48"/><ColumnDefinition Width="*"/><ColumnDefinition Width="220"/></Grid.ColumnDefinitions>
+      <CheckBox IsChecked="{Binding Included, Mode=OneWay}" Command="{Binding Toggle}" AutomationProperties.Name="{Binding Name}" VerticalAlignment="Top" MinHeight="40" MinWidth="40"/>
+      <StackPanel Grid.Column="1">
+        <TextBlock Text="{Binding Name}" FontSize="{DynamicResource RowTitleFontSize}" FontWeight="SemiBold"/>
+        <TextBlock Text="{Binding Mode}" Foreground="{DynamicResource Muted}" Margin="0,4"/>
+        <TextBlock Text="{Binding Paths}" TextWrapping="Wrap"/>
+      </StackPanel>
+      <StackPanel Grid.Column="2" Margin="16,0,0,0">
+        <TextBlock Text="{Binding Status}" TextWrapping="Wrap" FontWeight="SemiBold"/>
+        <TextBlock Text="{local:Tr 'Последний успех'}" Foreground="{DynamicResource Muted}" Margin="0,12,0,3"/>
+        <TextBlock Text="{Binding Last}"/>
+      </StackPanel>
+    </Grid>
+  </DataTemplate>
+  <ControlTemplate x:Key="ExpandedFolderGroup" TargetType="GroupItem">
+    <Expander IsExpanded="{Binding Name.Expanded, Mode=TwoWay}" Margin="0,0,0,8" Padding="0" HorizontalContentAlignment="Stretch">
+      <Expander.Header>
+        <Grid MinHeight="40" HorizontalAlignment="Stretch" ToolTip="{Binding Name.Path}">
+          <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+          <TextBlock Text="{Binding Name.Path}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+          <TextBlock Grid.Column="1" Text="{Binding Name.Summary}" Foreground="{DynamicResource Muted}" Margin="16,0,8,0" VerticalAlignment="Center"/>
+        </Grid>
+      </Expander.Header>
+      <ItemsPresenter Margin="16,0,0,0"/>
+    </Expander>
+  </ControlTemplate>
+  <Style x:Key="FolderGroupStyle" TargetType="GroupItem">
+    <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="GroupItem"><ItemsPresenter/></ControlTemplate></Setter.Value></Setter>
+    <Style.Triggers><DataTrigger Binding="{Binding Name.IsGroup}" Value="True"><Setter Property="Template" Value="{StaticResource ExpandedFolderGroup}"/></DataTrigger></Style.Triggers>
+  </Style>
+</ResourceDictionary>

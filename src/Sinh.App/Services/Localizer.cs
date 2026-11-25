@@ -42,6 +42,9 @@ internal sealed class Localizer : INotifyPropertyChanged
         var format = key switch
         {
             "ChangeCount" => english ? "Changes: {0}" : "Изменений: {0}",
+            "GroupIncluded" => english ? "Selected {0}/{1}" : "Выбрано {0}/{1}",
+            "GroupErrors" => english ? "Errors: {0}" : "Ошибок: {0}",
+            "RemoveProfile" => english ? "Remove “{0}” from the list? Files will be kept.\n{1}\n→ {2}" : "Удалить «{0}» из списка? Файлы сохранятся.\n{1}\n→ {2}",
             "SyncSelection" => english ? "Sync selected ({0})" : "Синхронизировать ({0})",
             "SyncCompleted" => english ? "Synchronization completed · {0} operations." : "Синхронизация завершена · {0} операций.",
             "StagePath" => "{0} · {1}",

@@ -24,7 +24,7 @@ internal static class Program
         catch (Exception ex) { Console.Error.WriteLine(ex); return 1; }
         finally { app.Shutdown(); }
     }
-    private static IEnumerable<T> Children<T>(DependencyObject parent) where T : DependencyObject
+    internal static IEnumerable<T> Children<T>(DependencyObject parent) where T : DependencyObject
     {
         for (var i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
         {
@@ -34,7 +34,7 @@ internal static class Program
         }
     }
     private static void Require(bool condition, string message) { if (!condition) throw new Exception(message); }
-    private static void Capture(Window window, string name)
+    internal static void Capture(Window window, string name)
     {
         window.UpdateLayout();
         var image = new RenderTargetBitmap((int)Math.Ceiling(window.ActualWidth), (int)Math.Ceiling(window.ActualHeight), 96, 96, PixelFormats.Pbgra32);
@@ -120,6 +120,7 @@ internal static class Program
         Console.WriteLine("PASS ten embedded font families contain Cyrillic and Latin glyphs");
         await SelectionChecks.RunAsync(store, model, window, directory);
         await FailureChecks.RunAsync(model, directory);
+        await PresentationChecks.RunAsync(store, model, window, directory);
         var signature = Children<DeveloperSignature>(window).First();
         var button = Children<Button>(signature).First();
         Require(DeveloperSignature.Developer == "MSS9LN" && button.MinHeight >= 40, "Developer identity or hit area changed");

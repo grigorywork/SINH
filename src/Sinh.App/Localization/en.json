@@ -312,5 +312,14 @@
   "Нет доступа к папке": "Access to folder denied",
   "Путь указывает на файл, а не на папку": "Path points to a file rather than a folder",
   "Не удалось проверить папку": "Could not check folder",
-  "Копировать ошибку": "Copy error"
+  "Копировать ошибку": "Copy error",
+  "Вид: компактный": "View: compact",
+  "Вид: подробный": "View: detailed",
+  "Сменить вид списка": "Switch list view",
+  "Группы": "Groups",
+  "Удалить из списка": "Remove from list",
+  "Зеркало": "Mirror",
+  "Обмен": "Two-way",
+  "Обновления": "Updates",
+  "Синхронизация…": "Synchronizing…"
 }

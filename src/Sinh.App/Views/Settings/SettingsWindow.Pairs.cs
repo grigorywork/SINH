@@ -42,8 +42,7 @@ public sealed partial class SettingsWindow
         remove.Click += async (_, _) =>
         {
             if (picker.SelectedItem is not FolderPair pair) return;
-            if (MessageBox.Show(this, Localizer.T("Удалить пару? Файлы сохранятся."), "SINH", MessageBoxButton.OKCancel) != MessageBoxResult.OK) return;
-            await Change(() => store.UpdateAsync(s => s with { Pairs = s.Pairs.Where(p => p.Id != pair.Id).ToArray() }));
+            await Change(() => FolderPairRemoval.RemoveAsync(this, store, pair));
         };
         return panel;
     }

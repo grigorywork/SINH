@@ -47,6 +47,8 @@ public sealed record AppSettings
     public const int CurrentSchema = 1;
     public int SchemaVersion { get; init; } = CurrentSchema;
     public Appearance Appearance { get; init; } = new();
+    public bool CompactPairs { get; init; } = true;
+    public bool GroupPairs { get; init; } = true;
     public IReadOnlyList<FolderPair> Pairs { get; init; } = [];
     public bool AutoStart { get; init; }
     public bool StartMinimized { get; init; }

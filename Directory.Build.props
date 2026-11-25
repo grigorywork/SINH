@@ -3,7 +3,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>14.0</LangVersion>
-    <Version>0.5.1-preview.1</Version>
+    <Version>0.6.0-preview.1</Version>
     <Authors>MSS9LN</Authors>
     <Company>MSS9LN</Company>
     <Product>SINH</Product>

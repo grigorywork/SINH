@@ -30,20 +30,27 @@ public sealed class PairWindow : Window
         var source = Field("Источник", pair.Source);
         var selection = new StackPanel(); panel.Children.Add(selection);
         var choices = new List<CheckBox>(); var grouped = false;
-        var pickA = new Button { Content = original == null ? "Выбрать папки…" : "Выбрать папку…", HorizontalAlignment = HorizontalAlignment.Left };
+        var pickA = new Button { Content = original == null ? "Добавить папки…" : "Выбрать папку…", HorizontalAlignment = HorizontalAlignment.Left };
         pickA.Click += (_, _) =>
         {
             var picker = new OpenFolderDialog { Title = Localizer.T("Выберите папки"), Multiselect = original == null };
             if (picker.ShowDialog(this) != true) return;
-            choices.Clear(); selection.Children.Clear(); grouped = picker.FolderNames.Length > 1;
-            source.IsReadOnly = grouped;
-            if (!grouped) { source.Text = picker.FolderName; return; }
-            source.Text = "";
-            foreach (var path in picker.FolderNames)
+            try
             {
-                var check = new CheckBox { Content = path, Tag = path, IsChecked = true, MinHeight = 40 };
+            if (original != null) { source.Text = picker.FolderName; return; }
+            var previous = choices.ToDictionary(c => (string)c.Tag, c => c.IsChecked == true, StringComparer.Ordinal);
+            var paths = FolderSelection.Accumulate(choices.Count > 0 ? choices.Select(c => (string)c.Tag) : string.IsNullOrWhiteSpace(source.Text) ? [] : [source.Text], picker.FolderNames);
+            choices.Clear(); selection.Children.Clear(); grouped = paths.Count > 1;
+            source.IsReadOnly = grouped;
+            if (!grouped) { source.Text = paths[0]; return; }
+            source.Text = "";
+            foreach (var path in paths)
+            {
+                var check = new CheckBox { Content = path, Tag = path, IsChecked = !previous.TryGetValue(path, out var enabled) || enabled, MinHeight = 40 };
                 choices.Add(check); selection.Children.Add(check);
             }
+            }
+            catch (Exception ex) { MessageBox.Show(this, Localizer.Error(ex), "SINH"); }
         }; panel.Children.Add(pickA);
         var target = Field("Назначение", pair.Destination);
         var pickB = new Button { Content = "Выбрать назначение…", HorizontalAlignment = HorizontalAlignment.Left };

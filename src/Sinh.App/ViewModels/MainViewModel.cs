@@ -4,7 +4,7 @@ using Sinh.Settings;
 
 namespace Sinh.App;
 
-public sealed class MainViewModel : Observable, IDisposable
+public sealed partial class MainViewModel : Observable, IDisposable
 {
     internal readonly SettingsStore Store;
     public ObservableCollection<PairViewModel> Pairs { get; } = [];
@@ -32,7 +32,7 @@ public sealed class MainViewModel : Observable, IDisposable
     private bool dialogOpen;
     public bool DialogOpen => Volatile.Read(ref dialogOpen);
     public Guid? ActivePairId { get; set; }
-    public void RefreshCommands() { Add.Refresh(); Edit.Refresh(); Pause.Refresh(); Compare.Refresh(); Sync.Refresh(); Stop.Refresh(); History.Refresh(); Settings.Refresh(); }
+    public void RefreshCommands() { Add.Refresh(); Edit.Refresh(); Pause.Refresh(); Compare.Refresh(); Sync.Refresh(); Stop.Refresh(); History.Refresh(); Settings.Refresh(); Remove.Refresh(); }
     private string status = "Создайте пару папок. Новые пары запускаются вручную.";
     private object?[] statusArgs = [];
     private Exception? error;
@@ -51,6 +51,10 @@ public sealed class MainViewModel : Observable, IDisposable
     public MainViewModel(SettingsStore store)
     {
         Store = store;
+        List = new(Pairs, group => { if (Selected?.FolderGroup == group) Selected = null; });
+        ToggleView = new(() => ChangeViewAsync(false));
+        ToggleGrouping = new(() => ChangeViewAsync(true));
+        Remove = new(RemoveSelectedAsync, () => Selected != null && !Busy && !BatchActive && !DialogOpen);
         CopyError = new(() => { System.Windows.Clipboard.SetText(ErrorDetails ?? Status); return Task.CompletedTask; }, () => HasError);
         Add = new(() => EditPair(null), () => !Busy && !BatchActive && !DialogOpen);
         Edit = new(() => EditPair(Selected?.Pair), () => Selected != null && !Busy && !BatchActive && !DialogOpen);
@@ -65,12 +69,17 @@ public sealed class MainViewModel : Observable, IDisposable
         Load(store.Current);
     }
     private void OnChanged(object? sender, AppSettings s) => System.Windows.Application.Current.Dispatcher.InvokeAsync(() => Load(Store.Current));
-    private void LocaleChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e) { Raise(nameof(Status)); Raise(nameof(ProgressInfo)); Raise(nameof(SyncCaption)); foreach (var pair in Pairs) pair.RefreshLanguage(); }
+    private void LocaleChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e) { Raise(nameof(Status)); Raise(nameof(ProgressInfo)); Raise(nameof(SyncCaption)); List.RefreshLanguage(); foreach (var pair in Pairs) pair.RefreshLanguage(); }
     private void Load(AppSettings s)
     {
+        List.Configure(s);
         var id = Selected?.Pair.Id;
         // Appearance changes do not rebuild pairs or schedule scans.
-        if (Pairs.Select(p => p.Pair).SequenceEqual(s.Pairs)) return;
+        if (Pairs.Select(p => p.Pair).SequenceEqual(s.Pairs))
+        {
+            if (List.Grouped && Selected?.FolderGroup is { IsGroup: true, Expanded: false }) Selected = null;
+            return;
+        }
         var ids = s.Pairs.Select(p => p.Id).ToHashSet();
         foreach (var obsolete in Pairs.Where(row => !ids.Contains(row.Pair.Id)).ToArray()) Pairs.Remove(obsolete);
         var rows = Pairs.ToDictionary(row => row.Pair.Id);
@@ -84,7 +93,9 @@ public sealed class MainViewModel : Observable, IDisposable
                 if (Pairs[index] != row) Pairs.Move(Pairs.IndexOf(row), index);
             }
         }
-        Selected = Pairs.FirstOrDefault(p => p.Pair.Id == id) ?? Pairs.FirstOrDefault();
+        List.Rebuild();
+        Selected = Pairs.FirstOrDefault(p => p.Pair.Id == id) ?? Pairs.FirstOrDefault(p => !List.Grouped || !p.FolderGroup.IsGroup);
+        if (List.Grouped && Selected?.FolderGroup is { IsGroup: true, Expanded: false }) Selected = null;
         Raise(nameof(SyncCaption)); RefreshCommands();
     }
     private bool? ShowModal(Window window)
@@ -126,5 +137,5 @@ public sealed class MainViewModel : Observable, IDisposable
         try { await FolderPairEditor.EditAsync(System.Windows.Application.Current.MainWindow, Store, pair); }
         finally { dialogOpen = false; RefreshCommands(); }
     }
-    public void Dispose() { Store.Changed -= OnChanged; Localizer.Current.PropertyChanged -= LocaleChanged; }
+    public void Dispose() { List.Dispose(); Store.Changed -= OnChanged; Localizer.Current.PropertyChanged -= LocaleChanged; }
 }

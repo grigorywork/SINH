@@ -84,7 +84,7 @@ internal sealed class AppearanceService : IDisposable
         app.Resources["RowTitleFontSize"] = 18 * a.Scale;
         app.Resources["DialogTitleFontSize"] = 26 * a.Scale;
         app.Resources["DeveloperHeroFontSize"] = 28 * a.Scale;
-        if (applied?.Icon != a.Icon) app.Resources["AppIcon"] = BitmapFrame.Create(AssetUris.For($"Assets/{a.Icon.ToString().ToLowerInvariant()}.ico"));
+        if (applied == null) app.Resources["AppIcon"] = BitmapFrame.Create(AssetUris.For("Assets/mirror.ico"));
         var tint = Tint(a, dark);
         var density = Math.Clamp((100 - a.Transparency) / 100 * .65 + a.Frost / 100 * .2, 0, .9);
         var mixed = Color.FromRgb((byte)(surface.R * (1 - density) + tint.R * density), (byte)(surface.G * (1 - density) + tint.G * density), (byte)(surface.B * (1 - density) + tint.B * density));

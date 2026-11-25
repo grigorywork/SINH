@@ -1,18 +1,19 @@
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
-using Sinh.Settings;
 using Microsoft.Win32;
+using Sinh.Settings;
 
 namespace Sinh.App;
 
 public sealed class PairWindow : Window
 {
-    public FolderPair? Result { get; private set; }
+    public IReadOnlyList<FolderPair> Results { get; private set; } = [];
     public PairWindow(FolderPair? original)
     {
         var pair = original ?? new();
         Title = original == null ? "SINH — новая пара" : "SINH — изменить пару";
-        Width = 650; Height = 660; MinWidth = 520; MinHeight = 450; WindowStartupLocation = WindowStartupLocation.CenterOwner;
+        Width = 650; Height = 700; MinWidth = 520; MinHeight = 450; WindowStartupLocation = WindowStartupLocation.CenterOwner;
         var panel = new StackPanel { Margin = new Thickness(24) };
         Content = new ScrollViewer { Content = panel, VerticalScrollBarVisibility = ScrollBarVisibility.Auto };
         TextBox Field(string title, string value)
@@ -22,50 +23,74 @@ public sealed class PairWindow : Window
             System.Windows.Automation.AutomationProperties.SetName(input, title); return input;
         }
         var name = Field("Название", pair.Name);
-        var source = Field("Источник A · локальная папка или UNC-путь", pair.Source);
-        var pickA = new Button { Content = "Выбрать источник", Margin = new Thickness(0, 5, 0, 0), HorizontalAlignment = HorizontalAlignment.Left };
-        pickA.Click += (_, _) => Pick(source); panel.Children.Add(pickA);
-        var target = Field("Назначение B · папка на флешке, диске или в сети", pair.Destination);
-        var pickB = new Button { Content = "Выбрать назначение", Margin = new Thickness(0, 5, 0, 0), HorizontalAlignment = HorizontalAlignment.Left };
-        pickB.Click += (_, _) => Pick(target); panel.Children.Add(pickB);
+        var direction = new WrapPanel(); panel.Children.Add(direction);
+        var pc = new RadioButton { Content = "ПК → USB", GroupName = "Direction", IsChecked = pair.UsbSide == UsbSide.Destination, Margin = new Thickness(0, 12, 20, 8), MinHeight = 40 };
+        var usb = new RadioButton { Content = "USB → ПК", GroupName = "Direction", IsChecked = pair.UsbSide == UsbSide.Source, MinHeight = 40 };
+        direction.Children.Add(pc); direction.Children.Add(usb);
+        var source = Field("Источник", pair.Source);
+        var selection = new StackPanel(); panel.Children.Add(selection);
+        var choices = new List<CheckBox>(); var grouped = false;
+        var pickA = new Button { Content = original == null ? "Выбрать папки…" : "Выбрать папку…", HorizontalAlignment = HorizontalAlignment.Left };
+        pickA.Click += (_, _) =>
+        {
+            var picker = new OpenFolderDialog { Title = Localizer.T("Выберите папки"), Multiselect = original == null };
+            if (picker.ShowDialog(this) != true) return;
+            choices.Clear(); selection.Children.Clear(); grouped = picker.FolderNames.Length > 1;
+            source.IsReadOnly = grouped;
+            if (!grouped) { source.Text = picker.FolderName; return; }
+            source.Text = "";
+            foreach (var path in picker.FolderNames)
+            {
+                var check = new CheckBox { Content = path, Tag = path, IsChecked = true, MinHeight = 40 };
+                choices.Add(check); selection.Children.Add(check);
+            }
+        }; panel.Children.Add(pickA);
+        var target = Field("Назначение", pair.Destination);
+        var pickB = new Button { Content = "Выбрать назначение…", HorizontalAlignment = HorizontalAlignment.Left };
+        pickB.Click += (_, _) => { var picker = new OpenFolderDialog(); if (picker.ShowDialog(this) == true) target.Text = picker.FolderName; }; panel.Children.Add(pickB);
+        var hint = new TextBlock { Text = "Несколько папок → отдельные копии внутри назначения.", TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 8, 0, 4) }; panel.Children.Add(hint);
         panel.Children.Add(new TextBlock { Text = "Режим", Margin = new Thickness(0, 14, 0, 5) });
-        var mode = new ComboBox { ItemsSource = new[] { "Копирование обновлений A → B", "Зеркало A → B", "Двусторонний обмен" }.Select(Localizer.T).ToArray(), SelectedIndex = (int)pair.Mode };
-        panel.Children.Add(mode);
-        var deletes = new CheckBox { Content = "Разрешить перенос удалений (потребуется план)", IsChecked = pair.AllowDeletes }; panel.Children.Add(deletes);
-        var history = new CheckBox { Content = "Сохранять заменённые и удалённые версии", IsChecked = pair.History }; panel.Children.Add(history);
-        panel.Children.Add(new TextBlock { Text = Localizer.T("Защитные копии незавершённых переносов сохраняются даже при выключенной истории. Их можно восстановить в разделе «История»."), TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 4, 0, 8) });
-        var connect = new CheckBox { Content = "Автоматически при подключении USB / внешнего носителя", IsChecked = pair.AutoOnConnect }; panel.Children.Add(connect);
-        var watch = new CheckBox { Content = "Сверять после изменений файлов (пакетно)", IsChecked = pair.WatchChanges }; panel.Children.Add(watch);
-        var interval = Field("Расписание · интервал в минутах, 0 — выключено", pair.IntervalMinutes.ToString());
-        var exclusions = Field("Исключения · по одному шаблону на строку, например *.tmp", string.Join(Environment.NewLine, pair.Exclusions));
-        exclusions.AcceptsReturn = true; exclusions.Height = 65;
-        var note = new TextBlock { Text = "Сначала выполните один ручной запуск. Для копии выберите отдельную папку на флешке: остальные файлы носителя останутся вне пары. Для работы после извлечения флешки включите помощник в настройках автозапуска Windows.", TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 12, 0, 12) }; panel.Children.Add(note);
+        var mode = new ComboBox { ItemsSource = new[] { "Копирование обновлений A → B", "Зеркало A → B", "Двусторонний обмен" }.Select(Localizer.T).ToArray(), SelectedIndex = (int)pair.Mode }; panel.Children.Add(mode);
+        var deletes = new CheckBox { Content = "Переносить удаления", IsChecked = pair.AllowDeletes }; panel.Children.Add(deletes);
+        var history = new CheckBox { Content = "История файлов", IsChecked = pair.History }; panel.Children.Add(history);
+        var connect = new CheckBox { Content = "При подключении USB", IsChecked = pair.AutoOnConnect }; panel.Children.Add(connect);
+        var watch = new CheckBox { Content = "При изменении файлов", IsChecked = pair.WatchChanges }; panel.Children.Add(watch);
+        var interval = Field("Интервал, мин · 0 — выключено", pair.IntervalMinutes.ToString());
+        var exclusions = Field("Исключения · по одному шаблону на строку", string.Join(Environment.NewLine, pair.Exclusions)); exclusions.AcceptsReturn = true; exclusions.Height = 65;
+        panel.Children.Add(new TextBlock { Text = "Первый запуск — вручную. Для работы без открытого окна включите автозапуск SINH.", TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 12, 0, 12) });
         var actions = new WrapPanel(); var save = new Button { Content = "Сохранить", IsDefault = true }; var cancel = new Button { Content = "Отмена", IsCancel = true };
         actions.Children.Add(save); actions.Children.Add(cancel); panel.Children.Add(actions);
         save.Click += async (_, _) =>
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(name.Text) || string.IsNullOrWhiteSpace(source.Text) || string.IsNullOrWhiteSpace(target.Text)) throw new ArgumentException("Заполните название и оба пути.");
-                var a = System.IO.Path.GetFullPath(source.Text); var b = System.IO.Path.GetFullPath(target.Text);
+                if (string.IsNullOrWhiteSpace(name.Text) || string.IsNullOrWhiteSpace(target.Text)) throw new ArgumentException("Заполните название и оба пути.");
+                var roots = FolderSelection.Map(grouped ? choices.Where(c => c.IsChecked == true).Select(c => (string)c.Tag) : [source.Text], target.Text, grouped);
                 if (!int.TryParse(interval.Text, out var minutes) || minutes < 0 || minutes > 10080) throw new ArgumentException("Интервал: целое число от 0 до 10080 минут.");
-                save.IsEnabled = false;
-                await Task.Run(() => Sinh.Core.PathRules.ValidatePair(a, b));
-                var usbId = pair.UsbId; var usbRelative = pair.UsbRelativePath;
-                if (connect.IsChecked == true) { var binding = await Task.Run(() => WindowsVolumes.Bind(b)); usbId = binding.Id; usbRelative = binding.Relative; }
-                else { var binding = await Task.Run(() => WindowsVolumes.BindLocal(b)); usbId = binding?.Id; usbRelative = binding?.Relative; }
-                var sourceBinding = await Task.Run(() => WindowsVolumes.BindLocal(a));
-                var changed = a != pair.Source || b != pair.Destination || (SyncMode)mode.SelectedIndex != pair.Mode || deletes.IsChecked != pair.AllowDeletes;
-                Result = pair with { Name = name.Text.Trim(), Source = a, Destination = b, Mode = (SyncMode)mode.SelectedIndex, AllowDeletes = deletes.IsChecked == true, History = history.IsChecked == true, Exclusions = exclusions.Text.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries), ApprovedRoots = changed ? null : pair.ApprovedRoots, AutoOnConnect = connect.IsChecked == true, WatchChanges = watch.IsChecked == true, IntervalMinutes = minutes, UsbId = usbId, UsbRelativePath = usbRelative, SourceVolumeId = sourceBinding?.Id, SourceRelativePath = sourceBinding?.Relative, LastSuccess = changed ? null : pair.LastSuccess };
-                DialogResult = true;
+                var side = usb.IsChecked == true ? UsbSide.Source : UsbSide.Destination;
+                var automatic = connect.IsChecked == true;
+                var selectedMode = (SyncMode)mode.SelectedIndex; var allowDeletes = deletes.IsChecked == true;
+                var keepHistory = history.IsChecked == true; var watchChanges = watch.IsChecked == true;
+                var title = name.Text.Trim(); var patterns = exclusions.Text.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                var parent = Path.GetFullPath(target.Text);
+                IsEnabled = false;
+                var results = await Task.Run(() =>
+                {
+                    // Validate the trigger volume before creating any destination children.
+                    if (automatic) foreach (var root in roots) WindowsVolumes.Bind(side == UsbSide.Source ? root.Source : parent);
+                    FolderPairEditor.PrepareDestinations(roots, parent, grouped);
+                    return roots.Select(root =>
+                    {
+                        var a = root.Source; var b = root.Destination;
+                        var sourceBinding = WindowsVolumes.BindLocal(a); var targetBinding = WindowsVolumes.BindLocal(b);
+                        var changed = a != pair.Source || b != pair.Destination || selectedMode != pair.Mode || allowDeletes != pair.AllowDeletes || side != pair.UsbSide;
+                        return pair with { Id = original == null ? Guid.NewGuid() : pair.Id, Name = grouped ? Path.GetFileName(Path.TrimEndingDirectorySeparator(a)) : title, Source = a, Destination = b, UsbSide = side, Mode = selectedMode, AllowDeletes = allowDeletes, History = keepHistory, Exclusions = patterns, ApprovedRoots = changed ? null : pair.ApprovedRoots, AutoOnConnect = automatic, WatchChanges = watchChanges, IntervalMinutes = minutes, UsbId = targetBinding?.Id, UsbRelativePath = targetBinding?.Relative, SourceVolumeId = sourceBinding?.Id, SourceRelativePath = sourceBinding?.Relative, LastSuccess = changed ? null : pair.LastSuccess };
+                    }).ToArray();
+                });
+                Results = results; DialogResult = true;
             }
             catch (Exception ex) { MessageBox.Show(this, Localizer.Error(ex), "SINH"); }
-            finally { save.IsEnabled = true; }
+            finally { IsEnabled = true; }
         };
-    }
-    private void Pick(TextBox field)
-    {
-        var dialog = new OpenFolderDialog { Title = Localizer.T("Выберите папку"), Multiselect = false };
-        if (dialog.ShowDialog(this) == true) field.Text = dialog.FolderName;
     }
 }

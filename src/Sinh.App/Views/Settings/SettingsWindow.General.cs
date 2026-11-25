@@ -9,8 +9,7 @@ public sealed partial class SettingsWindow
     private UIElement StartupPanel()
     {
         var panel = new StackPanel();
-        panel.Children.Add(Text("Помощник хранится в профиле пользователя на компьютере. После установки флешку можно извлекать. Права администратора не нужны."));
-        var startup = new CheckBox { Content = "Запускать SINH вместе с Windows · установить помощник", IsChecked = store.Current.AutoStart };
+        var startup = new CheckBox { Content = "Автозапуск Windows", IsChecked = store.Current.AutoStart };
         var changing = false;
         startup.Click += async (_, _) =>
         {
@@ -42,7 +41,7 @@ public sealed partial class SettingsWindow
             var check = new CheckBox { Content = label, IsChecked = initial };
             check.Click += (_, _) => save(check.IsChecked == true); panel.Children.Add(check);
         }
-        Toggle("Стартовать свёрнутым при входе в Windows", store.Current.StartMinimized, v => Save(s => s with { StartMinimized = v }));
+        Toggle("Старт свёрнутым", store.Current.StartMinimized, v => Save(s => s with { StartMinimized = v }));
         panel.Children.Add(Text("При закрытии главного окна"));
         var group = Guid.NewGuid().ToString();
         foreach (var (label, value) in new[] { ("Завершать SINH", CloseBehavior.Exit), ("Оставлять в трее", CloseBehavior.Tray) })
@@ -50,7 +49,6 @@ public sealed partial class SettingsWindow
             var radio = new RadioButton { Content = label, GroupName = group, IsChecked = store.Current.CloseBehavior == value, Padding = new Thickness(10), Margin = new Thickness(0, 0, 0, 8) };
             radio.Checked += (_, _) => Save(s => s with { CloseBehavior = value }); panel.Children.Add(radio);
         }
-        panel.Children.Add(Text("В трее всегда есть «Выход». Обычное закрытие по умолчанию завершает программу."));
         Toggle("Уведомления об успешной синхронизации", store.Current.NotifySuccess, v => Save(s => s with { NotifySuccess = v }));
         Toggle("Уведомления об ошибках", store.Current.NotifyError, v => Save(s => s with { NotifyError = v }));
         Toggle("Уведомления о конфликтах", store.Current.NotifyConflict, v => Save(s => s with { NotifyConflict = v }));
@@ -58,11 +56,11 @@ public sealed partial class SettingsWindow
     }
     private UIElement PerformancePanel()
     {
-        var panel = new StackPanel(); panel.Children.Add(Text("Один файловый поток; очередь ограничена одной парой. Сканирование, хеширование и запись выполняются вне UI-потока."));
+        var panel = new StackPanel();
         Numeric(panel, "Лимит скорости, МиБ/с · 0 без ограничения", store.Current.SpeedLimitMiB, 0, 10240, v => Save(s => s with { SpeedLimitMiB = v }));
-        Numeric(panel, "Контрольная сверка активных автоматических пар, минут", store.Current.ScanMinutes, 1, 1440, v => Save(s => s with { ScanMinutes = v }));
-        Numeric(panel, "Лимит всей истории файлов, МиБ", (int)store.Current.HistoryLimitMiB, 16, 1048576, v => Save(s => s with { HistoryLimitMiB = v }));
-        Numeric(panel, "Срок хранения завершённых журналов, дней", store.Current.LogDays, 1, 3650, v => Save(s => s with { LogDays = v }));
+        Numeric(panel, "Контрольная сверка, мин", store.Current.ScanMinutes, 1, 1440, v => Save(s => s with { ScanMinutes = v }));
+        Numeric(panel, "История, МиБ", (int)store.Current.HistoryLimitMiB, 16, 1048576, v => Save(s => s with { HistoryLimitMiB = v }));
+        Numeric(panel, "Журнал, дней", store.Current.LogDays, 1, 3650, v => Save(s => s with { LogDays = v }));
         return panel;
     }
     private void Numeric(StackPanel panel, string label, int current, int min, int max, Action<int> save)

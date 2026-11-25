@@ -25,14 +25,15 @@ public sealed partial class SettingsWindow : Window
             stack.Children.Add(expander);
         }
         Section("Внешний вид", AppearancePanel);
-        Section("Пары папок", () => Text("Пары настраиваются на главном экране. Изменение одной пары не меняет остальные."));
-        Section("Правила синхронизации", () => Text("Новые пары: ручное копирование обновлений A → B, без переноса удалений. Перед зеркалом и сменой корней потребуется план."));
-        Section("Расписание", () => Text("Интервал, запуск при подключении носителя и наблюдение задаются отдельно у каждой пары. Первый запуск ручной. Файловые события объединяются; при пропущенных событиях выполняется полная контрольная сверка."));
-        Section("Исключения", () => Text("У каждой пары свой список шаблонов. Шаблоны применяются к относительным путям. Ссылки и reparse points не обходятся."));
+        Section("Пары папок", PairsPanel);
         Section("История и восстановление", HistoryPanel);
-        Section("Резервная копия настроек", ConfigurationPanel);
-        Section("Производительность", PerformancePanel);
-        Section("Уведомления и трей", StartupPanel);
+        Section("Дополнительно", () =>
+        {
+            var panel = new StackPanel();
+            panel.Children.Add(StartupPanel()); panel.Children.Add(PerformancePanel());
+            panel.Children.Add(Text("Копия настроек")); panel.Children.Add(ConfigurationPanel());
+            return panel;
+        });
         Section("О программе", () =>
         {
             var about = new StackPanel();
@@ -56,9 +57,4 @@ public sealed partial class SettingsWindow : Window
         try { await store.UpdateAsync(update); status.Text = "Сохранено"; }
         catch (Exception ex) { status.Text = "Не удалось сохранить: " + ex.Message; }
     }
-    private UIElement HistoryPanel()
-    {
-        var p = new StackPanel(); var description = Text(""); description.SetBinding(TextBlock.TextProperty, Localizer.FormattedTranslation("HistorySettings")); p.Children.Add(description); return p;
-    }
 }
-

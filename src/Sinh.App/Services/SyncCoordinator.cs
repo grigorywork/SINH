@@ -25,40 +25,40 @@ internal sealed class SyncCoordinator : IDisposable
     }
     internal async Task<bool> RunAutomaticAsync(Sinh.Settings.FolderPair resolved)
     {
-        if (model.Busy || model.DialogOpen) return false;
+        if (model.Busy || model.BatchActive || model.DialogOpen) return false;
         var pair = model.Pairs.FirstOrDefault(p => p.Pair.Id == resolved.Id);
         if (pair == null || pair.Pair.Paused) return false;
         await RunAsync(pair, true, true); return true;
     }
-    private async Task RunAsync(PairViewModel pair, bool apply, bool automatic = false)
+    private async Task<bool> RunAsync(PairViewModel pair, bool apply, bool automatic = false)
     {
-        if (model.Busy || model.DialogOpen) return;
+        if (model.Busy || model.DialogOpen) return false;
         using var cts = new CancellationTokenSource(); cancellation = cts; completion = new(TaskCreationOptions.RunContinuationsAsynchronously); model.ActivePairId = pair.Pair.Id; model.Busy = true;
         try
         {
             pair.Status = "Сравнение…";
             var configured = model.Store.Current.Pairs.FirstOrDefault(p => p.Id == pair.Pair.Id);
-            if (configured == null || (apply && configured.Paused)) { pair.Status = "На паузе"; return; }
+            if (configured == null || (apply && configured.Paused)) { pair.Status = "На паузе"; return false; }
             var resolved = await Task.Run(() => WindowsVolumes.Resolve(configured));
             if (resolved == null) throw new System.IO.IOException("Настроенный носитель отключён.");
             await Task.Run(() => PairBoundaries.Validate(resolved, model.Store.Current.Pairs));
             pair.SetResolvedPaths(resolved.Source, resolved.Destination);
             var request = await Task.Run(() => SyncScope.ExcludeInternalDirectory(new SyncRequest(resolved.Id, PathRules.StableRoot(resolved.Source), PathRules.StableRoot(resolved.Destination), (SyncMode)(int)resolved.Mode, resolved.AllowDeletes, resolved.Exclusions.ToArray(), SourceIdentity: WindowsVolumes.StableSource(resolved), DestinationIdentity: WindowsVolumes.StableDestination(resolved)), stateStore.DirectoryPath));
-            if (automatic && resolved.ApprovedRoots != SyncPlanner.Fingerprint(request)) { pair.Status = "Нужен ручной запуск после изменения настроек"; return; }
+            if (automatic && resolved.ApprovedRoots != SyncPlanner.Fingerprint(request)) { pair.Status = "Нужен ручной запуск после изменения настроек"; return false; }
             await Task.Run(() => new SyncExecutor(stateStore).RecoverAsync(contextAvailable: j => WindowsVolumes.CanRecover(j, model.Store.Current.Pairs)));
             model.ReportProgress(new("Сравнение…", ""));
             var progress = new Progress<SyncProgress>(model.ReportProgress);
             var baseline = await Task.Run(() => stateStore.LoadAsync(request.PairId, cts.Token));
             var plan = await Task.Run(() => new ComparisonService().CompareAsync(request, baseline, progress, cts.Token));
             pair.SetStatus("ChangeCount", plan.Operations.Count); model.Status = "Сравнение завершено. Пользовательские файлы не изменялись.";
-            if (!apply) { CancelableDialog.Show(new PlanWindow(plan, false, resolved.Source, resolved.Destination), System.Windows.Application.Current.MainWindow, cts.Token); return; }
+            if (!apply) { CancelableDialog.Show(new PlanWindow(plan, false, resolved.Source, resolved.Destination), System.Windows.Application.Current.MainWindow, cts.Token); return true; }
             var reversed = false;
             if (plan.DestinationChanged && request.Mode != SyncMode.TwoWay)
             {
                 ((App)System.Windows.Application.Current).ShowMain();
                 ((App)System.Windows.Application.Current).Notify("Изменения в копии", pair.Name, "conflict");
-                var direction = new DirectionWindow() { Owner = System.Windows.Application.Current.MainWindow };
-                if (CancelableDialog.Show(direction, System.Windows.Application.Current.MainWindow, cts.Token) != true) return;
+                var direction = new DirectionWindow(resolved.UsbSide) { Owner = System.Windows.Application.Current.MainWindow };
+                if (CancelableDialog.Show(direction, System.Windows.Application.Current.MainWindow, cts.Token) != true) return false;
                 if (direction.UseDestination)
                 {
                     reversed = true;
@@ -70,7 +70,7 @@ internal sealed class SyncCoordinator : IDisposable
             if (plan.Operations.Count > 0 && review)
             {
                 ((App)System.Windows.Application.Current).ShowMain();
-                if (CancelableDialog.Show(new PlanWindow(plan, true, reversed ? resolved.Destination : resolved.Source, reversed ? resolved.Source : resolved.Destination), System.Windows.Application.Current.MainWindow, cts.Token) != true) return;
+                if (CancelableDialog.Show(new PlanWindow(plan, true, reversed ? resolved.Destination : resolved.Source, reversed ? resolved.Source : resolved.Destination), System.Windows.Application.Current.MainWindow, cts.Token) != true) return false;
             }
             pair.Status = "Копирование…";
             var settings = model.Store.Current;
@@ -83,10 +83,12 @@ internal sealed class SyncCoordinator : IDisposable
             model.SetStatus("SyncCompleted", plan.Operations.Count);
             pair.Status = "Готово";
             if (plan.Operations.Count > 0) ((App)System.Windows.Application.Current).Notify("Готово", Localizer.Format("PairOperations", pair.Name, plan.Operations.Count), "success");
+            return true;
         }
         catch (OperationCanceledException) { pair.Status = pair.Pair.Paused ? "На паузе" : "Остановлено"; model.Status = "Операция отменена."; }
         catch (Exception ex) { pair.Status = "Ошибка"; model.SetError(ex); ((App)System.Windows.Application.Current).Notify("Ошибка", Localizer.Error(ex), "error"); }
         finally { cancellation = null; model.ActivePairId = null; model.Busy = false; completion.TrySetResult(); }
+        return false;
     }
     public void Dispose() { model.Store.Changed -= SettingsChanged; cancellation?.Cancel(); model.RunPair = null; model.CancelRun = null; }
 }

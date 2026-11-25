@@ -2,15 +2,18 @@ using Sinh.Settings;
 
 namespace Sinh.App;
 
-public sealed class PairViewModel(FolderPair pair) : Observable
+public sealed class PairViewModel(FolderPair pair, Func<Task>? toggle = null) : Observable
 {
+    public bool Included => !Pair.Paused;
+    public AsyncCommand Toggle { get; } = new(toggle ?? (() => Task.CompletedTask));
+    public void RefreshSelection() => Raise(nameof(Included));
     public FolderPair Pair { get; private set; } = pair;
     public void Update(FolderPair value)
     {
         var wasPaused = Pair.Paused;
         if (Pair.Source != value.Source || Pair.Destination != value.Destination) effectiveSource = effectiveDestination = null;
         Pair = value;
-        Raise(nameof(Name)); Raise(nameof(Paths)); Raise(nameof(Mode)); Raise(nameof(Last));
+        RefreshSelection(); Raise(nameof(Name)); Raise(nameof(Paths)); Raise(nameof(Mode)); Raise(nameof(Last));
         if (value.Paused) Status = "На паузе"; else if (wasPaused) Status = "Готова к запуску";
     }
     public string Name => Pair.Name;

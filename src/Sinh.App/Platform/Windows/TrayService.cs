@@ -9,7 +9,6 @@ internal sealed class TrayService : IDisposable
 {
     private readonly Forms.NotifyIcon tray = new() { Text = "SINH · MSS9LN", Visible = false };
     private readonly SettingsStore store;
-    private IconStyle? currentIcon;
     internal TrayService(SettingsStore store)
     {
         this.store = store;
@@ -31,11 +30,10 @@ internal sealed class TrayService : IDisposable
     {
         var menu = tray.ContextMenuStrip;
         if (menu != null) { menu.Items[0].Text = Localizer.T("Открыть SINH"); menu.Items[1].Text = Localizer.T("Пауза всех пар"); menu.Items[3].Text = Localizer.T("Выход"); }
-        var icon = store.Current.Appearance.Icon;
-        if (currentIcon == icon) return;
-        var resource = System.Windows.Application.GetResourceStream(AssetUris.For($"Assets/{icon.ToString().ToLowerInvariant()}.ico"));
+        if (tray.Icon != null) return;
+        var resource = System.Windows.Application.GetResourceStream(AssetUris.For("Assets/mirror.ico"));
         using var stream = resource!.Stream;
-        var previous = tray.Icon; tray.Icon = new System.Drawing.Icon(stream); previous?.Dispose(); currentIcon = icon;
+        var previous = tray.Icon; tray.Icon = new System.Drawing.Icon(stream); previous?.Dispose();
     }
     internal void Notify(string title, string message, string kind)
     {

@@ -64,8 +64,9 @@ internal static class Program
         foreach (var expander in Children<Expander>(settings).ToArray()) expander.IsExpanded = true;
         await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
         Require(Children<Expander>(settings).All(e => e.Content != null), "Lazy settings panel failed");
-        Require(Children<Image>(settings).Count(i => i.Width == 64 && i.Source is BitmapSource image && image.PixelWidth > 0) >= 4, "Icon previews are missing");
-        Console.WriteLine("PASS lazy settings sections and four icon previews");
+        Require(Children<Expander>(settings).Count() == 5, "Settings contain redundant sections");
+        Require(!Children<TextBlock>(settings).Any(t => t.Text.Contains("NoteLS")) && !Children<RadioButton>(settings).Any(b => b.GroupName == "Icons"), "Removed branding or icon picker remains");
+        Console.WriteLine("PASS five lazy settings sections without legacy icon picker or branding");
         Capture(settings, "settings-ru");
         GC.Collect(); GC.WaitForPendingFinalizers();
         foreach (var theme in new[] { Theme.Dark, Theme.Light, Theme.Dark })
@@ -117,6 +118,7 @@ internal static class Program
             Require(family.GetTypefaces().Any(t => t.TryGetGlyphTypeface(out var glyph) && glyph.CharacterToGlyphMap.ContainsKey('Я') && glyph.CharacterToGlyphMap.ContainsKey('A')), "Embedded font lacks Cyrillic/Latin: " + font.Name);
         }
         Console.WriteLine("PASS ten embedded font families contain Cyrillic and Latin glyphs");
+        await SelectionChecks.RunAsync(store, model, window, directory);
         var signature = Children<DeveloperSignature>(window).First();
         var button = Children<Button>(signature).First();
         Require(DeveloperSignature.Developer == "MSS9LN" && button.MinHeight >= 40, "Developer identity or hit area changed");

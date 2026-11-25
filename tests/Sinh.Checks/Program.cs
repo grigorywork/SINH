@@ -39,6 +39,35 @@ try
         await File.WriteAllTextAsync(path, "{\"SchemaVersion\":0,\"Appearance\":{\"Theme\":\"FutureTheme\",\"Scale\":-4}}");
         await loaded.LoadAsync(); Require(loaded.Current.SchemaVersion == 1 && loaded.Current.Appearance.Theme == Theme.System && loaded.Current.Appearance.Scale == 1, "Migration/unknown enum failed");
     });
+    await Check("multiple selected folders retain exact names and reject target collisions", () =>
+    {
+        var a = Path.Combine(temp, "Выбранная папка Я" + new string('a', 100));
+        var b = Path.Combine(temp, "English folder 🌊");
+        var target = Path.Combine(temp, "Копии");
+        var mapped = FolderSelection.Map([a, b], target, true);
+        Require(mapped.Count == 2 && mapped[0].Destination == Path.Combine(target, Path.GetFileName(a)) && mapped[1].Source == b, "Names or roots changed");
+        Require(FolderSelection.Map([b], target, true)[0].Destination == Path.Combine(target, Path.GetFileName(b)), "Unchecking a folder changed grouping");
+        foreach (var sources in new[] { Array.Empty<string>(), new[] { a, Path.Combine(temp, "other", Path.GetFileName(a)) } })
+        {
+            try { FolderSelection.Map(sources, target, true); throw new Exception("Invalid selection accepted"); }
+            catch (ArgumentException) { }
+        }
+        Require(FolderSelection.Map([a], target, false)[0].Destination == target, "Single-folder target changed");
+        return Task.CompletedTask;
+    });
+    await Check("legacy icons ignored and per-pair USB direction persists independently", async () =>
+    {
+        var path = Path.Combine(temp, "usb-side.json");
+        await File.WriteAllTextAsync(path, "{\"Appearance\":{\"Icon\":\"Glass\"}}");
+        using (var store = new SettingsStore(path))
+        {
+            await store.LoadAsync(); Require(store.RecoveryMessage == null, "Legacy icon broke settings");
+            await store.UpdateAsync(s => s with { Pairs = [new() { Source = "A", Destination = "B", UsbSide = UsbSide.Source }, new() { Source = "C", Destination = "D" }] });
+        }
+        using var reloaded = new SettingsStore(path); await reloaded.LoadAsync();
+        Require(reloaded.Current.Pairs[0].UsbSide == UsbSide.Source && reloaded.Current.Pairs[1].UsbSide == UsbSide.Destination, "Pair direction leaked");
+        Require(!(await File.ReadAllTextAsync(path)).Contains("\"Icon\""), "Removed icon still exported");
+    });
     await Check("corrupt settings preserved", async () =>
     {
         var path = Path.Combine(temp, "broken.json"); await File.WriteAllTextAsync(path, "{broken");

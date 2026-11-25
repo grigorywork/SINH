@@ -9,13 +9,14 @@ public partial class MainWindow : Window
     {
         InitializeComponent(); DataContext = model; coordinator = new SyncCoordinator(model);
         LayoutUpdated += FitListViewport;
-        scheduler = new BackgroundScheduler(model.Store, pair => Dispatcher.InvokeAsync(() => coordinator.RunAutomaticAsync(pair)).Task.Unwrap(), () => model.Busy || model.DialogOpen);
+        scheduler = new BackgroundScheduler(model.Store, pair => Dispatcher.InvokeAsync(() => coordinator.RunAutomaticAsync(pair)).Task.Unwrap(), () => model.Busy || model.BatchActive || model.DialogOpen);
         Closing += async (_, e) =>
         {
             var app = (App)System.Windows.Application.Current;
             if (!app.ExitRequested && model.Store.Current.CloseBehavior == Sinh.Settings.CloseBehavior.Tray) { e.Cancel = true; Hide(); return; }
-            if (!model.Busy && !model.Store.HasPendingSaves) return;
-            e.Cancel = true; model.CancelRun?.Invoke();
+            if (!model.Busy && !model.BatchActive && !model.Store.HasPendingSaves) return;
+            e.Cancel = true; model.RequestStop();
+            await model.BatchCompletion;
             await coordinator.Completion;
             try { await model.Store.FlushAsync(); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
             Close();

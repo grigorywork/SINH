@@ -20,7 +20,7 @@ public sealed class SettingsStore : IDisposable
     {
         var options = new JsonSerializerOptions { WriteIndented = true, PropertyNameCaseInsensitive = true };
         options.Converters.Add(new LenientEnumConverter<Theme>());
-        options.Converters.Add(new LenientEnumConverter<IconStyle>());
+        options.Converters.Add(new LenientEnumConverter<UsbSide>());
         options.Converters.Add(new LenientEnumConverter<SyncMode>());
         options.Converters.Add(new LenientEnumConverter<CloseBehavior>());
         return options;

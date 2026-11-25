@@ -32,15 +32,17 @@
           <DataTemplate>
             <Grid>
               <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="48"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="220"/>
               </Grid.ColumnDefinitions>
-              <StackPanel>
+              <CheckBox IsChecked="{Binding Included, Mode=OneWay}" Command="{Binding Toggle}" AutomationProperties.Name="{Binding Name}" VerticalAlignment="Top" MinHeight="40" MinWidth="40"/>
+              <StackPanel Grid.Column="1">
                 <TextBlock Text="{Binding Name}" FontSize="{DynamicResource RowTitleFontSize}" FontWeight="SemiBold"/>
                 <TextBlock Text="{Binding Mode}" Foreground="{DynamicResource Muted}" Margin="0,4"/>
                 <TextBlock Text="{Binding Paths}" TextWrapping="Wrap"/>
               </StackPanel>
-              <StackPanel Grid.Column="1" Margin="16,0,0,0">
+              <StackPanel Grid.Column="2" Margin="16,0,0,0">
                 <TextBlock Text="{Binding Status}" TextWrapping="Wrap" FontWeight="SemiBold"/>
                 <TextBlock Text="{local:Tr 'Последний успех'}" Foreground="{DynamicResource Muted}" Margin="0,12,0,3"/>
                 <TextBlock Text="{Binding Last}"/>
@@ -55,7 +57,7 @@
       </StackPanel>
       <WrapPanel Grid.Row="4" Margin="0,16,0,12">
         <Button Content="{local:Tr 'Сравнить'}" Command="{Binding Compare}"/>
-        <Button Content="{local:Tr 'Синхронизировать'}" Command="{Binding Sync}"/>
+        <Button Content="{Binding SyncCaption}" Command="{Binding Sync}"/>
         <Button Content="{local:Tr 'Пауза / продолжить'}" Command="{Binding Pause}"/>
         <Button Content="{local:Tr 'Остановить'}" Command="{Binding Stop}"/>
         <Button Content="{local:Tr 'Изменить'}" Command="{Binding Edit}"/>

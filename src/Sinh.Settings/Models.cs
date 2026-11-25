@@ -2,7 +2,7 @@ namespace Sinh.Settings;
 
 public enum SyncMode { Updates, Mirror, TwoWay }
 public enum Theme { System, Light, Dark }
-public enum IconStyle { Glass, Frosted, Paper, Mirror }
+public enum UsbSide { Destination, Source }
 public enum CloseBehavior { Exit, Tray }
 
 public sealed record Appearance
@@ -17,7 +17,6 @@ public sealed record Appearance
     public double Frost { get; init; }
     public string Tint { get; init; } = "Theme";
     public string Background { get; init; } = "Aurora";
-    public IconStyle Icon { get; init; } = IconStyle.Mirror;
 }
 
 public sealed record FolderPair
@@ -30,6 +29,7 @@ public sealed record FolderPair
     public bool AllowDeletes { get; init; }
     public bool History { get; init; } = true;
     public bool Paused { get; init; }
+    public UsbSide UsbSide { get; init; }
     public bool AutoOnConnect { get; init; }
     public bool WatchChanges { get; init; }
     public int IntervalMinutes { get; init; }

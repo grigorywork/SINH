@@ -12,7 +12,7 @@ public sealed partial class SettingsWindow
     private UIElement ConfigurationPanel()
     {
         var panel = new StackPanel();
-        panel.Children.Add(Text("Копия настроек не содержит содержимого синхронизируемых папок и секретов. После импорта все пары на паузе; автоматика и удаления выключены. Сначала проверьте пути и выполните ручное сравнение."));
+        panel.Children.Add(Text("После импорта пары на паузе."));
         var frequencies = new[] { ("Вручную", 0), ("Ежедневно", 1), ("Раз в 3 дня", 3), ("Раз в 10 дней", 10), ("Раз в месяц", 30) };
         var group = Guid.NewGuid().ToString();
         foreach (var (label, days) in frequencies)

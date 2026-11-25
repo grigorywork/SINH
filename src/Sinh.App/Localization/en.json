@@ -245,5 +245,15 @@
   "Содержимое источника изменилось": "Source content changed",
   "Файл и папка имеют одинаковое имя; для замены требуется явное разрешение удалений": "A file and folder share a name; replacement requires explicitly enabled deletions",
   "Файл превышает ограничение файловой системы назначения": "The file exceeds the destination file system's limit",
-  "SINH — ошибка запуска": "SINH — startup error"
+  "SINH — ошибка запуска": "SINH — startup error",
+  "Дождитесь завершения синхронизации перед импортом.": "Wait for synchronization to finish before importing.",
+  "По теме": "Match theme",
+  "Голубой": "Light blue",
+  "Сиреневый": "Lilac",
+  "Янтарный": "Amber",
+  "Графитовый": "Graphite",
+  "Аврора": "Aurora",
+  "Полосы": "Stripes",
+  "Однотонный": "Solid",
+  "Сведения о подписи файла смотрите в свойствах Windows.": "See the file properties in Windows for signature information."
 }

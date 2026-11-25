@@ -10,7 +10,7 @@
   <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
  </PropertyGroup>
  <ItemGroup><ProjectReference Include="../Sinh.Core/Sinh.Core.csproj"/><ProjectReference Include="../Sinh.Settings/Sinh.Settings.csproj"/></ItemGroup>
- <ItemGroup><PackageReference Include="MaterialDesignThemes" Version="5.4.0"/></ItemGroup>
+ <ItemGroup><PackageReference Include="MaterialDesignThemes" Version="[5.4.0]"/></ItemGroup>
  <ItemGroup><Resource Include="Assets/*.png"/><Resource Include="Assets/*.ico"/></ItemGroup>
  <ItemGroup>
   <Resource Include="Assets/Fonts/**/*.ttf"/><Resource Include="Assets/Fonts/**/LICENSE.txt"/>
@@ -18,5 +18,5 @@
   <Content Include="Assets/Fonts/SOURCES.md" CopyToPublishDirectory="PreserveNewest" ExcludeFromSingleFile="true"/>
  </ItemGroup>
  <ItemGroup><Using Remove="System.Windows.Forms"/><Using Remove="System.Drawing"/></ItemGroup>
- <ItemGroup><EmbeddedResource Include="Localization/en.json"/></ItemGroup>
+ <ItemGroup><EmbeddedResource Include="Localization/en.json"/><Resource Include="Assets/Licenses/*.txt"/><Content Include="Assets/Licenses/*.txt" CopyToPublishDirectory="PreserveNewest" ExcludeFromSingleFile="true"/></ItemGroup>
 </Project>

@@ -14,9 +14,9 @@ public sealed class PairViewModel(FolderPair pair) : Observable
         if (value.Paused) Status = "На паузе"; else if (wasPaused) Status = "Готова к запуску";
     }
     public string Name => Pair.Name;
-    private string? effectiveSource,effectiveDestination;
-    public string Paths => (effectiveSource??Pair.Source) + (Pair.Mode==SyncMode.TwoWay?"\n↔\n":"\n↓\n") + (effectiveDestination??Pair.Destination);
-    public void SetResolvedPaths(string a,string b){effectiveSource=a;effectiveDestination=b;Raise(nameof(Paths));}
+    private string? effectiveSource, effectiveDestination;
+    public string Paths => (effectiveSource ?? Pair.Source) + (Pair.Mode == SyncMode.TwoWay ? "\n↔\n" : "\n↓\n") + (effectiveDestination ?? Pair.Destination);
+    public void SetResolvedPaths(string a, string b) { effectiveSource = a; effectiveDestination = b; Raise(nameof(Paths)); }
     public string Mode => Localizer.T(Pair.Mode switch { SyncMode.Mirror => "Зеркало A → B", SyncMode.TwoWay => "Двусторонний обмен", _ => "Копирование обновлений A → B" });
     public string Last => Pair.LastSuccess?.ToLocalTime().ToString("g") ?? Localizer.T("Ещё не запускалась");
     private string status = pair.Paused ? "На паузе" : "Ручной запуск";

@@ -73,7 +73,7 @@ internal static class TwoWayMerge
             conflicts.Add(new(path, "Обе изменённые версии сохранены. Версия USB имеет суффикс USB-."));
         }
         // Retain necessary parents when a child was edited while its parent was removed on the other side.
-        TreePolicy.PreserveContainers(desired,a,b);
+        TreePolicy.PreserveContainers(desired, a, b);
         var directories = desired.Values.Where(v => v.Entry.Directory).ToDictionary(v => v.Entry.RelativePath, StringComparer.OrdinalIgnoreCase);
         var files = desired.Values.Where(v => !v.Entry.Directory).Select(v => v.Entry.RelativePath).ToHashSet(StringComparer.OrdinalIgnoreCase);
         foreach (var value in desired.Values.ToArray())

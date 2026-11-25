@@ -4,3 +4,6 @@ artifacts/
 .vs/
 *.user
 *_wpftmp.csproj
+*.pfx
+*.p12
+*.key

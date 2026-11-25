@@ -10,6 +10,12 @@ public static class PathRules
         if (!System.IO.Directory.Exists(full)) throw new IOException("Папка недоступна (диск отключён или нет доступа): " + full);
         RejectLinks(full); return full;
     }
+    /// <summary>Use a volume GUID or UNC path for Windows I/O so a reused drive letter cannot redirect a commit.</summary>
+    public static string StableRoot(string path)
+    {
+        var root = Root(path);
+        return OperatingSystem.IsWindows() ? WindowsPathIdentity.Comparable(root) : root;
+    }
     public static void ValidatePair(string a, string b)
     {
         a = Root(a); b = Root(b);
@@ -19,28 +25,28 @@ public static class PathRules
     }
     public static bool Contains(string root, string path)
     {
-        if(ContainsLexical(root,path))return true;
-        return OperatingSystem.IsWindows()&&WindowsPathIdentity.TryRelative(root,path,out _);
+        if (ContainsLexical(root, path)) return true;
+        return OperatingSystem.IsWindows() && WindowsPathIdentity.TryRelative(root, path, out _);
     }
     private static string Logical(string path)
     {
-        var full=Path.GetFullPath(path);
-        if(OperatingSystem.IsWindows())
+        var full = Path.GetFullPath(path);
+        if (OperatingSystem.IsWindows())
         {
-            if(full.StartsWith(@"\\?\UNC\",StringComparison.OrdinalIgnoreCase))return @"\\"+full[8..];
-            if(full.StartsWith(@"\\?\",StringComparison.Ordinal)&&full.Length>6&&full[5]==':')return full[4..];
+            if (full.StartsWith(@"\\?\UNC\", StringComparison.OrdinalIgnoreCase)) return @"\\" + full[8..];
+            if (full.StartsWith(@"\\?\", StringComparison.Ordinal) && full.Length > 6 && full[5] == ':') return full[4..];
         }
         return full;
     }
-    private static bool ContainsLexical(string root,string path)
+    private static bool ContainsLexical(string root, string path)
     {
         root = Path.TrimEndingDirectorySeparator(Logical(root)); path = Logical(path);
         return string.Equals(root, path, Comparison) || path.StartsWith(Path.EndsInDirectorySeparator(root) ? root : root + Path.DirectorySeparatorChar, Comparison);
     }
-    public static string RelativeTo(string root,string path)
+    public static string RelativeTo(string root, string path)
     {
-        if(ContainsLexical(root,path))return Path.GetRelativePath(Logical(root),Logical(path));
-        if(OperatingSystem.IsWindows()&&WindowsPathIdentity.TryRelative(root,path,out var relative))return relative;
+        if (ContainsLexical(root, path)) return Path.GetRelativePath(Logical(root), Logical(path));
+        if (OperatingSystem.IsWindows() && WindowsPathIdentity.TryRelative(root, path, out var relative)) return relative;
         throw new IOException("Путь выходит за разрешённый корень.");
     }
     public static string Under(string root, string relative)

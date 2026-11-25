@@ -9,13 +9,15 @@ namespace Sinh.App;
 public sealed partial class SettingsWindow : Window
 {
     private readonly SettingsStore store;
+    private readonly Func<bool> profileChangesAllowed;
     private readonly TextBlock status = new() { TextWrapping = TextWrapping.Wrap };
-    public SettingsWindow(SettingsStore store)
+    public SettingsWindow(SettingsStore store, Func<bool>? profileChangesAllowed = null)
     {
+        this.profileChangesAllowed = profileChangesAllowed ?? (() => true);
         this.store = store; Title = "SINH — настройки"; Width = 720; Height = 760; MinWidth = 520; MinHeight = 420; WindowStartupLocation = WindowStartupLocation.CenterOwner;
         var stack = new StackPanel { Margin = new Thickness(24) };
         Content = new ScrollViewer { Content = stack, VerticalScrollBarVisibility = ScrollBarVisibility.Auto };
-        stack.Children.Add(new TextBlock { Text = "Настройки", FontSize = 26, Margin = new Thickness(0, 0, 0, 16) });
+        var heading = new TextBlock { Text = "Настройки", Margin = new Thickness(0, 0, 0, 16) }; heading.SetResourceReference(TextBlock.FontSizeProperty, "DialogTitleFontSize"); stack.Children.Add(heading);
         void Section(string title, Func<UIElement> build)
         {
             var expander = new Expander { Header = title };
@@ -34,18 +36,18 @@ public sealed partial class SettingsWindow : Window
         Section("О программе", () =>
         {
             var about = new StackPanel();
-            about.Children.Add(Text($"SINH {App.DisplayVersion} · Windows 10/11 x64 (целевые ОС).\nОтдельная программа; протокол NoteLS не используется.\nОформление: NoteLS 1.10.58, b1f4b1f8…\nСборка не подписана. Windows-запуск и DPI-проверки ещё не выполнены."));
+            about.Children.Add(Text(Localizer.Format("About", App.DisplayVersion)));
             about.Children.Add(new DeveloperSignature { HorizontalAlignment = HorizontalAlignment.Left });
             return about;
         });
         stack.Children.Add(status);
         var close = new Button { Content = "Закрыть", IsCancel = true, HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(0, 12, 0, 0) }; stack.Children.Add(close);
-        Closing+=async(_,e)=>
+        Closing += async (_, e) =>
         {
-            if(!store.HasPendingSaves)return;
-            e.Cancel=true;IsEnabled=false;
-            try{await store.FlushAsync();IsEnabled=true;Close();}
-            catch(Exception ex){IsEnabled=true;status.Text=ex.Message;}
+            if (!store.HasPendingSaves) return;
+            e.Cancel = true; IsEnabled = false;
+            try { await store.FlushAsync(); IsEnabled = true; Close(); }
+            catch (Exception ex) { IsEnabled = true; status.Text = ex.Message; }
         };
     }
     private static TextBlock Text(string text) => new() { Text = text, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 10, 0, 8) };
@@ -56,7 +58,7 @@ public sealed partial class SettingsWindow : Window
     }
     private UIElement HistoryPanel()
     {
-        var p = new StackPanel(); p.Children.Add(Text($"Заменённые и удалённые версии сохраняются на этом компьютере отдельно от синхронизируемых папок. Лимит: {store.Current.HistoryLimitMiB} МиБ. При заполнении операция остановится. Автоматическая очистка выключена. Просмотр и восстановление: выберите пару на главной и нажмите «История».")); return p;
+        var p = new StackPanel(); p.Children.Add(Text(Localizer.Format("HistorySettings", store.Current.HistoryLimitMiB))); return p;
     }
 }
 

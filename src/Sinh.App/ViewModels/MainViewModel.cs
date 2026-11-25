@@ -46,7 +46,7 @@ public sealed class MainViewModel : Observable, IDisposable
         Compare = new(async () => { if (RunPair != null) await RunPair(Selected!, false); }, () => Selected != null && RunPair != null && !Busy);
         Sync = new(async () => { if (RunPair != null) await RunPair(Selected!, true); }, () => Selected != null && RunPair != null && !Busy && Selected.Pair.Paused == false);
         Stop = new(() => { CancelRun?.Invoke(); return Task.CompletedTask; }, () => Busy);
-        Settings = new(() => { ShowModal(new SettingsWindow(Store)); return Task.CompletedTask; });
+        Settings = new(() => { ShowModal(new SettingsWindow(Store, () => !Busy)); return Task.CompletedTask; });
         History = new(() => { ShowModal(new HistoryWindow(Selected!.Pair, Store.Current.HistoryLimitMiB * 1048576)); return Task.CompletedTask; }, () => Selected != null && !Busy);
         Store.Changed += OnChanged;
         Localizer.Current.PropertyChanged += LocaleChanged;
@@ -59,12 +59,18 @@ public sealed class MainViewModel : Observable, IDisposable
         var id = Selected?.Pair.Id;
         // Appearance changes do not rebuild pairs or schedule scans.
         if (Pairs.Select(p => p.Pair).SequenceEqual(s.Pairs)) return;
-        foreach (var obsolete in Pairs.Where(row => !s.Pairs.Any(p => p.Id == row.Pair.Id)).ToArray()) Pairs.Remove(obsolete);
+        var ids = s.Pairs.Select(p => p.Id).ToHashSet();
+        foreach (var obsolete in Pairs.Where(row => !ids.Contains(row.Pair.Id)).ToArray()) Pairs.Remove(obsolete);
+        var rows = Pairs.ToDictionary(row => row.Pair.Id);
         for (var index = 0; index < s.Pairs.Count; index++)
         {
-            var p = s.Pairs[index]; var row = Pairs.FirstOrDefault(x => x.Pair.Id == p.Id);
+            var p = s.Pairs[index]; var row = rows.GetValueOrDefault(p.Id);
             if (row == null) Pairs.Insert(index, new(p));
-            else { row.Update(p); var oldIndex = Pairs.IndexOf(row); if (oldIndex != index) Pairs.Move(oldIndex, index); }
+            else
+            {
+                if (!ReferenceEquals(row.Pair, p)) row.Update(p);
+                if (Pairs[index] != row) Pairs.Move(Pairs.IndexOf(row), index);
+            }
         }
         Selected = Pairs.FirstOrDefault(p => p.Pair.Id == id) ?? Pairs.FirstOrDefault();
     }

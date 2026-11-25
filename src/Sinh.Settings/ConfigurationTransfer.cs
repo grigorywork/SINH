@@ -31,12 +31,23 @@ public static class ConfigurationTransfer
         // A different computer/volume must be reviewed manually; import cannot enable unattended writes.
         return imported with
         {
-            AutoStart = false, StartMinimized = false, ConfigurationBackupDays = 0,
+            AutoStart = false,
+            StartMinimized = false,
+            ConfigurationBackupDays = 0,
             Pairs = (imported.Pairs ?? []).Where(p => p != null).Select(p => p with
             {
-                Id = Guid.NewGuid(), Paused = true, ApprovedRoots = null, LastSuccess = null,
-                AutoOnConnect = false, WatchChanges = false, IntervalMinutes = 0, AllowDeletes = false,
-                SourceVolumeId = null, SourceRelativePath = null, UsbId = null, UsbRelativePath = null
+                Id = Guid.NewGuid(),
+                Paused = true,
+                ApprovedRoots = null,
+                LastSuccess = null,
+                AutoOnConnect = false,
+                WatchChanges = false,
+                IntervalMinutes = 0,
+                AllowDeletes = false,
+                SourceVolumeId = null,
+                SourceRelativePath = null,
+                UsbId = null,
+                UsbRelativePath = null
             }).ToArray()
         };
     }, token);

@@ -1,26 +1,35 @@
-<Window x:Class="Sinh.App.EasterEggWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="SINH · MSS9LN" Width="480" Height="430" MinWidth="340" MinHeight="340" WindowStartupLocation="CenterOwner">
- <Grid Margin="24">
-  <Grid.RowDefinitions><RowDefinition/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
-  <Viewbox Margin="12" Stretch="Uniform" AutomationProperties.Name="Два зеркальных элемента SINH">
-   <Canvas Width="400" Height="240">
-    <Canvas x:Name="Mirrors" Width="400" Height="240" RenderTransformOrigin="0.5,0.5">
-     <Canvas.RenderTransform><ScaleTransform x:Name="Pulse"/></Canvas.RenderTransform>
-     <Canvas>
-      <Path Data="M 150,20 L 35,135 L 68,168 L 183,53 Z" Fill="#5ACAF2"/>
-      <Path Data="M 110,108 L 68,150 L 140,222 L 182,222 L 110,150 L 152,108 Z" Fill="#22B3E8"/>
-      <Path Data="M 68,150 L 110,192 L 152,150 L 110,108 Z" Fill="#0868B5"/>
-     </Canvas>
-     <Canvas>
-      <Canvas.RenderTransform><ScaleTransform ScaleX="-1" CenterX="200"/></Canvas.RenderTransform>
-      <Path Data="M 150,20 L 35,135 L 68,168 L 183,53 Z" Fill="#5ACAF2"/>
-      <Path Data="M 110,108 L 68,150 L 140,222 L 182,222 L 110,150 L 152,108 Z" Fill="#22B3E8"/>
-      <Path Data="M 68,150 L 110,192 L 152,150 L 110,108 Z" Fill="#0868B5"/>
-     </Canvas>
-    </Canvas>
-   </Canvas>
-  </Viewbox>
-  <TextBlock Grid.Row="1" Text="MSS9LN" FontSize="28" FontWeight="SemiBold" HorizontalAlignment="Center"/>
-  <TextBlock Grid.Row="2" Text="Два отражения. Одна SINH." Margin="0,10,0,20" HorizontalAlignment="Center" TextWrapping="Wrap" Foreground="{DynamicResource Muted}"/>
-  <Button Grid.Row="3" Content="Закрыть" HorizontalAlignment="Center" Click="CloseClick" IsDefault="True"/>
- </Grid>
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="Sinh.App.EasterEggWindow" Title="SINH · MSS9LN" Width="480" Height="430" MinWidth="340" MinHeight="340" WindowStartupLocation="CenterOwner">
+  <Grid Margin="24">
+    <Grid.RowDefinitions>
+      <RowDefinition/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+    </Grid.RowDefinitions>
+    <Viewbox Margin="12" Stretch="Uniform" AutomationProperties.Name="Два зеркальных элемента SINH">
+      <Canvas Width="400" Height="240">
+        <Canvas x:Name="Mirrors" Width="400" Height="240" RenderTransformOrigin="0.5,0.5">
+          <Canvas.RenderTransform>
+            <ScaleTransform x:Name="Pulse"/>
+          </Canvas.RenderTransform>
+          <Canvas>
+            <Path Data="M 150,20 L 35,135 L 68,168 L 183,53 Z" Fill="#5ACAF2"/>
+            <Path Data="M 110,108 L 68,150 L 140,222 L 182,222 L 110,150 L 152,108 Z" Fill="#22B3E8"/>
+            <Path Data="M 68,150 L 110,192 L 152,150 L 110,108 Z" Fill="#0868B5"/>
+          </Canvas>
+          <Canvas>
+            <Canvas.RenderTransform>
+              <ScaleTransform ScaleX="-1" CenterX="200"/>
+            </Canvas.RenderTransform>
+            <Path Data="M 150,20 L 35,135 L 68,168 L 183,53 Z" Fill="#5ACAF2"/>
+            <Path Data="M 110,108 L 68,150 L 140,222 L 182,222 L 110,150 L 152,108 Z" Fill="#22B3E8"/>
+            <Path Data="M 68,150 L 110,192 L 152,150 L 110,108 Z" Fill="#0868B5"/>
+          </Canvas>
+        </Canvas>
+      </Canvas>
+    </Viewbox>
+    <TextBlock Grid.Row="1" Text="MSS9LN" FontSize="{DynamicResource DeveloperHeroFontSize}" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+    <TextBlock Grid.Row="2" Text="Два отражения. Одна SINH." Margin="0,10,0,20" HorizontalAlignment="Center" TextWrapping="Wrap" Foreground="{DynamicResource Muted}"/>
+    <Button Grid.Row="3" Content="Закрыть" HorizontalAlignment="Center" Click="CloseClick" IsDefault="True"/>
+  </Grid>
 </Window>

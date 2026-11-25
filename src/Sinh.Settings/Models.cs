@@ -59,6 +59,5 @@ public sealed record AppSettings
     public int ScanMinutes { get; init; } = 10;
     public int LogDays { get; init; } = 30;
     public int ConfigurationBackupDays { get; init; }
-    public int HistoryDays { get; init; } = 30;
     public long HistoryLimitMiB { get; init; } = 4096;
 }

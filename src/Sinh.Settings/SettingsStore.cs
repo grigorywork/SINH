@@ -25,13 +25,13 @@ public sealed class SettingsStore : IDisposable
         options.Converters.Add(new LenientEnumConverter<CloseBehavior>());
         return options;
     }
-    public Task LoadAsync()=>Task.Run(LoadCoreAsync);
+    public Task LoadAsync() => Task.Run(LoadCoreAsync);
     private async Task LoadCoreAsync()
     {
         await gate.WaitAsync().ConfigureAwait(false);
         try
         {
-            RecoveryMessage=null;preserveBackup=false;
+            RecoveryMessage = null; preserveBackup = false;
             if (!File.Exists(path)) return;
             try
             {
@@ -45,7 +45,7 @@ public sealed class SettingsStore : IDisposable
                 var recovery = path + ".recovery-" + Guid.NewGuid().ToString("N");
                 File.Copy(path, recovery, false);
                 RecoveryMessage = "Повреждённые или более новые настройки сохранены: " + recovery;
-                preserveBackup=true;
+                preserveBackup = true;
                 Volatile.Write(ref current, new());
             }
         }
@@ -71,9 +71,9 @@ public sealed class SettingsStore : IDisposable
         AppSettings next;
         try
         {
-            var previous=Current;
-            next = Validate(update(previous),previous);
-            if(next==previous&&File.Exists(path)&&!preserveBackup)return;
+            var previous = Current;
+            next = Validate(update(previous), previous);
+            if (next == previous && File.Exists(path) && !preserveBackup) return;
             Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(path))!);
             var temp = path + "." + Guid.NewGuid().ToString("N") + ".tmp";
             try
@@ -84,17 +84,17 @@ public sealed class SettingsStore : IDisposable
                     await file.FlushAsync().ConfigureAwait(false);
                     file.Flush(true);
                 }
-                if (File.Exists(path)&&!preserveBackup) File.Copy(path, path + ".bak", true);
+                if (File.Exists(path) && !preserveBackup) File.Copy(path, path + ".bak", true);
                 File.Move(temp, path, true);
                 Volatile.Write(ref current, next);
-                preserveBackup=false;
+                preserveBackup = false;
             }
             finally { if (File.Exists(temp)) File.Delete(temp); }
         }
         finally { gate.Release(); }
         Changed?.Invoke(this, next);
     }
-    private static AppSettings Validate(AppSettings x,AppSettings? previous=null)
+    private static AppSettings Validate(AppSettings x, AppSettings? previous = null)
     {
         var a = x.Appearance ?? new();
         return x with
@@ -108,27 +108,26 @@ public sealed class SettingsStore : IDisposable
                 Transparency = double.IsFinite(a.Transparency) ? Math.Clamp(a.Transparency, 0, 100) : 50,
                 Frost = double.IsFinite(a.Frost) ? Math.Clamp(a.Frost, 0, 100) : 0
             },
-            Pairs = FreezePairs(x.Pairs,previous),
+            Pairs = FreezePairs(x.Pairs, previous),
             MaxParallelFiles = 1, // This release applies operations sequentially.
             SpeedLimitMiB = Math.Clamp(x.SpeedLimitMiB, 0, 10240),
             ScanMinutes = Math.Clamp(x.ScanMinutes, 1, 1440),
             LogDays = Math.Clamp(x.LogDays, 1, 3650),
             ConfigurationBackupDays = x.ConfigurationBackupDays is 0 or 1 or 3 or 10 or 30 ? x.ConfigurationBackupDays : 0,
-            HistoryDays = Math.Clamp(x.HistoryDays, 1, 3650),
             HistoryLimitMiB = Math.Clamp(x.HistoryLimitMiB, 16, 1048576)
         };
     }
-    private static IReadOnlyList<FolderPair> FreezePairs(IReadOnlyList<FolderPair>? pairs,AppSettings? previous)
+    private static IReadOnlyList<FolderPair> FreezePairs(IReadOnlyList<FolderPair>? pairs, AppSettings? previous)
     {
-        if(previous!=null&&ReferenceEquals(pairs,previous.Pairs))return previous.Pairs;
-        var prior=previous?.Pairs.ToDictionary(p=>p.Id)??[];
-        var result=(pairs??[]).Where(p=>p!=null&&p.Id!=Guid.Empty).DistinctBy(p=>p.Id).Select(p=>
+        if (previous != null && ReferenceEquals(pairs, previous.Pairs)) return previous.Pairs;
+        var prior = previous?.Pairs.ToDictionary(p => p.Id) ?? [];
+        var result = (pairs ?? []).Where(p => p != null && p.Id != Guid.Empty).DistinctBy(p => p.Id).Select(p =>
         {
-            prior.TryGetValue(p.Id,out var old);
-            if(ReferenceEquals(p,old))return p;
-            var exclusions=old!=null&&ReferenceEquals(p.Exclusions,old.Exclusions)?old.Exclusions:Array.AsReadOnly((p.Exclusions??[]).Where(e=>e!=null).ToArray());
-            var valid=!string.IsNullOrWhiteSpace(p.Source)&&!string.IsNullOrWhiteSpace(p.Destination);
-            return p with {Name=string.IsNullOrWhiteSpace(p.Name)?"Новая пара":p.Name,Source=p.Source??"",Destination=p.Destination??"",Exclusions=exclusions,IntervalMinutes=Math.Clamp(p.IntervalMinutes,0,10080),Paused=p.Paused||!valid,ApprovedRoots=valid?p.ApprovedRoots:null};
+            prior.TryGetValue(p.Id, out var old);
+            if (ReferenceEquals(p, old)) return p;
+            var exclusions = old != null && ReferenceEquals(p.Exclusions, old.Exclusions) ? old.Exclusions : Array.AsReadOnly((p.Exclusions ?? []).Where(e => e != null).ToArray());
+            var valid = !string.IsNullOrWhiteSpace(p.Source) && !string.IsNullOrWhiteSpace(p.Destination);
+            return p with { Name = string.IsNullOrWhiteSpace(p.Name) ? "Новая пара" : p.Name, Source = p.Source ?? "", Destination = p.Destination ?? "", Exclusions = exclusions, IntervalMinutes = Math.Clamp(p.IntervalMinutes, 0, 10080), Paused = p.Paused || !valid, ApprovedRoots = valid ? p.ApprovedRoots : null };
         }).ToArray();
         return Array.AsReadOnly(result);
     }

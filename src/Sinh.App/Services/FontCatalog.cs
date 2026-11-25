@@ -20,27 +20,27 @@ internal static class FontCatalog
         FontFamily family;
         try
         {
-        if (key.StartsWith("builtin:", StringComparison.Ordinal))
-        {
-            var id = key[8..];
-            var entry = BuiltIns.FirstOrDefault(f => f.Id == id);
-            family = entry.Id != null
-                ? new FontFamily(new Uri("pack://application:,,,/"), $"./Assets/Fonts/{entry.Id}/#{entry.Name}")
-                : System.Windows.SystemFonts.MessageFontFamily;
+            if (key.StartsWith("builtin:", StringComparison.Ordinal))
+            {
+                var id = key[8..];
+                var entry = BuiltIns.FirstOrDefault(f => f.Id == id);
+                family = entry.Id != null
+                    ? new FontFamily(new Uri("pack://application:,,,/"), $"./Assets/Fonts/{entry.Id}/#{entry.Name}")
+                    : System.Windows.SystemFonts.MessageFontFamily;
+            }
+            else family = key switch
+            {
+                "System" => System.Windows.SystemFonts.MessageFontFamily,
+                "system:sans" => new FontFamily("Segoe UI"),
+                "system:serif" => new FontFamily("Georgia"),
+                "system:mono" => new FontFamily("Consolas"),
+                "system:hand" => new FontFamily("Segoe Print"),
+                _ => new FontFamily(key)
+            };
         }
-        else family = key switch
-        {
-            "System" => System.Windows.SystemFonts.MessageFontFamily,
-            "system:sans" => new FontFamily("Segoe UI"),
-            "system:serif" => new FontFamily("Georgia"),
-            "system:mono" => new FontFamily("Consolas"),
-            "system:hand" => new FontFamily("Segoe Print"),
-            _ => new FontFamily(key)
-        };
-        }
-        catch(ArgumentException){family=System.Windows.SystemFonts.MessageFontFamily;}
-        catch(UriFormatException){family=System.Windows.SystemFonts.MessageFontFamily;}
-        if(cache.Count>=24)cache.Remove(cache.Keys.First());
+        catch (ArgumentException) { family = System.Windows.SystemFonts.MessageFontFamily; }
+        catch (UriFormatException) { family = System.Windows.SystemFonts.MessageFontFamily; }
+        if (cache.Count >= 24) cache.Remove(cache.Keys.First());
         cache[key] = family;
         return family;
     }

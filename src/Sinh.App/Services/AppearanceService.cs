@@ -62,6 +62,11 @@ internal sealed class AppearanceService : IDisposable
         app.Resources["Accent"] = Frozen(new SolidColorBrush(accent));
         app.Resources["AppFontFamily"] = FontCatalog.Resolve(a.Font);
         app.Resources["AppFontSize"] = 14 * a.Scale;
+        app.Resources["TitleFontSize"] = 32 * a.Scale;
+        app.Resources["SectionFontSize"] = 20 * a.Scale;
+        app.Resources["RowTitleFontSize"] = 18 * a.Scale;
+        app.Resources["DialogTitleFontSize"] = 26 * a.Scale;
+        app.Resources["DeveloperHeroFontSize"] = 28 * a.Scale;
         if (applied?.Icon != a.Icon) app.Resources["AppIcon"] = BitmapFrame.Create(new Uri($"pack://application:,,,/Assets/{a.Icon.ToString().ToLowerInvariant()}.ico"));
         var tint = Tint(a, dark);
         var density = Math.Clamp((100 - a.Transparency) / 100 * .65 + a.Frost / 100 * .2, 0, .9);
@@ -90,7 +95,7 @@ internal sealed class AppearanceService : IDisposable
         "Graphite" => "#7D8593",
         _ => dark ? "#34334B" : "#E5E4F3"
     });
-    private static Brush CreatePattern(string pattern, Color background, Color tint)
+    internal static Brush CreatePattern(string pattern, Color background, Color tint)
     {
         if (pattern == "Solid") return Frozen(new SolidColorBrush(tint));
         if (pattern == "Stripes")

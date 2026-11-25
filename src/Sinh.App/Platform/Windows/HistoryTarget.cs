@@ -16,8 +16,9 @@ internal sealed record HistoryTarget(HistoryEntry Entry, string Root, Func<bool>
             if (entry.RootIdentity != null ? entry.RootIdentity != identity : !PathRules.Contains(configured, entry.OriginalPath)) continue;
             var root = WindowsVolumes.ResolveSide(pair, destination, mounts) ?? throw new IOException("Носитель для восстановления недоступен или изменился.");
             var relative = entry.RootIdentity != null ? entry.Version.RelativePath : PathRules.RelativeTo(configured, entry.OriginalPath);
-            var target = PathRules.Under(root, relative);
-            return new(entry with { OriginalPath = target }, root, () => Directory.Exists(root) && (identity == null || WindowsVolumes.IdentityMatches(identity, root)));
+            var stableRoot = PathRules.StableRoot(root);
+            var target = PathRules.Under(stableRoot, relative);
+            return new(entry with { OriginalPath = target }, stableRoot, () => Directory.Exists(stableRoot) && (identity == null || WindowsVolumes.IdentityMatches(identity, stableRoot)));
         }
         throw new IOException("Исходная папка этой версии больше не входит в текущую пару.");
     }

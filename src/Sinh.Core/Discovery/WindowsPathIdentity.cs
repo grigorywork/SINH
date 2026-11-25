@@ -37,7 +37,7 @@ internal static class WindowsPathIdentity
     internal static void RejectOverlap(string source, string destination)
     {
         var a = Read(source); var b = Read(destination);
-        bool Within(string root, string path) => string.Equals(root, path, StringComparison.OrdinalIgnoreCase) || path.StartsWith(Path.EndsInDirectorySeparator(root)?root:root+"\\", StringComparison.OrdinalIgnoreCase);
+        bool Within(string root, string path) => string.Equals(root, path, StringComparison.OrdinalIgnoreCase) || path.StartsWith(Path.EndsInDirectorySeparator(root) ? root : root + "\\", StringComparison.OrdinalIgnoreCase);
         if (Within(a.Canonical, b.Canonical) || Within(b.Canonical, a.Canonical) || Same(a, b)) throw new IOException("Корни совпадают или вложены друг в друга через альтернативный путь Windows.");
         // Detect aliases through local SMB shares and drive mappings where file IDs are available.
         foreach (var (path, other) in new[] { (source, b), (destination, a) })
@@ -53,34 +53,34 @@ internal static class WindowsPathIdentity
     }
     internal static string Comparable(string path)
     {
-        var cursor=Path.GetFullPath(path);var missing=new Stack<string>();
-        while(!Directory.Exists(cursor)&&!File.Exists(cursor))
+        var cursor = Path.GetFullPath(path); var missing = new Stack<string>();
+        while (!Directory.Exists(cursor) && !File.Exists(cursor))
         {
-            var trimmed=Path.TrimEndingDirectorySeparator(cursor);var parent=Path.GetDirectoryName(trimmed);
-            if(string.IsNullOrEmpty(parent)||parent==cursor)return path;
-            missing.Push(Path.GetFileName(trimmed));cursor=parent;
+            var trimmed = Path.TrimEndingDirectorySeparator(cursor); var parent = Path.GetDirectoryName(trimmed);
+            if (string.IsNullOrEmpty(parent) || parent == cursor) return path;
+            missing.Push(Path.GetFileName(trimmed)); cursor = parent;
         }
-        var canonical=Read(cursor).Canonical;
-        while(missing.TryPop(out var part))canonical=Path.Combine(canonical,part);
+        var canonical = Read(cursor).Canonical;
+        while (missing.TryPop(out var part)) canonical = Path.Combine(canonical, part);
         return canonical;
     }
-    internal static bool TryRelative(string root,string path,out string relative)
+    internal static bool TryRelative(string root, string path, out string relative)
     {
-        var canonicalRoot=Comparable(root);var canonicalPath=Comparable(path);
-        if(string.Equals(canonicalRoot,canonicalPath,StringComparison.OrdinalIgnoreCase)||canonicalPath.StartsWith(Path.EndsInDirectorySeparator(canonicalRoot)?canonicalRoot:canonicalRoot+"\\",StringComparison.OrdinalIgnoreCase))
-        {relative=Path.GetRelativePath(canonicalRoot,canonicalPath);return true;}
-        if(!Directory.Exists(root)){relative="";return false;}
+        var canonicalRoot = Comparable(root); var canonicalPath = Comparable(path);
+        if (string.Equals(canonicalRoot, canonicalPath, StringComparison.OrdinalIgnoreCase) || canonicalPath.StartsWith(Path.EndsInDirectorySeparator(canonicalRoot) ? canonicalRoot : canonicalRoot + "\\", StringComparison.OrdinalIgnoreCase))
+        { relative = Path.GetRelativePath(canonicalRoot, canonicalPath); return true; }
+        if (!Directory.Exists(root)) { relative = ""; return false; }
         // Different volume-GUID roots cannot alias one another, even if cloned serial numbers match.
-        if(canonicalRoot.StartsWith(@"\\?\Volume{",StringComparison.OrdinalIgnoreCase)&&canonicalPath.StartsWith(@"\\?\Volume{",StringComparison.OrdinalIgnoreCase))
-        {relative="";return false;}
-        var identity=Read(root);var cursor=Path.GetFullPath(path);var parts=new Stack<string>();
-        while(!string.IsNullOrEmpty(cursor))
+        if (canonicalRoot.StartsWith(@"\\?\Volume{", StringComparison.OrdinalIgnoreCase) && canonicalPath.StartsWith(@"\\?\Volume{", StringComparison.OrdinalIgnoreCase))
+        { relative = ""; return false; }
+        var identity = Read(root); var cursor = Path.GetFullPath(path); var parts = new Stack<string>();
+        while (!string.IsNullOrEmpty(cursor))
         {
-            if((Directory.Exists(cursor)||File.Exists(cursor))&&Same(identity,Read(cursor))){relative=parts.Count==0?".":Path.Combine(parts.ToArray());return true;}
-            var trimmed=Path.TrimEndingDirectorySeparator(cursor);var parent=Path.GetDirectoryName(trimmed);
-            if(string.IsNullOrEmpty(parent)||parent==cursor)break;
-            parts.Push(Path.GetFileName(trimmed));cursor=parent;
+            if ((Directory.Exists(cursor) || File.Exists(cursor)) && Same(identity, Read(cursor))) { relative = parts.Count == 0 ? "." : Path.Combine(parts.ToArray()); return true; }
+            var trimmed = Path.TrimEndingDirectorySeparator(cursor); var parent = Path.GetDirectoryName(trimmed);
+            if (string.IsNullOrEmpty(parent) || parent == cursor) break;
+            parts.Push(Path.GetFileName(trimmed)); cursor = parent;
         }
-        relative="";return false;
+        relative = ""; return false;
     }
 }

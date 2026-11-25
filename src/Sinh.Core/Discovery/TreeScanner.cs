@@ -10,7 +10,7 @@ public sealed class TreeScanner
         var root = PathRules.Root(path);
         var entries = new Dictionary<string, Entry>(StringComparer.Ordinal);
         var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        var skipped=new List<string>();var links=new List<string>();var rules=new ExclusionRules(exclusions);
+        var skipped = new List<string>(); var links = new List<string>(); var rules = new ExclusionRules(exclusions);
         var pending = new Stack<string>(); pending.Push(root);
         long bytes = 0;
         var lastReport = Environment.TickCount64;
@@ -22,9 +22,9 @@ public sealed class TreeScanner
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 var relative = Path.GetRelativePath(root, full);
-                if(rules.Matches(relative)){skipped.Add(relative);continue;}
-                var attributes=File.GetAttributes(full);
-                if((attributes&FileAttributes.ReparsePoint)!=0){skipped.Add(relative);links.Add(relative);continue;}
+                if (rules.Matches(relative)) { skipped.Add(relative); continue; }
+                var attributes = File.GetAttributes(full);
+                if ((attributes & FileAttributes.ReparsePoint) != 0) { skipped.Add(relative); links.Add(relative); continue; }
                 PathRules.RejectLinks(full);
                 if (!names.Add(relative)) throw new IOException("Имена отличаются только регистром в одном каталоге; автоматическое применение заблокировано: " + relative);
                 var isDirectory = (attributes & FileAttributes.Directory) != 0;
@@ -37,7 +37,7 @@ public sealed class TreeScanner
         }
         PathRules.Root(root);
         progress?.Report(new("Сканирование завершено", root, bytes, bytes));
-        return TreeSnapshot.Create(root, entries.Values,skipped,links);
+        return TreeSnapshot.Create(root, entries.Values, skipped, links);
     }
     public static async Task<Entry> ReadFileAsync(string path, string relative, CancellationToken cancellationToken = default)
     {

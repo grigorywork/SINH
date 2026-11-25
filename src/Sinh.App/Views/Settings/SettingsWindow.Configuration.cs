@@ -40,6 +40,7 @@ public sealed partial class SettingsWindow
         var import = new Button { Content = "Импорт…" }; actions.Children.Add(import);
         import.Click += async (_, _) => await Execute(import, async () =>
         {
+            if (!profileChangesAllowed()) { status.Text = Localizer.T("Дождитесь завершения синхронизации перед импортом."); return; }
             var dialog = new OpenFileDialog { Filter = "JSON|*.json" }; if (dialog.ShowDialog(this) != true) return;
             var snapshot = await ConfigurationTransfer.ReadImportAsync(dialog.FileName);
             var invalid = await Task.Run(() => snapshot.Pairs.Count(pair =>

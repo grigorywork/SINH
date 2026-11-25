@@ -5,3 +5,4 @@
 *.cer binary
 *.zip binary
 *.cmd text eol=crlf
+src/Sinh.App/Assets/Fonts/**/LICENSE.txt -text

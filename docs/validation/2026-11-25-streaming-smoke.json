@@ -1,0 +1,20 @@
+{
+  "StartedAt": "2026-11-25T11:12:13.6775785+00:00",
+  "UpdatedAt": "2026-11-25T11:12:23.7080977+00:00",
+  "Completed": true,
+  "DurationSeconds": 10.030484,
+  "RequestedSeconds": 10,
+  "MinimumCases": 0,
+  "Seed": 1000000,
+  "Iterations": 134,
+  "Cancellations": 21,
+  "Guarded": 34,
+  "FailureCount": 0,
+  "Failures": [],
+  "Samples": [],
+  "OS": "Debian GNU/Linux 13 (trixie)",
+  "Architecture": "X64",
+  "CoreVersion": "0.4.0.0",
+  "CoreSHA256": "B14D5961944818056B7489BE10EA301C856A8EA8FC7D32F11EA7E2F685C335C8",
+  "FixtureRoot": "/tmp/sinh-soak-a7c021890dcb4150a8a647a921e72038"
+}

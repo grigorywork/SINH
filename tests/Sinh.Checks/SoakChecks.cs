@@ -4,7 +4,7 @@ using Sinh.Core;
 
 internal static class SoakChecks
 {
-    internal static async Task<int> RunAsync(int seconds, int seed, string reportPath)
+    internal static async Task<int> RunAsync(int seconds, int seed, string reportPath, int minimumCases = 0)
     {
         var started = DateTimeOffset.UtcNow;
         var clock = Stopwatch.StartNew();
@@ -16,13 +16,13 @@ internal static class SoakChecks
         Directory.CreateDirectory(root);
         async Task SaveReport(bool completed)
         {
-            var report = new { StartedAt = started, UpdatedAt = DateTimeOffset.UtcNow, Completed = completed, DurationSeconds = clock.Elapsed.TotalSeconds, RequestedSeconds = seconds, Seed = seed, Iterations = iterations, Cancellations = cancellations, Guarded = guarded, FailureCount = failureCount, Failures = failures, Samples = samples, OS = System.Runtime.InteropServices.RuntimeInformation.OSDescription, Architecture = System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture.ToString(), CoreVersion = typeof(SyncExecutor).Assembly.GetName().Version?.ToString(), CoreSHA256 = assemblyHash, FixtureRoot = root };
+            var report = new { StartedAt = started, UpdatedAt = DateTimeOffset.UtcNow, Completed = completed, DurationSeconds = clock.Elapsed.TotalSeconds, RequestedSeconds = seconds, MinimumCases = minimumCases, Seed = seed, Iterations = iterations, Cancellations = cancellations, Guarded = guarded, FailureCount = failureCount, Failures = failures, Samples = samples, OS = System.Runtime.InteropServices.RuntimeInformation.OSDescription, Architecture = System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture.ToString(), CoreVersion = typeof(SyncExecutor).Assembly.GetName().Version?.ToString(), CoreSHA256 = assemblyHash, FixtureRoot = root };
             Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(reportPath))!);
             await File.WriteAllTextAsync(reportPath + ".tmp", JsonSerializer.Serialize(report, new JsonSerializerOptions { WriteIndented = true }));
             File.Move(reportPath + ".tmp", reportPath, true);
         }
         Console.WriteLine($"SOAK START {started:O} duration={seconds}s seed={seed} root={root}");
-        while (clock.Elapsed < TimeSpan.FromSeconds(seconds))
+        while (clock.Elapsed < TimeSpan.FromSeconds(seconds) || iterations < minimumCases)
         {
             var caseSeed = seed + iterations;
             var folder = Path.Combine(root, iterations.ToString("D8"));

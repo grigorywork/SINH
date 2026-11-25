@@ -7,7 +7,7 @@ namespace Sinh.App;
 
 public partial class App : System.Windows.Application
 {
-    internal static string DisplayVersion => typeof(App).Assembly.GetName().Version?.ToString(3) ?? "0.2.0";
+    internal static string DisplayVersion => typeof(App).Assembly.GetCustomAttributes(typeof(System.Reflection.AssemblyInformationalVersionAttribute), false).OfType<System.Reflection.AssemblyInformationalVersionAttribute>().FirstOrDefault()?.InformationalVersion.Split('+')[0] ?? "0.4.0-preview.1";
     internal static string DataDirectory => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "SINH");
     internal SettingsStore Store { get; private set; } = null!;
     private AppearanceService? appearance;
@@ -39,13 +39,13 @@ public partial class App : System.Windows.Application
             Store = new SettingsStore(Path.Combine(DataDirectory, "settings.json"));
             await Task.Run(Store.LoadAsync);
             localization = new LocalizationService(Store);
-            var recovery=new Sinh.Core.SyncExecutor(new Sinh.Core.StateStore(DataDirectory));
-            var recovered = await Task.Run(() => recovery.RecoverAsync(contextAvailable:j=>WindowsVolumes.CanRecover(j,Store.Current.Pairs)));
+            var recovery = new Sinh.Core.SyncExecutor(new Sinh.Core.StateStore(DataDirectory));
+            var recovered = await Task.Run(() => recovery.RecoverAsync(contextAvailable: j => WindowsVolumes.CanRecover(j, Store.Current.Pairs)));
             await recovery.PruneCompletedLogsAsync(Store.Current.LogDays);
             appearance = new AppearanceService(Store);
             var model = new MainViewModel(Store);
             if (recovered > 0) model.Status = $"Незавершённых запусков: {recovered}. Временные файлы убраны; выполните новое сравнение.";
-            if(recovery.RecoveryWarnings.Count>0)model.Status="Некоторые журналы требуют проверки; они сохранены в служебной папке SINH.";
+            if (recovery.RecoveryWarnings.Count > 0) model.Status = "Некоторые журналы требуют проверки; они сохранены в служебной папке SINH.";
             var window = new MainWindow(model);
             MainWindow = window;
             tray = new TrayService(Store);

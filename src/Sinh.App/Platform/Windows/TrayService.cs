@@ -29,8 +29,8 @@ internal sealed class TrayService : IDisposable
     private void SettingsChanged(object? sender, AppSettings e) => System.Windows.Application.Current.Dispatcher.InvokeAsync(ApplyIcon);
     private void ApplyIcon()
     {
-        var menu=tray.ContextMenuStrip;
-        if(menu!=null){menu.Items[0].Text=Localizer.T("Открыть SINH");menu.Items[1].Text=Localizer.T("Пауза всех пар");menu.Items[3].Text=Localizer.T("Выход");}
+        var menu = tray.ContextMenuStrip;
+        if (menu != null) { menu.Items[0].Text = Localizer.T("Открыть SINH"); menu.Items[1].Text = Localizer.T("Пауза всех пар"); menu.Items[3].Text = Localizer.T("Выход"); }
         var icon = store.Current.Appearance.Icon;
         if (currentIcon == icon) return;
         var resource = System.Windows.Application.GetResourceStream(new Uri($"pack://application:,,,/Assets/{icon.ToString().ToLowerInvariant()}.ico"));

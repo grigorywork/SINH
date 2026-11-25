@@ -50,10 +50,13 @@ internal sealed class Localizer : INotifyPropertyChanged
             "ProgressOperations" => english ? "{0:N0} / {1:N0} operations" : "{0:N0} / {1:N0} операций",
             "PlanSummary" => english ? "Operations: {0} · Deletions: {1} · Copy: {2:F1} MiB · Conflicts: {3}\nSource: {4}\nDestination: {5}" : "Операций: {0} · Удалений: {1} · Копирование: {2:F1} МиБ · Конфликтов: {3}\nИсточник: {4}\nНазначение: {5}",
             "ImportSummary" => english ? "Replace settings? Profiles: {0}; unavailable or invalid paths: {1}. All profiles will be paused; automatic runs and deletions disabled. Current settings will be backed up." : "Заменить настройки? Пар: {0}; недоступных или недопустимых путей: {1}. Все пары будут на паузе; автоматика и удаления выключены. Текущие настройки сохранятся отдельной копией.",
+            "About" => english ? "SINH {0} · Windows 10/11 x64 (target systems).\nIndependent application; does not use the NoteLS protocol.\nAppearance reference: NoteLS 1.10.58, b1f4b1f8…\nWindows runtime and DPI checks are pending. See Windows file properties for signature information." : "SINH {0} · Windows 10/11 x64 (целевые ОС).\nОтдельная программа; протокол NoteLS не используется.\nОформление: NoteLS 1.10.58, b1f4b1f8…\nWindows-запуск и DPI-проверки ещё не выполнены. Сведения о подписи файла смотрите в свойствах Windows.",
+            "HistoryIntro" => english ? "History for “{0}” · shared limit {1} MiB. Stored on this computer. Versions are kept until manually deleted." : "История пары «{0}» · лимит всей истории {1} МиБ. Хранится на этом компьютере. Версии сохраняются до удаления вручную.",
+            "HistorySettings" => english ? "Replaced and deleted versions are stored on this computer, separately from synchronized folders. Shared limit: {0} MiB; synchronization stops when full. Versions are kept until manually deleted. Select a profile and click History to browse, restore or delete archived versions." : "Заменённые и удалённые версии сохраняются на этом компьютере отдельно от синхронизируемых папок. Лимит: {0} МиБ. При заполнении операция остановится. Версии сохраняются до удаления вручную. Просмотр, восстановление и удаление архивных версий: выберите пару на главной и нажмите «История».",
             _ => T(key)
         };
         if (key == "StagePath" && args.Length > 0) args[0] = T(args[0]?.ToString() ?? "");
-        if(args.Length==0)return format;
+        if (args.Length == 0) return format;
         return string.Format(CultureInfo.GetCultureInfo(english ? "en-US" : "ru-RU"), format, args);
     }
     private static Dictionary<string, string> LoadEnglish()
@@ -79,7 +82,7 @@ internal sealed class Localizer : INotifyPropertyChanged
         if (parent is TextBlock) Label(parent, TextBlock.TextProperty);
         if (parent is System.Windows.Controls.Primitives.ButtonBase or System.Windows.Controls.Label) Label(parent, ContentControl.ContentProperty);
         if (parent is HeaderedContentControl) Label(parent, HeaderedContentControl.HeaderProperty);
-        if(parent is FrameworkElement)Label(parent,FrameworkElement.ToolTipProperty);
+        if (parent is FrameworkElement) Label(parent, FrameworkElement.ToolTipProperty);
         if (parent is DataGrid table) foreach (var column in table.Columns) Label(column, DataGridColumn.HeaderProperty);
         Label(parent, System.Windows.Automation.AutomationProperties.NameProperty);
         foreach (var child in LogicalTreeHelper.GetChildren(parent).OfType<DependencyObject>()) Attach(child);

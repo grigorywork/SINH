@@ -40,10 +40,10 @@ internal sealed class SyncCoordinator : IDisposable
             resolved ??= await Task.Run(() => WindowsVolumes.Resolve(pair.Pair));
             if (resolved == null) throw new System.IO.IOException("Настроенный носитель отключён.");
             await Task.Run(() => PairBoundaries.Validate(resolved, model.Store.Current.Pairs));
-            pair.SetResolvedPaths(resolved.Source,resolved.Destination);
-            var request = await Task.Run(()=>SyncScope.ExcludeInternalDirectory(new SyncRequest(resolved.Id, resolved.Source, resolved.Destination, (SyncMode)(int)resolved.Mode, resolved.AllowDeletes, resolved.Exclusions.ToArray(),SourceIdentity:WindowsVolumes.StableSource(resolved), DestinationIdentity: WindowsVolumes.StableDestination(resolved)),stateStore.DirectoryPath));
+            pair.SetResolvedPaths(resolved.Source, resolved.Destination);
+            var request = await Task.Run(() => SyncScope.ExcludeInternalDirectory(new SyncRequest(resolved.Id, PathRules.StableRoot(resolved.Source), PathRules.StableRoot(resolved.Destination), (SyncMode)(int)resolved.Mode, resolved.AllowDeletes, resolved.Exclusions.ToArray(), SourceIdentity: WindowsVolumes.StableSource(resolved), DestinationIdentity: WindowsVolumes.StableDestination(resolved)), stateStore.DirectoryPath));
             if (automatic && pair.Pair.ApprovedRoots != SyncPlanner.Fingerprint(request)) { pair.Status = "Нужен ручной запуск после изменения настроек"; return; }
-            await Task.Run(()=>new SyncExecutor(stateStore).RecoverAsync(contextAvailable:j=>WindowsVolumes.CanRecover(j,model.Store.Current.Pairs)));
+            await Task.Run(() => new SyncExecutor(stateStore).RecoverAsync(contextAvailable: j => WindowsVolumes.CanRecover(j, model.Store.Current.Pairs)));
             model.ReportProgress(new("Сравнение…", ""));
             var progress = new Progress<SyncProgress>(model.ReportProgress);
             var baseline = await Task.Run(() => stateStore.LoadAsync(request.PairId, cts.Token));
@@ -72,10 +72,10 @@ internal sealed class SyncCoordinator : IDisposable
             }
             pair.Status = "Копирование…";
             var settings = model.Store.Current;
-            Func<bool> mounted = ()=>WindowsVolumes.ContextMatches(resolved);
-            var limits=await Task.Run(()=>plan.Operations.Select(o=>o.Root).Distinct(StringComparer.OrdinalIgnoreCase).Select(WindowsVolumes.GetLimits).ToArray());
-            var maxBytes=limits.Length>0?limits.Min(l=>l.MaxFileBytes):long.MaxValue;var maxName=limits.Length>0?limits.Min(l=>l.MaxComponentLength):int.MaxValue;
-            var state = await Task.Run(() => new SyncExecutor(stateStore).ApplyAsync(plan, new(pair.Pair.History, settings.HistoryLimitMiB * 1048576, settings.SpeedLimitMiB, mounted,maxBytes,maxName,limits.Any(l=>l.ReadOnly)), progress, cts.Token));
+            Func<bool> mounted = () => WindowsVolumes.ContextMatches(resolved);
+            var limits = await Task.Run(() => plan.Operations.Select(o => o.Root).Distinct(StringComparer.OrdinalIgnoreCase).Select(WindowsVolumes.GetLimits).ToArray());
+            var maxBytes = limits.Length > 0 ? limits.Min(l => l.MaxFileBytes) : long.MaxValue; var maxName = limits.Length > 0 ? limits.Min(l => l.MaxComponentLength) : int.MaxValue;
+            var state = await Task.Run(() => new SyncExecutor(stateStore).ApplyAsync(plan, new(pair.Pair.History, settings.HistoryLimitMiB * 1048576, settings.SpeedLimitMiB, mounted, maxBytes, maxName, limits.Any(l => l.ReadOnly)), progress, cts.Token));
             if (reversed) await stateStore.SaveAsync(request.PairId, new(SyncPlanner.Fingerprint(request), state.Destination, state.Source, state.ConfirmedAt), cts.Token);
             await model.Store.UpdateAsync(s => s with { Pairs = s.Pairs.Select(p => p.Id == request.PairId ? p with { LastSuccess = state.ConfirmedAt, ApprovedRoots = SyncPlanner.Fingerprint(request) } : p).ToArray() });
             model.SetStatus("SyncCompleted", plan.Operations.Count);

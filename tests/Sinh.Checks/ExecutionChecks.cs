@@ -29,6 +29,19 @@ internal static class ExecutionChecks
             try { await new SyncExecutor(new(data)).ApplyAsync(plan, new(SpeedLimitMiB: 4), progress, cts.Token); } catch (OperationCanceledException) { cancelled = true; }
             require(cancelled, "Cancellation ignored"); require(await File.ReadAllTextAsync(Path.Combine(b, "large.bin")) == "old", "Cancelled copy damaged original"); require(!Directory.GetFiles(b, "*.tmp").Any(), "Temporary destination left behind");
         });
+        await check("one-way backup streams to destination without a second full local payload", async () =>
+        {
+            var (a, b, data) = Roots(); await File.WriteAllBytesAsync(Path.Combine(a, "large.bin"), new byte[2 * 1024 * 1024]);
+            var plan = await new ComparisonService().CompareAsync(new(Guid.NewGuid(), a, b)); var observed = false;
+            var progress = new InlineProgress(p =>
+            {
+                if (p.Stage != "Копирование" || p.Completed <= 0) return;
+                observed = true;
+                require(!Directory.EnumerateFiles(Path.Combine(data, "work"), "*.data", SearchOption.AllDirectories).Any(), "One-way backup staged another full payload on the PC");
+            });
+            var result = await new SyncExecutor(new(data)).ApplyAsync(plan, new(SpeedLimitMiB: 4), progress);
+            require(observed && result.Source.SameContent(result.Destination), "Streaming backup integrity failed");
+        });
         await check("history limit stops replacement without loss", async () =>
         {
             var (a, b, data) = Roots(); await File.WriteAllTextAsync(Path.Combine(a, "f"), "new"); await File.WriteAllTextAsync(Path.Combine(b, "f"), "old version"); var plan = await new ComparisonService().CompareAsync(new(Guid.NewGuid(), a, b)); var failed = false;
@@ -55,6 +68,24 @@ internal static class ExecutionChecks
             var (a, b, data) = Roots(); await File.WriteAllBytesAsync(Path.Combine(a, "f"), new byte[2 * 1024 * 1024]); await File.WriteAllTextAsync(Path.Combine(b, "f"), "old"); var r = new SyncRequest(Guid.NewGuid(), a, b); var plan = await new ComparisonService().CompareAsync(r);
             await File.WriteAllBytesAsync(Path.Combine(a, "f"), new byte[1]); var failed = false; try { await new SyncExecutor(new(data)).ApplyAsync(plan); } catch (IOException) { failed = true; }
             require(failed && await File.ReadAllTextAsync(Path.Combine(b, "f")) == "old", "Changed source overwritten destination");
+        });
+        await check("source modification during transfer is blocked or detected before destination writes", async () =>
+        {
+            var (a, b, data) = Roots(); var source = Path.Combine(a, "changing.bin"); var target = Path.Combine(b, "changing.bin");
+            await File.WriteAllBytesAsync(source, new byte[2 * 1024 * 1024]); await File.WriteAllTextAsync(target, "original");
+            var request = new SyncRequest(Guid.NewGuid(), a, b); var plan = await new ComparisonService().CompareAsync(request);
+            var attempted = false; var blocked = false; var failed = false;
+            var progress = new InlineProgress(p =>
+            {
+                if (attempted || p.Stage != "Копирование" && p.Stage != "Подготовка копии") return;
+                attempted = true;
+                try { using var edit = new FileStream(source, FileMode.Open, FileAccess.Write, FileShare.ReadWrite); edit.Position = edit.Length - 1; edit.WriteByte(1); edit.Flush(true); }
+                catch (IOException) { blocked = true; }
+            });
+            try { await new SyncExecutor(new(data)).ApplyAsync(plan, new(SpeedLimitMiB: 4), progress); } catch (IOException) { failed = true; }
+            require(attempted, "Mutation was not attempted during transfer");
+            require(blocked || failed, "Changed source was silently accepted");
+            if (!blocked) require(await File.ReadAllTextAsync(target) == "original" && await new StateStore(data).LoadAsync(request.PairId) == null, "Changed source modified destination or baseline");
         });
         await check("crash journal recovery only cleans recorded temporary file", async () =>
         {

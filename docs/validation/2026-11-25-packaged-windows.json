@@ -1,0 +1,10 @@
+{
+  "AtUTC": "2026-11-25T20:07:59.9117807Z",
+  "ExecutableSHA256": "A4BA6BC7283950410E94F6C8D29835B8445B8B76046E8B2C1F5CEAF24D0C2C0F",
+  "Architecture": "x64",
+  "ValidationRun": 45690034185,
+  "PackagedExe": "Launched SINH window and closed normally",
+  "OS": "Microsoft Windows NT 10.0.26100.0",
+  "TrustStoreModified": false,
+  "Authenticode": "UnknownError"
+}

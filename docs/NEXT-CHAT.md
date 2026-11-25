@@ -1,46 +1,29 @@
-# SINH — итог текущего этапа
+# SINH — итог публикации
 
-Версия **0.4.0-preview.1**, main, `/workspace/sinh`. SDK10.0.404, .NET10 LTS, WPF/MVVM, MaterialDesignThemes5.4.0. Финальный код оболочки278705c, ядра0845f11. Локальный preview упаковывается в `artifacts/release/`; подробности `RELEASE-0.4.0-preview.1.md`.
+**0.4.0-preview.3 публично опубликован**: https://github.com/grigorywork/SINH/releases/tag/v0.4.0-preview.3
+Прямой EXE: https://github.com/grigorywork/SINH/releases/download/v0.4.0-preview.3/SINH.exe
+Репозиторий: https://github.com/grigorywork/SINH (public, main). Исходная история владельца сохранена merge, без force push.
 
-## Сделано
+## Что проверено
 
-Модульный Discovery/Planning/Execution/Persistence, отдельные Settings/App/Checks. Три режима; план без записи, SHA256/streaming/temp/atomic replace, защита границ, GUID/UNC, ссылки/исключения/служебные temp, конфликты, история/restore/recovery, mandatory safety при отмене без обычной истории. Настройки atomic/immutable/flush, импорт с выключенной автоматикой, отдельные backup. Windows helper/USB-ID/scheduler/watch/tray/Exit; обычные права, автозапуск off по умолчанию. Темы/Material Design, RU/EN, масштаб/DPI hook/маленькое окно, offline-шрифты с лицензиями, стекло-черновик, mirror+три сохранённых значка. MSS9LN: 2-е нажатия прыгают, 9-е — пасхалка. Последними добавлены короткие появления окон/разделов и динамический reduced-motion.
+- Linux:58/58 проверок ядра; предыдущие часовые прогоны и отдельный safety stress в docs/validation. Они относятся к своим зафиксированным версиям/SHA, а не автоматически к последнему бинарнику.
+- Windows Server2025/10.0.26100 x64: source run45690034185, commit6b07e48 — build0 warnings/errors, 61/61 engine, все WPF-группы PASS (иконки/темы/GC/масштаб/стекло/English/малое окно/cancel/font10/MSS9LN).
+- Publisher run45691898021: **точный подписанный EXE** из ZIP запущен на Windows, окно SINH появилось и штатно закрылось с ExitCode0. SHA проверен; Authenticode повторно проверен osslsigncode с явным публичным certificate, system trust не менялся. Релиз опубликован только после smoke PASS.
+- GitHub REST digest опубликованных EXE/ZIP/source соответствует локальному. Прямая публичная ссылка EXE проверена: HTTP200.
 
-## Проверено
+EXE SHA256: `a4ba6bc7283950410e94f6c8d29835b8445b8b76046e8b2c1f5ceaf24d0c2c0f`.
+Подпись MSS9LN **самоподписанная / не доверенный издатель**. Windows Get-AuthenticodeSignature возвратил UnknownError для недоверенной цепочки; это не помечается как доверенная подпись. Закрытый ключ не передавался в Git/Actions/Releases. Публичный cert приложен.
 
-58/58 Linux x64; App и WindowsChecks cross-build 0 warnings/errors. Полный час исправлений62921/0. Оптимизация старого снимка705f600:3605с/69111/0 + после паузы3889/0, всего73000 seeds. Оригинальный Completed=false сохранён; пауза не считается работой. Финальное ядро0845f11 проверено отдельно:328с/5000/0 без обычной истории. Отчёты: docs/validation/2026-11-25-summary.json и исходные JSON. Аудит исходной версии72506/1497 обнаружений не считать PASS.
+## Что изменилось после локального preview1
 
-Финальный Core SHA8c299baa497cf6993186bda66ddf2f8effd14b9087f7cdafe8a82527cdb473f8 сохранён в artifacts/qa-safety-final и побайтово включён в single-file EXE. App-only сборка с BuildProjectReferences=false сохраняет этот binary. Проверены31 font asset SHA /4072676bytes.
+Native CreateFileW получил extended DOS/UNC prefix, восстановление длинных Unicode путей теперь PASS на Windows. WPF readonly ProgressBar.Value явно OneWay; общий Window style применяется к производным окнам, иконки/шрифты загружаются по SINH;component URI. Несовместимый Merriweather заменён на оригинальные static2.002 upstream Google Fonts b848f42f... с OFL; остальные9 семейств не изменены. Бинарникpreview2 с дефектом только дополнительного шрифта был выдан отдельно, актуаленpreview3.
 
-## Ограничения и следующий шаг
+## Публикация
 
-Windows runtime **не запускался**: ни Win10, ни Win11, ни физические USB/SMB/DPI/Narrator/portable launch не подтверждены. Следующий этап — `scripts/Check-Windows.ps1` и матрица docs/WINDOWS-VALIDATION.md на Windows, затем исправления реальных находок. Linux GUI — после Windows. Не выдавать cross-build за рабочий Windows-релиз.
+Cloud CLI upload-host возвращал401, поэтому подписанные архивы переданы через временную release-assets ветку, а поддерживаемый GitHub Actions workflow проверил хеши/источник/первый запуск и опубликовал EXE/ZIP/source/bundle/сертификат/JSON/SHA. Старый пустой draft1 удалён; временная ветка удалена после успешной публикации. Main содержит исходник, без больших бинарников. Локальные пакеты в artifacts/release; пользовательские прежние download-файлы не удалены.
 
-GitHub creation заблокирована правами интеграции (`createRepository`, свежий GET404). Origin не появился; публикация не выполнена. При появлении разрешённого репозитория проверить доступ и выгрузить main/portable, не менять видимость и не использовать NoteLS. Пользователь уже разрешил публикацию; дополнительных вопросов о рутине не нужно.
+## Следующий этап
 
-Подпись preview **самоподписанная MSS9LN**, не доверенный издатель. Authenticode целостность проверена явным публичным certificate; system trust не менялось. Закрытый ключ вне Git и вне пакета. EXE SHA b6a9adc373b3e5c5ec5079d4c76f4ac7a1b42b33e05c6f4107fdc19a712bdc86. Финальные ZIP SHA в artifacts/release/SHA256SUMS.txt.
+Клиентские **Windows10/11**, реальные USB/SMB, стандартный (не runneradmin) пользователь, DPI100/125/150/200/несколько мониторов, сенсор/Narrator требуют проверки по docs/WINDOWS-VALIDATION.md. Windows Server не подменяет эти результаты. Linux GUI — после Windows. Никаких покупок/платныхИИ; не менять identity или доверенные хранилища. Рефакторинг модульный, C#/WPF/Material Design. MSS9LN: каждое2-е нажатие прыжок, каждое9-е пасхалка; reduced-motion соблюдается.
 
-Пользователь просит работать автономно, ничего не спрашивать, сохранять этапы в Git и рефакторить по модулям. Не покупать сервисы/платные ИИ. Не использовать subagents без явного задания. Личные данные не трогались: проверки только на временных каталогах.
-
-## Последнее уточнение владельца — публикация публичная
-
-Владелец явно указал «также в открытом доступе»: создавать SINH как public, исходник и сборку размещать публично. Повторная попытка `gh repo create grigorywork/SINH --public` также отклонена: Resource not accessible by integration (createRepository). Нужен созданный владельцем публичный репозиторий и доступ интеграции. Код/артефакты остаются локально; публикация не состоялась. Не публиковать приватный ключ.
-
-## Доступ к GitHub предоставлен
-Владелец создал grigorywork/SINH, public; API подтвердил push/admin. Удалённый первоначальный README объединён с локальным исходником с сохранением обеих Git-историй. Далее push main, Windows CI и публичный preview Release с проверенными артефактами.
-
-## Первый Windows CI
-Исходники успешно опубликованы в public grigorywork/SINH, main36e0076. Run45687215216 на Windows Server2025/10.0.26100 собрал все проекты без warning, но ядро60/61: восстановление пути>500 упало в P/Invoke CreateFileW без extended prefix. Исправлено добавлением \\?\ / \\?\UNC\ до native CreateFile; существующая регрессия проверяет реальный случай. Кандидат повышен до0.4.0-preview.2, старыйv1 остаётся draft. Нужен повтор Windows CI и новый подписанный portable.
-
-Windows run45687751429: **61/61 ядра PASS**, включая длинные Unicode пути и restore. WPF harness упал до окон из-за запрещённой смены Application.ResourceAssembly при существующей entry assembly. Убрано присваивание; URI ресурсов App теперь явно SINH;component через AssetUris, чтобы работать и из тест-хоста, и из EXE.
-
-Windows run45688434617: engine61/61; WPF достиг настоящего MainWindow и выявил TwoWay по умолчанию у ProgressBar.Value для read-only ProgressValue. Явно задан Mode=OneWay. Следующий прогон обязателен перед публичной сборкой.
-
-Windows run45688690683: engine61/61, WPF MainWindow открылся; найден пропавший icon, потому что implicit Style TargetType=Window не наследуется производными Window-классами. WindowLoaded теперь явно присоединяет общий window style, сохраняя локально выбранный style.
-
-Windows run45689082987: MainWindow/theme/icons/lazy sections/GC/scales/glass draft/English/small window/cancel-dialog PASS. Выявлено WPF имя семейства Merriweather: pinned static TTF содержит legacy name ID1 «Merriweather Light», weight400/700. URI ссылается на legacy имя, UI-имя сохраняется Merriweather; файлы и OFL Reserved Font Name не менялись.
-
-Пользователю выдан отдельный самоподписанный EXE0.4.0-preview.2 (SHAa5f9453c5616b73feae4f8b6aa4de5b07e3bf621094124361c5f7524b26f17f6), с честно обозначенным дефектом дополнительного Merriweather. Публичный финальный preview повышен до.3: Merriweather заменён на оригинальные static2.002 Google Fonts b848f42f0bc0a8bc53588c3688ca37890e1db0bd, с исходной OFL и обновлённым manifest; другие9семейств не менялись. Новый Windows CI обязателен.
-
-## Windows зелёный / подготовка публичного EXE3
-Run45690034185 (commit6b07e48) SUCCESS на Windows Server2025/26100 x64: 61/61 engine, все8 групп WPF включая десять шрифтов и MSS9LN. Клиентские Win10/11, USB/SMB/DPI/Narrator не проверены. Текущий CodeVersion0.4.0-preview.3. Требуется финально подписать publish-preview3, упаковать; отдельный SINH.exe будет извлечён в GitHub publish workflow и опубликован в Releases. Прямой uploads.github.com в Cloud возвращает401 (API/git работают); используется стандартная публикация через GitHub Actions без передачи закрытого ключа. Временная release-assets ветка переносит только уже подписанные архивы/публичные метаданные, затем удаляется. Workflow проверяет SHA, source CI и первый запуск/закрытие точного packaged EXE на Windows, повторно проверяет Authenticode с публичным cert в Linux, и только затем публикует release.
+Последняя проблема пользователя была **скачивание по локальной /workspace-ссылке**, а не ошибка EXE. Решена выдачей обычного публичного GitHub download URL. Если он сообщит новую ошибку, сначала различить скачивание/запуск/синхронизацию; Windows-проверки и фактический запуск уже есть.

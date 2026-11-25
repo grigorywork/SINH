@@ -2,6 +2,8 @@
 
 Программа синхронизации файлов USB/ПК.
 
+[**Скачать SINH.exe — 0.4.0-preview.3**](https://github.com/grigorywork/SINH/releases/download/v0.4.0-preview.3/SINH.exe) · [ZIP, исходники и SHA256](https://github.com/grigorywork/SINH/releases/tag/v0.4.0-preview.3)
+
 Самостоятельный синхронизатор папок для Windows 10/11 x64. C# / .NET 10 LTS / WPF / MVVM, компоненты Material Design. Это предварительная версия: Windows Server 2025 CI прошёл (61/61 ядра и WPF); клиентские Windows 10/11, реальные USB/SMB и DPI ещё требуют проверки. Linux-интерфейс — следующий порт после проверки Windows.
 
 ## Начало работы

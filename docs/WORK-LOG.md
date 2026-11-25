@@ -40,3 +40,6 @@ Public main загружен с объединением истории влад
 
 ### Windows runtime CI SUCCESS
 0.4.0-preview.3 /6b07e48 /run45690034185: build0 warnings/errors, engine61/61, все WPF-группы PASS. Исправлены native long-path prefix, read-only ProgressBar binding, component URI, shared style derived windows; Merriweather upstream static2.002 с оригинальной OFL. Публичный исходник на GitHub; пакет готовится к публикации через GitHub Actions (Cloud upload-host credential401), закрытый ключ остаётся локально.
+
+### Публичный release0.4.0-preview.3
+Source CI45690034185:61/61+WPF PASS Windows Server2025. Publisher45691898021 запустил точный signed EXE, увидел SINH window, штатно закрыл ExitCode0; затем повторно проверил crypto/хеши и опубликовал8 assets. GitHub digest совпал; EXE HTTP200. SHAa4ba6bc7283950410e94f6c8d29835b8445b8b76046e8b2c1f5ceaf24d0c2c0f. Локальная ссылка не скачивалась у пользователя — выдан публичный GitHub URL.

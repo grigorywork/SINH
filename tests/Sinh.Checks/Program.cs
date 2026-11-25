@@ -1,5 +1,13 @@
 using Sinh.Settings;
 
+if(args.Length>0 && args[0]=="--soak")
+{
+    var seconds=args.Length>1?int.Parse(args[1]):3600;
+    var seed=args.Length>2?int.Parse(args[2]):900000;
+    var report=args.Length>3?args[3]:"artifacts/soak-report.json";
+    return await SoakChecks.RunAsync(seconds,seed,report);
+}
+
 var failures = 0;
 var count = 0;
 async Task Check(string name, Func<Task> run)

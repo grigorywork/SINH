@@ -1,0 +1,25 @@
+{
+  "StartedAt": "2026-11-24T21:47:29.6765278+00:00",
+  "FinishedAt": "2026-11-24T21:47:59.689527+00:00",
+  "DurationSeconds": 30.0129933,
+  "RequestedSeconds": 30,
+  "Seed": 900000,
+  "Iterations": 597,
+  "Cancellations": 97,
+  "Guarded": 134,
+  "Failures": [],
+  "Samples": [
+    {
+      "ElapsedSeconds": 30.0127007,
+      "Iterations": 597,
+      "Cancellations": 97,
+      "Guarded": 134,
+      "Failures": 0,
+      "WorkingSetBytes": 67493888
+    }
+  ],
+  "OS": "Debian GNU/Linux 13 (trixie)",
+  "Architecture": "X64",
+  "CoreVersion": "0.3.0.0",
+  "FixtureRoot": "/tmp/sinh-soak-2cb580dada5f47b1beed2615ddc4ad76"
+}

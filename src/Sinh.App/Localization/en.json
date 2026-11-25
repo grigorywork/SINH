@@ -265,5 +265,12 @@
   "Rubik · встроенный": "Rubik · bundled",
   "Manrope · встроенный": "Manrope · bundled",
   "Playfair Display · встроенный": "Playfair Display · bundled",
-  "Merriweather · встроенный": "Merriweather · bundled"
+  "Merriweather · встроенный": "Merriweather · bundled",
+  "Дождитесь завершения синхронизации перед установкой помощника.": "Wait for synchronization to finish before installing the helper.",
+  "Конфликты": "Conflicts",
+  "Тип": "Type",
+  "Защитная копия переноса": "Transfer safety copy",
+  "Версия истории": "History version",
+  "Файл и папка: тип назначения будет заменён. Проверьте удаления в плане.": "File versus folder: the destination type will be replaced. Review the planned deletions.",
+  "Защитные копии незавершённых переносов сохраняются даже при выключенной истории. Их можно восстановить в разделе «История».": "Safety copies for interrupted transfers are retained even with optional history off. Restore them from History."
 }

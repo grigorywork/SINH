@@ -36,7 +36,7 @@ public sealed class SyncExecutor(StateStore store)
             await VerifyTreesAsync(plan, progress, token).ConfigureAwait(false);
             var payloads = await PayloadSources.PrepareAsync(plan, work, options, progress, token).ConfigureAwait(false);
             if (payloads.Staged) await VerifyTreesAsync(plan, progress, token).ConfigureAwait(false);
-            var history = new HistoryStore(store.DirectoryPath);
+            var history = new OperationHistory(plan, options, store.DirectoryPath);
             var lastProgress = Environment.TickCount64;
             foreach (var operation in plan.Operations)
             {
@@ -61,14 +61,14 @@ public sealed class SyncExecutor(StateStore store)
                     }).ConfigureAwait(false);
                     var check = await TreeScanner.ReadFileAsync(temporary, entry.RelativePath, token).ConfigureAwait(false);
                     if (!entry.SameContent(check)) throw new IOException("Целевая копия не прошла проверку SHA256.");
-                    if (options.History && operation.Before is { Directory: false } old) await history.ArchiveAsync(request.PairId, target, old, options.HistoryLimitBytes, token, operation.Root == plan.Source.Root ? request.SourceIdentity : request.DestinationIdentity).ConfigureAwait(false);
+                    await history.PreserveAsync(operation, target, token).ConfigureAwait(false);
                     await VerifyEntryAsync(target, operation.Before, token).ConfigureAwait(false); PathRules.RejectLinks(target);
                     token.ThrowIfCancellationRequested(); CheckContext(); File.Move(temporary, target, operation.Before != null); temporary = null; temporaryOwned = false;
                     File.SetLastWriteTimeUtc(target, entry.LastWriteUtc);
                 }
                 else if (operation.Kind == OperationKind.DeleteFile)
                 {
-                    if (options.History) await history.ArchiveAsync(request.PairId, target, operation.Before!, options.HistoryLimitBytes, token, operation.Root == plan.Source.Root ? request.SourceIdentity : request.DestinationIdentity).ConfigureAwait(false);
+                    await history.PreserveAsync(operation, target, token).ConfigureAwait(false);
                     await VerifyEntryAsync(target, operation.Before, token).ConfigureAwait(false); token.ThrowIfCancellationRequested(); CheckContext(); File.Delete(target);
                 }
                 else if (operation.Kind == OperationKind.DeleteDirectory) Directory.Delete(target, false);
@@ -89,6 +89,7 @@ public sealed class SyncExecutor(StateStore store)
             await store.SaveAsync(request.PairId, state, token).ConfigureAwait(false);
             await StateStore.AtomicJsonAsync(journalPath, journal with { Stage = "Завершено", TemporaryPath = null }, CancellationToken.None).ConfigureAwait(false);
             ArchiveJournal(journalPath);
+            await history.CompleteAsync(token, recoveryWarnings.Add).ConfigureAwait(false);
             return state;
         }
         catch (Exception ex)

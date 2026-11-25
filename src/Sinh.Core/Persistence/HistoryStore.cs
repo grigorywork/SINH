@@ -2,7 +2,7 @@ using System.Text.Json;
 
 namespace Sinh.Core;
 
-public sealed record HistoryEntry(Guid Id, Guid PairId, string OriginalPath, string ArchivePath, Entry Version, DateTimeOffset CreatedAt, string? RootIdentity = null);
+public sealed record HistoryEntry(Guid Id, Guid PairId, string OriginalPath, string ArchivePath, Entry Version, DateTimeOffset CreatedAt, string? RootIdentity = null, bool SafetyCopy = false);
 
 public sealed class HistoryStore(string dataDirectory)
 {
@@ -17,7 +17,7 @@ public sealed class HistoryStore(string dataDirectory)
         PathRules.Under(Root, entry.Version.RelativePath);
         PathRules.RejectLinks(entry.ArchivePath);
     }
-    public async Task<HistoryEntry> ArchiveAsync(Guid pairId, string originalPath, Entry version, long limitBytes, CancellationToken token, string? rootIdentity = null)
+    public async Task<HistoryEntry> ArchiveAsync(Guid pairId, string originalPath, Entry version, long limitBytes, CancellationToken token, string? rootIdentity = null, bool safetyCopy = false)
     {
         Directory.CreateDirectory(Root);
         // A store is scoped to one serialized application run. Measure once, account for each committed archive.
@@ -29,7 +29,7 @@ public sealed class HistoryStore(string dataDirectory)
         try
         {
             await VerifiedCopy.CopyAsync(originalPath, archive, version, 0, null, "История", token, () => { owned = true; return Task.CompletedTask; }).ConfigureAwait(false);
-            var entry = new HistoryEntry(id, pairId, originalPath, archive, version, DateTimeOffset.UtcNow, rootIdentity);
+            var entry = new HistoryEntry(id, pairId, originalPath, archive, version, DateTimeOffset.UtcNow, rootIdentity, safetyCopy);
             await StateStore.AtomicJsonAsync(Path.ChangeExtension(archive, ".json"), entry, token).ConfigureAwait(false);
             usedBytes = used + version.Length;
             return entry;

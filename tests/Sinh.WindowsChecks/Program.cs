@@ -62,7 +62,8 @@ internal static class Program
         foreach (var expander in Children<Expander>(settings).ToArray()) expander.IsExpanded = true;
         await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
         Require(Children<Expander>(settings).All(e => e.Content != null), "Lazy settings panel failed");
-        Console.WriteLine("PASS lazy settings sections and three icon previews");
+        Require(Children<Image>(settings).Count(i => i.Width == 64 && i.Source is BitmapSource image && image.PixelWidth > 0) >= 4, "Icon previews are missing");
+        Console.WriteLine("PASS lazy settings sections and four icon previews");
         Capture(settings, "settings-ru");
         GC.Collect(); GC.WaitForPendingFinalizers();
         foreach (var theme in new[] { Theme.Dark, Theme.Light, Theme.Dark })
@@ -101,6 +102,13 @@ internal static class Program
         window.Height = 740; window.MinHeight = 500; viewport.ScrollToHome();
         await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
         Console.WriteLine("PASS small-window scrolling and finite virtualized list viewport");
+        using (var cancelDialog = new CancellationTokenSource())
+        {
+            var dialog = new Window { Title = "Cancellation check", Width = 300, Height = 180 };
+            _ = app.Dispatcher.InvokeAsync(cancelDialog.Cancel, DispatcherPriority.ContextIdle);
+            Require(CancelableDialog.Show(dialog, window, cancelDialog.Token) != true && !dialog.IsVisible, "Cancellation left a modal approval window open");
+        }
+        Console.WriteLine("PASS cancellation closes a modal approval window");
         foreach (var font in FontCatalog.BuiltIns)
         {
             var family = FontCatalog.Resolve("builtin:" + font.Id);

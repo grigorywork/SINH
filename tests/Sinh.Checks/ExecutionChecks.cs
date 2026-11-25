@@ -56,11 +56,41 @@ internal static class ExecutionChecks
             await new SyncExecutor(new(data)).ApplyAsync(plan, new(SpeedLimitMiB: 4), progress);
             require(observed && await File.ReadAllTextAsync(Path.Combine(b, "Folder", "extra.txt")) == "USB extra" && new FileInfo(Path.Combine(b, "Folder", "big.bin")).Length == 2 * 1024 * 1024, "Case rename lost source or USB extra data");
         });
+        await check("cancelled case rename keeps unique USB extras recoverable even when history is disabled", async () =>
+        {
+            var (a, b, data) = Roots(); Directory.CreateDirectory(Path.Combine(a, "Folder")); Directory.CreateDirectory(Path.Combine(b, "folder")); var original = Path.Combine(b, "folder", "unique.txt"); await File.WriteAllTextAsync(original, "unique USB data");
+            var version = await TreeScanner.ReadFileAsync(original, Path.Combine("folder", "unique.txt")); var request = new SyncRequest(Guid.NewGuid(), a, b); var plan = await new ComparisonService().CompareAsync(request); using var cts = new CancellationTokenSource(); var cancelled = false;
+            try { await new SyncExecutor(new(data)).ApplyAsync(plan, new(History: false), new InlineProgress(p => { if (p.Stage == "Применение" && p.Completed >= 1) cts.Cancel(); }), cts.Token); } catch (OperationCanceledException) { cancelled = true; }
+            var visible = await new TreeScanner().ScanAsync(b); var versions = await new HistoryStore(data).ListAsync(request.PairId);
+            require(cancelled && (visible.Entries.Values.Any(e => e.SameContent(version)) || versions.Any(e => e.Version.SameContent(version))), "Cancellation lost the only USB extra version while history was disabled");
+            var safety = versions.Single(e => e.Version.SameContent(version)); require(safety.SafetyCopy, "Interrupted transfer not labelled as a safety copy");
+            var history = new HistoryStore(data); await history.RestoreAsync(safety, [a, b], 1L << 30);
+            require(await File.ReadAllTextAsync(original) == "unique USB data", "Safety copy cannot restore the unique version");
+            await history.DeleteAsync(safety);
+            await new SyncExecutor(new(data)).ApplyAsync(await new ComparisonService().CompareAsync(request), new(History: false));
+            require(await File.ReadAllTextAsync(Path.Combine(b, "Folder", "unique.txt")) == "unique USB data" && (await history.ListAsync(request.PairId)).Count == 0, "Successful transfer did not retain data or clean its temporary safety copy");
+        });
+        await check("full safety area stops a destructive rename even with optional history disabled", async () =>
+        {
+            var (a, b, data) = Roots(); Directory.CreateDirectory(Path.Combine(a, "Folder")); Directory.CreateDirectory(Path.Combine(b, "folder")); var original = Path.Combine(b, "folder", "unique.txt"); await File.WriteAllTextAsync(original, "unique USB data"); var plan = await new ComparisonService().CompareAsync(new(Guid.NewGuid(), a, b)); var refused = false;
+            try { await new SyncExecutor(new(data)).ApplyAsync(plan, new(History: false, HistoryLimitBytes: 1)); } catch (IOException) { refused = true; }
+            require(refused && await File.ReadAllTextAsync(original) == "unique USB data", "Safety quota allowed the only original to be deleted");
+        });
         await check("history limit stops replacement without loss", async () =>
         {
             var (a, b, data) = Roots(); await File.WriteAllTextAsync(Path.Combine(a, "f"), "new"); await File.WriteAllTextAsync(Path.Combine(b, "f"), "old version"); var plan = await new ComparisonService().CompareAsync(new(Guid.NewGuid(), a, b)); var failed = false;
             try { await new SyncExecutor(new(data)).ApplyAsync(plan, new(HistoryLimitBytes: 1)); } catch (IOException) { failed = true; }
             require(failed && await File.ReadAllTextAsync(Path.Combine(b, "f")) == "old version", "History overflow damaged original");
+        });
+        await check("case aliases cannot bypass type replacement permissions or concrete review", async () =>
+        {
+            var (a, b, data) = Roots(); await File.WriteAllTextAsync(Path.Combine(a, "ITEM"), "source file"); Directory.CreateDirectory(Path.Combine(b, "item")); await File.WriteAllTextAsync(Path.Combine(b, "item", "old.txt"), "old child"); await File.WriteAllTextAsync(Path.Combine(b, "item-other.txt"), "unrelated sibling");
+            var request = new SyncRequest(Guid.NewGuid(), a, b); var refused = false; try { await new ComparisonService().CompareAsync(request); } catch (IOException) { refused = true; }
+            require(refused && File.Exists(Path.Combine(b, "item", "old.txt")), "Case alias bypassed disabled deletions");
+            request = request with { AllowDeletes = true }; var plan = await new ComparisonService().CompareAsync(request);
+            require(plan.Conflicts.Count > 0 && PlanReviewPolicy.RequiresReview(plan, true, plan.Fingerprint), "Structural replacement did not require a concrete plan");
+            await new SyncExecutor(new(data)).ApplyAsync(plan, new(History: false));
+            require(await File.ReadAllTextAsync(Path.Combine(b, "ITEM")) == "source file" && await File.ReadAllTextAsync(Path.Combine(b, "item-other.txt")) == "unrelated sibling", "Type replacement retained invalid descendants or changed an unrelated sibling");
         });
         await check("mirror removes with recoverable file versions", async () =>
         {

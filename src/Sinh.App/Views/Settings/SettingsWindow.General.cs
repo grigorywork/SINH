@@ -15,6 +15,11 @@ public sealed partial class SettingsWindow
         startup.Click += async (_, _) =>
         {
             if (changing) return;
+            if (startup.IsChecked == true && !profileChangesAllowed())
+            {
+                startup.IsChecked = store.Current.AutoStart;
+                status.Text = Localizer.T("Дождитесь завершения синхронизации перед установкой помощника."); return;
+            }
             changing = true; startup.IsEnabled = false; var old = store.Current.AutoStart;
             try
             {

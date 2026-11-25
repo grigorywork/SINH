@@ -10,8 +10,17 @@ internal static class OneWayMerge
         TreePolicy.PreserveContainers(desired, b);
         var protectedParents = TreePolicy.ProtectedParents(a, b);
         var aliases = desired.Keys.ToDictionary(path => path, path => path, StringComparer.OrdinalIgnoreCase);
+        var destination = b.Entries.Values.ToDictionary(e => e.RelativePath, StringComparer.OrdinalIgnoreCase);
+        var conflicts = new List<Conflict>();
         foreach (var e in a.Entries.Values.OrderBy(e => e.RelativePath.Length))
         {
+            var replacesType = destination.TryGetValue(e.RelativePath, out var before) && before.Directory != e.Directory;
+            if (replacesType)
+            {
+                if (protectedParents.Contains(e.RelativePath)) throw new IOException("Замена затрагивает каталог с исключёнными данными: " + e.RelativePath);
+                if (!request.AllowDeletes) throw new IOException("Файл и папка имеют одинаковое имя; для замены требуется явное разрешение удалений: " + e.RelativePath);
+                conflicts.Add(new(e.RelativePath, "Файл и папка: тип назначения будет заменён. Проверьте удаления в плане."));
+            }
             // Preserve exact case. A case-only path change is implemented as a staged remove + create.
             if (aliases.TryGetValue(e.RelativePath, out var old) && old != e.RelativePath)
             {
@@ -20,6 +29,7 @@ internal static class OneWayMerge
                 foreach (var child in children)
                 {
                     var value = desired[child]; desired.Remove(child); aliases.Remove(child);
+                    if (replacesType) continue;
                     var renamed = e.RelativePath + child[old.Length..]; desired[renamed] = value with { Entry = value.Entry with { RelativePath = renamed } }; aliases[renamed] = renamed;
                 }
                 desired.Remove(old); aliases.Remove(old);
@@ -32,6 +42,6 @@ internal static class OneWayMerge
             }
             desired[e.RelativePath] = new(e, a.Root, e.RelativePath); aliases[e.RelativePath] = e.RelativePath;
         }
-        return new(desired, []);
+        return new(desired, conflicts);
     }
 }

@@ -73,7 +73,7 @@ internal sealed class BackgroundScheduler : IDisposable
             var exclusions = new ExclusionRules(pair.Exclusions);
             void Signal(string? fullPath)
             {
-                if (disposed || isBusy()) return;
+                if (disposed) return;
                 try
                 {
                     if (fullPath != null && (PathRules.Contains(App.DataDirectory, fullPath) || exclusions.MatchesPathOrParent(Path.GetRelativePath(path, fullPath)))) return;

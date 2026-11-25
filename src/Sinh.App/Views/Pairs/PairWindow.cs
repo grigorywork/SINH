@@ -33,6 +33,7 @@ public sealed class PairWindow : Window
         panel.Children.Add(mode);
         var deletes = new CheckBox { Content = "Разрешить перенос удалений (потребуется план)", IsChecked = pair.AllowDeletes }; panel.Children.Add(deletes);
         var history = new CheckBox { Content = "Сохранять заменённые и удалённые версии", IsChecked = pair.History }; panel.Children.Add(history);
+        panel.Children.Add(new TextBlock { Text = Localizer.T("Защитные копии незавершённых переносов сохраняются даже при выключенной истории. Их можно восстановить в разделе «История»."), TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 4, 0, 8) });
         var connect = new CheckBox { Content = "Автоматически при подключении USB / внешнего носителя", IsChecked = pair.AutoOnConnect }; panel.Children.Add(connect);
         var watch = new CheckBox { Content = "Сверять после изменений файлов (пакетно)", IsChecked = pair.WatchChanges }; panel.Children.Add(watch);
         var interval = Field("Расписание · интервал в минутах, 0 — выключено", pair.IntervalMinutes.ToString());
@@ -46,7 +47,7 @@ public sealed class PairWindow : Window
             try
             {
                 if (string.IsNullOrWhiteSpace(name.Text) || string.IsNullOrWhiteSpace(source.Text) || string.IsNullOrWhiteSpace(target.Text)) throw new ArgumentException("Заполните название и оба пути.");
-                var a = System.IO.Path.GetFullPath(source.Text.Trim()); var b = System.IO.Path.GetFullPath(target.Text.Trim());
+                var a = System.IO.Path.GetFullPath(source.Text); var b = System.IO.Path.GetFullPath(target.Text);
                 if (!int.TryParse(interval.Text, out var minutes) || minutes < 0 || minutes > 10080) throw new ArgumentException("Интервал: целое число от 0 до 10080 минут.");
                 save.IsEnabled = false;
                 await Task.Run(() => Sinh.Core.PathRules.ValidatePair(a, b));

@@ -25,7 +25,7 @@ public sealed class MainViewModel : Observable, IDisposable
     private bool dialogOpen;
     public bool DialogOpen => Volatile.Read(ref dialogOpen);
     public Guid? ActivePairId { get; set; }
-    public void RefreshCommands() { Add.Refresh(); Edit.Refresh(); Pause.Refresh(); Compare.Refresh(); Sync.Refresh(); Stop.Refresh(); History.Refresh(); }
+    public void RefreshCommands() { Add.Refresh(); Edit.Refresh(); Pause.Refresh(); Compare.Refresh(); Sync.Refresh(); Stop.Refresh(); History.Refresh(); Settings.Refresh(); }
     private string status = "Создайте пару папок. Новые пары запускаются вручную.";
     private object?[] statusArgs = [];
     private Exception? error;
@@ -40,14 +40,14 @@ public sealed class MainViewModel : Observable, IDisposable
     public MainViewModel(SettingsStore store)
     {
         Store = store;
-        Add = new(() => EditPair(null), () => !Busy);
-        Edit = new(() => EditPair(Selected?.Pair), () => Selected != null && !Busy);
-        Pause = new(async () => { var id = Selected!.Pair.Id; if (ActivePairId == id) CancelRun?.Invoke(); await Store.UpdateAsync(s => s with { Pairs = s.Pairs.Select(p => p.Id == id ? p with { Paused = !p.Paused } : p).ToArray() }); }, () => Selected != null && (!Busy || ActivePairId == Selected.Pair.Id));
-        Compare = new(async () => { if (RunPair != null) await RunPair(Selected!, false); }, () => Selected != null && RunPair != null && !Busy);
-        Sync = new(async () => { if (RunPair != null) await RunPair(Selected!, true); }, () => Selected != null && RunPair != null && !Busy && Selected.Pair.Paused == false);
+        Add = new(() => EditPair(null), () => !Busy && !DialogOpen);
+        Edit = new(() => EditPair(Selected?.Pair), () => Selected != null && !Busy && !DialogOpen);
+        Pause = new(async () => { var id = Selected!.Pair.Id; if (ActivePairId == id) CancelRun?.Invoke(); await Store.UpdateAsync(s => s with { Pairs = s.Pairs.Select(p => p.Id == id ? p with { Paused = !p.Paused } : p).ToArray() }); }, () => Selected != null && !DialogOpen && (!Busy || ActivePairId == Selected.Pair.Id));
+        Compare = new(async () => { if (RunPair != null) await RunPair(Selected!, false); }, () => Selected != null && RunPair != null && !Busy && !DialogOpen);
+        Sync = new(async () => { if (RunPair != null) await RunPair(Selected!, true); }, () => Selected != null && RunPair != null && !Busy && !DialogOpen && Selected.Pair.Paused == false);
         Stop = new(() => { CancelRun?.Invoke(); return Task.CompletedTask; }, () => Busy);
-        Settings = new(() => { ShowModal(new SettingsWindow(Store, () => !Busy)); return Task.CompletedTask; });
-        History = new(() => { ShowModal(new HistoryWindow(Selected!.Pair, Store.Current.HistoryLimitMiB * 1048576)); return Task.CompletedTask; }, () => Selected != null && !Busy);
+        Settings = new(() => { ShowModal(new SettingsWindow(Store, () => !Busy)); return Task.CompletedTask; }, () => !DialogOpen);
+        History = new(() => { ShowModal(new HistoryWindow(Selected!.Pair, Store.Current.HistoryLimitMiB * 1048576)); return Task.CompletedTask; }, () => Selected != null && !Busy && !DialogOpen);
         Store.Changed += OnChanged;
         Localizer.Current.PropertyChanged += LocaleChanged;
         Load(store.Current);
@@ -76,16 +76,21 @@ public sealed class MainViewModel : Observable, IDisposable
     }
     private bool? ShowModal(Window window)
     {
-        dialogOpen = true;
+        dialogOpen = true; RefreshCommands();
         try { window.Owner = System.Windows.Application.Current.MainWindow; return window.ShowDialog(); }
-        finally { dialogOpen = false; }
+        finally { dialogOpen = false; RefreshCommands(); }
     }
     private async Task EditPair(FolderPair? pair)
     {
-        var dialog = new PairWindow(pair);
-        if (ShowModal(dialog) != true || dialog.Result is not { } result) return;
-        await Task.Run(() => PairBoundaries.Validate(result, Store.Current.Pairs));
-        await Store.UpdateAsync(s => s with { Pairs = pair == null ? [.. s.Pairs, result] : s.Pairs.Select(p => p.Id == result.Id ? result : p).ToArray() });
+        dialogOpen = true; RefreshCommands();
+        try
+        {
+            var dialog = new PairWindow(pair) { Owner = System.Windows.Application.Current.MainWindow };
+            if (dialog.ShowDialog() != true || dialog.Result is not { } result) return;
+            await Task.Run(() => PairBoundaries.Validate(result, Store.Current.Pairs));
+            await Store.UpdateAsync(s => s with { Pairs = pair == null ? [.. s.Pairs, result] : s.Pairs.Select(p => p.Id == result.Id ? result with { Paused = p.Paused } : p).ToArray() });
+        }
+        finally { dialogOpen = false; RefreshCommands(); }
     }
     public void Dispose() { Store.Changed -= OnChanged; Localizer.Current.PropertyChanged -= LocaleChanged; }
 }

@@ -8,7 +8,7 @@ if (args.Length > 0 && args[0] == "--soak")
     var seed = args.Length > 2 ? int.Parse(args[2]) : 900000;
     var report = args.Length > 3 ? args[3] : "artifacts/soak-report.json";
     var minimumCases = args.Length > 4 ? int.Parse(args[4]) : 0;
-    return await SoakChecks.RunAsync(seconds, seed, report, minimumCases);
+    return await SoakChecks.RunAsync(seconds, seed, report, minimumCases, args.Contains("--no-history"));
 }
 
 var failures = 0;

@@ -50,9 +50,9 @@ public partial class App : System.Windows.Application
             MainWindow = window;
             tray = new TrayService(Store);
             configurationBackups = new ConfigurationBackups(Store);
-            window.Show();
             ShutdownMode = ShutdownMode.OnMainWindowClose;
-            if (e.Args.Contains("--background") || (e.Args.Contains("--startup") && Store.Current.StartMinimized)) window.Hide();
+            var background = e.Args.Contains("--background") || (e.Args.Contains("--startup") && Store.Current.StartMinimized);
+            if (!background) window.Show();
             if (Store.RecoveryMessage != null) MessageBox.Show(window, Store.RecoveryMessage, "SINH");
         }
         catch (Exception ex) { MessageBox.Show(ex.Message, "SINH — ошибка запуска"); Shutdown(1); }

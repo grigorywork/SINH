@@ -19,3 +19,5 @@ MaterialDesignInXamlToolkit: https://github.com/MaterialDesignInXAML/MaterialDes
 По последнему референсу владельца зеркальный голубой концепт включён как mirror.png/mirror.ico и выбран по умолчанию для нового профиля. PNG копируется без творческих изменений; ICO получен конвертацией Pillow в 16/24/32/48/64/128/256 px. Три первоначальных варианта сохранены.
 
 Лицензии MaterialDesignThemes/Colors получены из закреплённого commit 14223ece627401f4e987fdd4ba2b1ac5674977ff, XamlBehaviors — eaf05bcb7395e3fbbb930f863180defc8e9928f7. Уведомления и лицензии .NET/WindowsDesktop взяты из runtime NuGet 10.0.15. Тексты в Assets/Licenses встроены в EXE и приложены к пакету.
+
+Также сохранены Noto OFL из того же pinned toolkit commit и отдельные Apache 2.0/Google notices для Roboto, встроенного в MaterialDesignThemes (метаданные TTF). Это отдельная поставка от Roboto NoteLS под OFL. Инспекция ресурсов подтверждает 20 TTF SINH и 18 TTF MaterialDesignThemes; GUI-глифы пока не проверялись на Windows.

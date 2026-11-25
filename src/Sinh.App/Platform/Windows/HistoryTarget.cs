@@ -4,7 +4,7 @@ using Sinh.Settings;
 
 namespace Sinh.App;
 
-internal sealed record HistoryTarget(HistoryEntry Entry, string Root, Func<bool> Available)
+internal sealed record HistoryTarget(HistoryEntry Entry, string Root, Func<bool> Available, string DisplayPath)
 {
     internal static HistoryTarget Resolve(HistoryEntry entry, FolderPair pair)
     {
@@ -18,7 +18,7 @@ internal sealed record HistoryTarget(HistoryEntry Entry, string Root, Func<bool>
             var relative = entry.RootIdentity != null ? entry.Version.RelativePath : PathRules.RelativeTo(configured, entry.OriginalPath);
             var stableRoot = PathRules.StableRoot(root);
             var target = PathRules.Under(stableRoot, relative);
-            return new(entry with { OriginalPath = target }, stableRoot, () => Directory.Exists(stableRoot) && (identity == null || WindowsVolumes.IdentityMatches(identity, stableRoot)));
+            return new(entry with { OriginalPath = target }, stableRoot, () => Directory.Exists(stableRoot) && (identity == null || WindowsVolumes.IdentityMatches(identity, stableRoot)), Path.Combine(root, relative));
         }
         throw new IOException("Исходная папка этой версии больше не входит в текущую пару.");
     }

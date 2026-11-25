@@ -4,7 +4,7 @@ using Sinh.Core;
 
 internal static class SoakChecks
 {
-    internal static async Task<int> RunAsync(int seconds, int seed, string reportPath, int minimumCases = 0)
+    internal static async Task<int> RunAsync(int seconds, int seed, string reportPath, int minimumCases = 0, bool noHistory = false)
     {
         var started = DateTimeOffset.UtcNow;
         var clock = Stopwatch.StartNew();
@@ -16,7 +16,7 @@ internal static class SoakChecks
         Directory.CreateDirectory(root);
         async Task SaveReport(bool completed)
         {
-            var report = new { StartedAt = started, UpdatedAt = DateTimeOffset.UtcNow, Completed = completed, DurationSeconds = clock.Elapsed.TotalSeconds, RequestedSeconds = seconds, MinimumCases = minimumCases, Seed = seed, Iterations = iterations, Cancellations = cancellations, Guarded = guarded, FailureCount = failureCount, Failures = failures, Samples = samples, OS = System.Runtime.InteropServices.RuntimeInformation.OSDescription, Architecture = System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture.ToString(), CoreVersion = typeof(SyncExecutor).Assembly.GetName().Version?.ToString(), CoreSHA256 = assemblyHash, FixtureRoot = root };
+            var report = new { StartedAt = started, UpdatedAt = DateTimeOffset.UtcNow, Completed = completed, DurationSeconds = clock.Elapsed.TotalSeconds, RequestedSeconds = seconds, MinimumCases = minimumCases, OptionalHistory = !noHistory, Generator = noHistory ? "case-rename-and-pending-source-retention" : "standard", Seed = seed, Iterations = iterations, Cancellations = cancellations, Guarded = guarded, FailureCount = failureCount, Failures = failures, Samples = samples, OS = System.Runtime.InteropServices.RuntimeInformation.OSDescription, Architecture = System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture.ToString(), CoreVersion = typeof(SyncExecutor).Assembly.GetName().Version?.ToString(), CoreSHA256 = assemblyHash, FixtureRoot = root };
             Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(reportPath))!);
             await File.WriteAllTextAsync(reportPath + ".tmp", JsonSerializer.Serialize(report, new JsonSerializerOptions { WriteIndented = true }));
             File.Move(reportPath + ".tmp", reportPath, true);
@@ -28,7 +28,7 @@ internal static class SoakChecks
             var folder = Path.Combine(root, iterations.ToString("D8"));
             try
             {
-                var result = await RunCase(folder, caseSeed);
+                var result = await RunCase(folder, caseSeed, !noHistory);
                 if (result == "cancelled") cancellations++;
                 if (result == "guarded") guarded++;
                 Directory.Delete(folder, true);
@@ -59,7 +59,7 @@ internal static class SoakChecks
         return failureCount == 0 ? 0 : 1;
     }
 
-    private static async Task<string> RunCase(string folder, int seed)
+    private static async Task<string> RunCase(string folder, int seed, bool keepHistory)
     {
         var random = new Random(seed);
         var a = Path.Combine(folder, "A"); var b = Path.Combine(folder, "USB", "Copies");
@@ -89,9 +89,24 @@ internal static class SoakChecks
         var request = new SyncRequest(Guid.NewGuid(), a, b, mode, allowDeletes);
         var store = new StateStore(Path.Combine(folder, "app-data")); var executor = new SyncExecutor(store); var compare = new ComparisonService(); var scanner = new TreeScanner();
         ConfirmedState state;
-        try { state = await executor.ApplyAsync(await compare.CompareAsync(request)); }
+        try { state = await executor.ApplyAsync(await compare.CompareAsync(request), new(History: keepHistory)); }
         catch (IOException ex) when (ex.Message.Contains("для замены требуется", StringComparison.Ordinal)) { return "guarded"; }
         for (var i = 0; i < 7; i++) Mutate(random.Next(2) == 0 ? a : b);
+        if (!keepHistory)
+        {
+            var changeRoot = random.Next(2) == 0 ? a : b;
+            var candidates = Directory.GetDirectories(changeRoot, "*", SearchOption.AllDirectories);
+            if (candidates.Length > 0)
+            {
+                var oldPath = candidates[random.Next(candidates.Length)]; var parent = Path.GetDirectoryName(oldPath)!;
+                var newName = Path.GetFileName(oldPath).ToUpperInvariant(); var newPath = Path.Combine(parent, newName);
+                if (newName != Path.GetFileName(oldPath) && !Directory.EnumerateDirectories(parent).Any(p => string.Equals(p, newPath, StringComparison.Ordinal)))
+                {
+                    var temporary = Path.Combine(parent, ".case-rename-" + Guid.NewGuid().ToString("N"));
+                    Directory.Move(oldPath, temporary); Directory.Move(temporary, newPath);
+                }
+            }
+        }
         var beforeA = await scanner.ScanAsync(a); var beforeB = await scanner.ScanAsync(b);
         var protectedTypeCollisionHashes = new HashSet<string>();
         if (mode == SyncMode.TwoWay)
@@ -111,7 +126,7 @@ internal static class SoakChecks
         var injectCancellation = random.Next(5) == 0;
         var progress = new ImmediateProgress(p => { if (injectCancellation && p.Stage == "Применение" && p.Completed >= 1) cts.Cancel(); });
         var cancelled = false;
-        try { await executor.ApplyAsync(plan, progress: progress, token: cts.Token); }
+        try { await executor.ApplyAsync(plan, new(History: keepHistory), progress: progress, token: cts.Token); }
         catch (OperationCanceledException) { cancelled = true; }
         if (await File.ReadAllTextAsync(outside) != "unrelated USB payload") throw new Exception("Unrelated USB file changed");
         var afterA = await scanner.ScanAsync(a); var afterB = await scanner.ScanAsync(b);
@@ -120,6 +135,19 @@ internal static class SoakChecks
         if (afterA.Entries.Values.Concat(afterB.Entries.Values).Any(e => !e.Directory && !validHashes.Contains(e.Hash))) throw new Exception("Truncated or unknown file content after application");
         if (cancelled)
         {
+            var live = afterA.Entries.Values.Concat(afterB.Entries.Values).Where(e => !e.Directory).Select(e => e.Hash).ToHashSet();
+            var required = plan.Operations.Where(o => o.Kind == OperationKind.CopyFile).Select(o => o.After!.Hash).ToHashSet();
+            required.ExceptWith(live);
+            if (required.Count > 0)
+            {
+                foreach (var entry in await new HistoryStore(store.DirectoryPath).ListAsync(request.PairId))
+                {
+                    if (!required.Contains(entry.Version.Hash)) continue;
+                    var archived = await TreeScanner.ReadFileAsync(entry.ArchivePath, entry.Version.RelativePath);
+                    if (archived.SameContent(entry.Version)) required.Remove(entry.Version.Hash);
+                }
+                if (required.Count > 0) throw new Exception("Cancellation lost a source version still needed by the confirmed plan");
+            }
             var saved = await store.LoadAsync(request.PairId);
             if (saved?.ConfirmedAt != state.ConfirmedAt) throw new Exception("Cancellation advanced confirmed baseline");
             await executor.RecoverAsync(); return "cancelled";

@@ -1,0 +1,113 @@
+name: Publish verified portable preview
+on:
+  workflow_dispatch:
+    inputs:
+      asset_ref:
+        description: Temporary release-assets branch containing the signed archives
+        required: true
+      tag:
+        description: Preview release tag
+        required: true
+permissions:
+  contents: read
+concurrency:
+  group: publish-${{ inputs.tag }}
+  cancel-in-progress: false
+jobs:
+  smoke:
+    runs-on: windows-2025
+    timeout-minutes: 10
+    outputs:
+      report: ${{ steps.smoke.outputs.report }}
+    steps:
+      - name: Validate requested transport branch
+        shell: pwsh
+        env:
+          ASSET_REF: ${{ inputs.asset_ref }}
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: |
+          if ($env:ASSET_REF -notmatch '^release-assets/v[0-9A-Za-z.-]+$' -or $env:RELEASE_TAG -notmatch '^v[0-9A-Za-z.-]+$') { throw 'Invalid release ref.' }
+          if ($env:ASSET_REF -ne ('release-assets/' + $env:RELEASE_TAG)) { throw 'Tag/ref mismatch.' }
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ inputs.asset_ref }}
+      - name: Check signed portable and launch exact packaged EXE
+        id: smoke
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          foreach ($line in Get-Content SHA256SUMS.txt) {
+            if ($line -notmatch '^([a-fA-F0-9]{64})  ([A-Za-z0-9_.-]+)$') { throw 'Invalid checksum entry.' }
+            if ((Get-FileHash -LiteralPath $Matches[2] -Algorithm SHA256).Hash -ne $Matches[1]) { throw 'Archive checksum mismatch.' }
+          }
+          $meta = Get-Content RELEASE.json -Raw | ConvertFrom-Json
+          $validation = (& gh api "repos/$env:REPOSITORY/actions/runs/$($meta.ValidationRun)" | ConvertFrom-Json)
+          if ($LASTEXITCODE -ne 0 -or $validation.conclusion -ne 'success' -or $validation.head_sha -ne $meta.CodeCommit) { throw 'Source Windows validation is not successful for this commit.' }
+          $portable = Get-ChildItem '*-win-x64-portable.zip' | Select-Object -First 1
+          Expand-Archive -LiteralPath $portable.FullName -DestinationPath package
+          $exe = Join-Path (Resolve-Path package) 'SINH.exe'
+          $hash = (Get-FileHash -LiteralPath $exe -Algorithm SHA256).Hash
+          if ($hash -ne $meta.ExecutableSHA256) { throw 'EXE checksum mismatch.' }
+          $signature = Get-AuthenticodeSignature -LiteralPath $exe
+          if ($signature.Status -notin @('Valid', 'NotTrusted') -or $null -eq $signature.SignerCertificate) { throw "Invalid Authenticode signature: $($signature.Status)" }
+          $certificateHash = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($signature.SignerCertificate.RawData))
+          if ($certificateHash -ne $meta.Signature.CertificateSHA256) { throw 'Unexpected signing certificate.' }
+          $process = Start-Process -FilePath $exe -PassThru
+          try {
+            $ready = $false
+            for ($i = 0; $i -lt 60; $i++) {
+              Start-Sleep -Milliseconds 500
+              $process.Refresh()
+              if ($process.HasExited) { throw 'Packaged EXE exited before its window was ready.' }
+              if ($process.MainWindowHandle -ne 0 -and $process.MainWindowTitle -eq 'SINH') { $ready = $true; break }
+            }
+            if (-not $ready) { throw "SINH main window did not appear; title: $($process.MainWindowTitle)" }
+            if (-not $process.CloseMainWindow() -or -not $process.WaitForExit(15000)) { throw 'Packaged EXE did not close normally.' }
+            $report = @{ OS = [Environment]::OSVersion.VersionString; Architecture = 'x64'; PackagedExe = 'Launched SINH window and closed normally'; ExecutableSHA256 = $hash; Authenticode = $signature.Status.ToString(); TrustStoreModified = $false; ValidationRun = $meta.ValidationRun; AtUTC = [DateTime]::UtcNow.ToString('o') } | ConvertTo-Json -Compress
+            "report=$report" | Add-Content $env:GITHUB_OUTPUT
+            Write-Output $report
+          } finally { if (-not $process.HasExited) { $process.Kill() } }
+  publish:
+    needs: smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ inputs.asset_ref }}
+      - name: Publish already signed artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          RELEASE_TAG: ${{ inputs.tag }}
+          SMOKE_REPORT: ${{ needs.smoke.outputs.report }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          sha256sum -c SHA256SUMS.txt
+          python3 - <<'PY'
+          import os,json,zipfile,hashlib
+          from pathlib import Path
+          meta=json.loads(Path('RELEASE.json').read_text())
+          assert os.environ['RELEASE_TAG']=='v'+meta['Version']
+          archive=next(Path('.').glob('*-win-x64-portable.zip'))
+          with zipfile.ZipFile(archive) as z:
+              for name in ('SINH.exe','MSS9LN-preview.cer'):
+                  Path(name).write_bytes(z.read(name))
+          assert hashlib.sha256(Path('SINH.exe').read_bytes()).hexdigest()==meta['ExecutableSHA256']
+          Path('windows-packaged-smoke.json').write_text(os.environ['SMOKE_REPORT']+'\n')
+          PY
+          source_commit=$(python3 -c 'import json; print(json.load(open("RELEASE.json"))["SourceArchiveCommit"])')
+          if gh release view "$RELEASE_TAG" --repo "$REPOSITORY" --json isDraft >/dev/null 2>&1; then
+            test "$(gh release view "$RELEASE_TAG" --repo "$REPOSITORY" --json isDraft --jq .isDraft)" = true
+          else
+            gh release create "$RELEASE_TAG" --repo "$REPOSITORY" --target "$source_commit" --draft --prerelease --title "SINH ${RELEASE_TAG#v}" --notes-file RELEASE-NOTES.md
+          fi
+          sha256sum SINH.exe MSS9LN-preview.cer windows-packaged-smoke.json >> SHA256SUMS.txt
+          gh release upload "$RELEASE_TAG" --repo "$REPOSITORY" --clobber ./*.zip ./*.bundle SINH.exe MSS9LN-preview.cer RELEASE.json windows-packaged-smoke.json SHA256SUMS.txt
+          gh release edit "$RELEASE_TAG" --repo "$REPOSITORY" --draft=false --prerelease

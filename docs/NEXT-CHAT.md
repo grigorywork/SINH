@@ -35,3 +35,5 @@ GitHub creation заблокирована правами интеграции (
 Windows run45687751429: **61/61 ядра PASS**, включая длинные Unicode пути и restore. WPF harness упал до окон из-за запрещённой смены Application.ResourceAssembly при существующей entry assembly. Убрано присваивание; URI ресурсов App теперь явно SINH;component через AssetUris, чтобы работать и из тест-хоста, и из EXE.
 
 Windows run45688434617: engine61/61; WPF достиг настоящего MainWindow и выявил TwoWay по умолчанию у ProgressBar.Value для read-only ProgressValue. Явно задан Mode=OneWay. Следующий прогон обязателен перед публичной сборкой.
+
+Windows run45688690683: engine61/61, WPF MainWindow открылся; найден пропавший icon, потому что implicit Style TargetType=Window не наследуется производными Window-классами. WindowLoaded теперь явно присоединяет общий window style, сохраняя локально выбранный style.

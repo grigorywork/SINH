@@ -31,6 +31,9 @@ internal sealed class AppearanceService : IDisposable
     {
         if (active == null || !active.TryGetTarget(out var service)) return;
         var window = (Window)sender;
+        // WPF implicit styles do not flow from Window to derived MainWindow/SettingsWindow types.
+        if (window.ReadLocalValue(FrameworkElement.StyleProperty) == DependencyProperty.UnsetValue)
+            window.SetResourceReference(FrameworkElement.StyleProperty, typeof(Window));
         if (!(bool)window.GetValue(DpiHookedProperty))
         {
             window.SetValue(DpiHookedProperty, true);

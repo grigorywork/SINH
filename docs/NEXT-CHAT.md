@@ -28,3 +28,6 @@ GitHub creation заблокирована правами интеграции (
 
 ## Доступ к GitHub предоставлен
 Владелец создал grigorywork/SINH, public; API подтвердил push/admin. Удалённый первоначальный README объединён с локальным исходником с сохранением обеих Git-историй. Далее push main, Windows CI и публичный preview Release с проверенными артефактами.
+
+## Первый Windows CI
+Исходники успешно опубликованы в public grigorywork/SINH, main36e0076. Run45687215216 на Windows Server2025/10.0.26100 собрал все проекты без warning, но ядро60/61: восстановление пути>500 упало в P/Invoke CreateFileW без extended prefix. Исправлено добавлением \\?\ / \\?\UNC\ до native CreateFile; существующая регрессия проверяет реальный случай. Кандидат повышен до0.4.0-preview.2, старыйv1 остаётся draft. Нужен повтор Windows CI и новый подписанный portable.

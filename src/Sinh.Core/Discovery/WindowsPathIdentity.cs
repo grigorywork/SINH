@@ -24,7 +24,11 @@ internal static class WindowsPathIdentity
 
     private static Identity Read(string path)
     {
-        using var handle = CreateFile(path, 0x80, 7, IntPtr.Zero, 3, 0x02000000, IntPtr.Zero);
+        // P/Invoke does not add .NET's long-path prefix; callers include console/test hosts without our manifest.
+        var native = Path.GetFullPath(path);
+        if (!native.StartsWith(@"\\?\", StringComparison.Ordinal))
+            native = native.StartsWith(@"\\", StringComparison.Ordinal) ? @"\\?\UNC\" + native[2..] : @"\\?\" + native;
+        using var handle = CreateFile(native, 0x80, 7, IntPtr.Zero, 3, 0x02000000, IntPtr.Zero);
         if (handle.IsInvalid) throw new IOException("Не удалось проверить физический путь: " + path, new Win32Exception(Marshal.GetLastWin32Error()));
         if (!GetFileInformationByHandle(handle, out var info)) throw new IOException("Не удалось проверить идентичность папки: " + path, new Win32Exception(Marshal.GetLastWin32Error()));
         var buffer = new StringBuilder(32768);

@@ -34,3 +34,6 @@
 
 ### Фактическое завершение проверок и preview
 Fix hour3600.038с/62921/0. Optimization3605.204с/69111/0 прерван после часа до min73000; supplement268.562с/3889/0 на следующих seeds завершил цель. Пауза12:49–19:08 не включена. Финальный Core0845f11 отдельно58/58 и327.976с/5000/0 без обычной истории. App-only анимации и WindowsChecks собраны; Windows runtime не запускался. Authenticode self-signed MSS9LN проверена с явным CAfile, без изменения trust store. Финальный EXE SHA b6a9adc373b3e5c5ec5079d4c76f4ac7a1b42b33e05c6f4107fdc19a712bdc86. GitHub creation по-прежнему запрещено интеграцией.
+
+### Публикация и Windows
+Public main загружен с объединением истории владельца. Первый Windows Server2025 CI: build0 warnings/errors, 60/61 engine, WPF ещё не запущен из-за отказа engine. Найден и исправляется native long-path prefix, version0.4.0-preview.2.

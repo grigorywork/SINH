@@ -66,11 +66,17 @@ public sealed class SyncPlanner
             return candidate;
         }
         var redirects = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        var preservedSourceDirectories = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         bool Same(Entry? x, Entry? y) => x == null ? y == null : x.SameContent(y) && x.RelativePath == y!.RelativePath;
         void Put(Entry? entry, string root) { if (entry != null) desired[entry.RelativePath] = new(entry, root, entry.RelativePath); }
         foreach (var path in names)
         {
             var av = ai.GetValueOrDefault(path); var bv = bi.GetValueOrDefault(path);
+            if(preservedSourceDirectories.Any(parent=>path.StartsWith(parent+Path.DirectorySeparatorChar,StringComparison.OrdinalIgnoreCase)))
+            {
+                Put(av,a.Root);
+                continue;
+            }
             // Preserve entire alternate B subtree for a file/directory collision.
             var redirect = redirects.Keys.Where(k => path.StartsWith(k + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)).OrderByDescending(k => k.Length).FirstOrDefault();
             if (redirect != null && bv != null)
@@ -84,6 +90,7 @@ public sealed class SyncPlanner
                 Put(av, a.Root); var alternate = Alternative(bv.RelativePath, bv.Hash);
                 desired[alternate] = new(bv with { RelativePath = alternate }, b.Root, bv.RelativePath);
                 if (bv.Directory) redirects[bv.RelativePath] = alternate;
+                else if(av.Directory)preservedSourceDirectories.Add(av.RelativePath);
                 conflicts.Add(new(path, "Файл и папка: обе версии сохранены, USB-версия переименована.")); continue;
             }
             var changedA = !Same(av, ba.GetValueOrDefault(path)); var changedB = !Same(bv, bb.GetValueOrDefault(path));

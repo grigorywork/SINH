@@ -10,3 +10,5 @@ Font license texts obtained from the corresponding upstream Google Fonts directo
 - manrope: https://github.com/google/fonts/tree/main/ofl/manrope
 - playfair: https://github.com/google/fonts/tree/main/ofl/playfairdisplay
 - merriweather: https://github.com/google/fonts/tree/main/ofl/merriweather
+
+Windows compatibility: Merriweather regular/bold and OFL are unmodified upstream static v2.002 files from google/fonts commit b848f42f0bc0a8bc53588c3688ca37890e1db0bd (ofl/merriweather), replacing NoteLS-derived files rejected by WPF. Other families remain pinned NoteLS assets. Exact URLs and hashes are in manifest.json.

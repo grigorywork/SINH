@@ -39,3 +39,5 @@ Windows run45688434617: engine61/61; WPF достиг настоящего MainW
 Windows run45688690683: engine61/61, WPF MainWindow открылся; найден пропавший icon, потому что implicit Style TargetType=Window не наследуется производными Window-классами. WindowLoaded теперь явно присоединяет общий window style, сохраняя локально выбранный style.
 
 Windows run45689082987: MainWindow/theme/icons/lazy sections/GC/scales/glass draft/English/small window/cancel-dialog PASS. Выявлено WPF имя семейства Merriweather: pinned static TTF содержит legacy name ID1 «Merriweather Light», weight400/700. URI ссылается на legacy имя, UI-имя сохраняется Merriweather; файлы и OFL Reserved Font Name не менялись.
+
+Пользователю выдан отдельный самоподписанный EXE0.4.0-preview.2 (SHAa5f9453c5616b73feae4f8b6aa4de5b07e3bf621094124361c5f7524b26f17f6), с честно обозначенным дефектом дополнительного Merriweather. Публичный финальный preview повышен до.3: Merriweather заменён на оригинальные static2.002 Google Fonts b848f42f0bc0a8bc53588c3688ca37890e1db0bd, с исходной OFL и обновлённым manifest; другие9семейств не менялись. Новый Windows CI обязателен.

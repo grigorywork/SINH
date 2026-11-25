@@ -163,21 +163,21 @@
   },
   {
     "path": "src/Sinh.App/Assets/Fonts/merriweather/merriweather_regular.ttf",
-    "url": "https://raw.githubusercontent.com/grigorywork/NoteLS/b1f4b1f8be850c5d63349cc63618b4a478cf3eff/app/src/main/res/font/merriweather_regular.ttf",
-    "sha256": "9a7b87766002a5968968a6faa5cdafa03cf84bfe0c8e908ba8acf0991f88b401",
-    "bytes": 827672
+    "url": "https://raw.githubusercontent.com/google/fonts/b848f42f0bc0a8bc53588c3688ca37890e1db0bd/ofl/merriweather/Merriweather-Regular.ttf",
+    "sha256": "bc38fe756b3e259248183fc0b75ad81b02774f3ca68e5e544e925827b0186d40",
+    "bytes": 156096
   },
   {
     "path": "src/Sinh.App/Assets/Fonts/merriweather/merriweather_bold.ttf",
-    "url": "https://raw.githubusercontent.com/grigorywork/NoteLS/b1f4b1f8be850c5d63349cc63618b4a478cf3eff/app/src/main/res/font/merriweather_bold.ttf",
-    "sha256": "1ebb979923f83a6251433eb8a8ee28aaceaec3c20dd9e1270c58e699a089ee91",
-    "bytes": 827652
+    "url": "https://raw.githubusercontent.com/google/fonts/b848f42f0bc0a8bc53588c3688ca37890e1db0bd/ofl/merriweather/Merriweather-Bold.ttf",
+    "sha256": "55139769a87085bff777f68e3ecf92450c21a04c5ddd1e9e9528960ba4088c9f",
+    "bytes": 149112
   },
   {
     "path": "src/Sinh.App/Assets/Fonts/merriweather/LICENSE.txt",
-    "url": "https://raw.githubusercontent.com/grigorywork/NoteLS/b1f4b1f8be850c5d63349cc63618b4a478cf3eff/app/src/main/assets/font-licenses/merriweather.txt",
-    "sha256": "715bd349bfa6116f99e351e1548321dcfa25b91df65502d22ca8d624557697d2",
-    "bytes": 4438
+    "url": "https://raw.githubusercontent.com/google/fonts/b848f42f0bc0a8bc53588c3688ca37890e1db0bd/ofl/merriweather/OFL.txt",
+    "sha256": "a7ba785ad99b6eae0444ab89910e512d4af9865937fddbcb5c72c4f59f55d6ad",
+    "bytes": 4437
   },
   {
     "path": "src/Sinh.App/Assets/Fonts/SOURCES.md",

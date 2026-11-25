@@ -24,10 +24,8 @@ internal static class FontCatalog
             {
                 var id = key[8..];
                 var entry = BuiltIns.FirstOrDefault(f => f.Id == id);
-                // The pinned static Merriweather files retain this legacy name (name ID 1); WPF uses it.
-                var familyName = entry.Id == "merriweather" ? "Merriweather Light" : entry.Name;
                 family = entry.Id != null
-                    ? new FontFamily(AssetUris.Base, $"./Assets/Fonts/{entry.Id}/#{familyName}")
+                    ? new FontFamily(AssetUris.Base, $"./Assets/Fonts/{entry.Id}/#{entry.Name}")
                     : System.Windows.SystemFonts.MessageFontFamily;
             }
             else family = key switch

@@ -21,3 +21,5 @@ MaterialDesignInXamlToolkit: https://github.com/MaterialDesignInXAML/MaterialDes
 Лицензии MaterialDesignThemes/Colors получены из закреплённого commit 14223ece627401f4e987fdd4ba2b1ac5674977ff, XamlBehaviors — eaf05bcb7395e3fbbb930f863180defc8e9928f7. Уведомления и лицензии .NET/WindowsDesktop взяты из runtime NuGet 10.0.15. Тексты в Assets/Licenses встроены в EXE и приложены к пакету.
 
 Также сохранены Noto OFL из того же pinned toolkit commit и отдельные Apache 2.0/Google notices для Roboto, встроенного в MaterialDesignThemes (метаданные TTF). Это отдельная поставка от Roboto NoteLS под OFL. Инспекция ресурсов подтверждает 20 TTF SINH и 18 TTF MaterialDesignThemes; GUI-глифы пока не проверялись на Windows.
+
+Для Windows WPF Merriweather заменён на немодифицированные upstream static v2.002 regular/bold/OFL: google/fonts commit b848f42f0bc0a8bc53588c3688ca37890e1db0bd, ofl/merriweather. Исходные NoteLS-файлы с несовместимыми WPF метаданными не использованы в окончательном preview. Reserved Font Name не менялся; новые SHA/URL зафиксированы в manifest.

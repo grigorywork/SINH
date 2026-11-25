@@ -38,7 +38,26 @@ internal static class SelectionChecks
         Require(WindowsVolumes.Resolve(profile, new Dictionary<Guid, string>()) == null, "Disconnected USB source was treated as available");
         var fromUsb = new DirectionWindow(UsbSide.Source) { Owner = owner }; fromUsb.Show(); await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
         Require(((Panel)((ScrollViewer)fromUsb.Content).Content).Children.OfType<WrapPanel>().Single().Children.OfType<Button>().Any(b => b.Content?.ToString()?.Contains("A → B") == true), "USB-source direction is missing"); fromUsb.Close();
+        var sourceA = System.IO.Path.Combine(directory, "Исходная Я" + new string('x', 100));
+        var sourceB = System.IO.Path.Combine(directory, "English 🌊");
+        var target = System.IO.Path.Combine(directory, "Copies");
+        foreach (var path in new[] { sourceA, sourceB, target }) System.IO.Directory.CreateDirectory(path);
+        var roots = FolderSelection.Map([sourceA, sourceB], target, true);
+        var draft = new FolderPairDraft(new(), true, "Batch", roots, target, true, UsbSide.Source, SyncMode.Updates, false, true, false, false, 0, []);
+        var created = await Task.Run(() => draft.Build([]));
+        Require(created.Length == 2 && created.Select(p => p.Id).Distinct().Count() == 2 && created.All(p => p.SourceVolumeId != null && p.UsbSide == UsbSide.Source && p.ApprovedRoots == null && System.IO.Directory.Exists(p.Destination)), "Profile drafts lost roots/identity or independence");
+        var conflictSource = System.IO.Path.Combine(directory, "New source"); System.IO.Directory.CreateDirectory(conflictSource);
+        var blockedRoots = FolderSelection.Map([conflictSource], target, true);
+        try
+        {
+            await Task.Run(() => (draft with { Roots = blockedRoots }).Build([new() { Source = sourceA, Destination = target }]));
+            throw new Exception("Overlapping destination accepted");
+        }
+        catch (System.IO.IOException) { }
+        Require(!System.IO.Directory.Exists(blockedRoots[0].Destination), "Preflight created an overlapping destination before rejection");
+        var editor = new PairWindow(created[0], created) { Owner = owner }; editor.Show(); await Dispatcher.Yield(DispatcherPriority.ApplicationIdle); editor.Close();
+        Require(editor.Results.Count == 0, "Closing the editor wrote profiles");
         await store.UpdateAsync(s => s with { Pairs = [] }); await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
-        Console.WriteLine("PASS checked multi-profile ordering, pause isolation, stop/decline, USB-source remount and disconnect");
+        Console.WriteLine("PASS checked multi-profile ordering, pause isolation, stop/decline, USB-source remount/disconnect and multi-folder draft preflight");
     }
 }

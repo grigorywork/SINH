@@ -11,7 +11,7 @@ internal static class FolderPairEditor
     internal static async Task EditAsync(Window owner, SettingsStore store, FolderPair? original)
     {
         var displayed = original == null ? null : await Task.Run(() => WindowsVolumes.Resolve(original) ?? original);
-        var dialog = new PairWindow(displayed) { Owner = owner };
+        var dialog = new PairWindow(displayed, store.Current.Pairs) { Owner = owner };
         if (dialog.ShowDialog() != true) return;
         var results = dialog.Results;
         await Task.Run(() => Validate(results, store.Current.Pairs));

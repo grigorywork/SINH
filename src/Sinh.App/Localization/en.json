@@ -305,5 +305,7 @@
   "Выберите хотя бы одну папку.": "Select at least one folder.",
   "Для нескольких папок выберите общую папку назначения.": "Select a common destination for multiple folders.",
   "Выберите папки, а не весь диск.": "Select folders rather than an entire drive.",
-  "У выбранных папок одинаковые имена. Добавьте их отдельно с разными назначениями.": "Selected folders have duplicate names. Add them separately with different destinations."
+  "У выбранных папок одинаковые имена. Добавьте их отдельно с разными назначениями.": "Selected folders have duplicate names. Add them separately with different destinations.",
+  "По компьютеру · B → A": "Use computer · B → A",
+  "По USB · A → B": "Use USB · A → B"
 }

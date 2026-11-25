@@ -9,7 +9,7 @@ namespace Sinh.App;
 public sealed class PairWindow : Window
 {
     public IReadOnlyList<FolderPair> Results { get; private set; } = [];
-    public PairWindow(FolderPair? original)
+    public PairWindow(FolderPair? original, IReadOnlyList<FolderPair>? existing = null)
     {
         var pair = original ?? new();
         Title = original == null ? "SINH — новая пара" : "SINH — изменить пару";
@@ -60,6 +60,8 @@ public sealed class PairWindow : Window
         panel.Children.Add(new TextBlock { Text = "Первый запуск — вручную. Для работы без открытого окна включите автозапуск SINH.", TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 12, 0, 12) });
         var actions = new WrapPanel(); var save = new Button { Content = "Сохранить", IsDefault = true }; var cancel = new Button { Content = "Отмена", IsCancel = true };
         actions.Children.Add(save); actions.Children.Add(cancel); panel.Children.Add(actions);
+        var saving = false;
+        Closing += (_, e) => { if (saving) e.Cancel = true; };
         save.Click += async (_, _) =>
         {
             try
@@ -73,24 +75,14 @@ public sealed class PairWindow : Window
                 var keepHistory = history.IsChecked == true; var watchChanges = watch.IsChecked == true;
                 var title = name.Text.Trim(); var patterns = exclusions.Text.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
                 var parent = Path.GetFullPath(target.Text);
-                IsEnabled = false;
-                var results = await Task.Run(() =>
-                {
-                    // Validate the trigger volume before creating any destination children.
-                    if (automatic) foreach (var root in roots) WindowsVolumes.Bind(side == UsbSide.Source ? root.Source : parent);
-                    FolderPairEditor.PrepareDestinations(roots, parent, grouped);
-                    return roots.Select(root =>
-                    {
-                        var a = root.Source; var b = root.Destination;
-                        var sourceBinding = WindowsVolumes.BindLocal(a); var targetBinding = WindowsVolumes.BindLocal(b);
-                        var changed = a != pair.Source || b != pair.Destination || selectedMode != pair.Mode || allowDeletes != pair.AllowDeletes || side != pair.UsbSide;
-                        return pair with { Id = original == null ? Guid.NewGuid() : pair.Id, Name = grouped ? Path.GetFileName(Path.TrimEndingDirectorySeparator(a)) : title, Source = a, Destination = b, UsbSide = side, Mode = selectedMode, AllowDeletes = allowDeletes, History = keepHistory, Exclusions = patterns, ApprovedRoots = changed ? null : pair.ApprovedRoots, AutoOnConnect = automatic, WatchChanges = watchChanges, IntervalMinutes = minutes, UsbId = targetBinding?.Id, UsbRelativePath = targetBinding?.Relative, SourceVolumeId = sourceBinding?.Id, SourceRelativePath = sourceBinding?.Relative, LastSuccess = changed ? null : pair.LastSuccess };
-                    }).ToArray();
-                });
+                var draft = new FolderPairDraft(pair, original == null, title, roots, parent, grouped, side, selectedMode, allowDeletes, keepHistory, automatic, watchChanges, minutes, patterns);
+                saving = true; IsEnabled = false;
+                var results = await Task.Run(() => draft.Build(existing ?? []));
+                saving = false;
                 Results = results; DialogResult = true;
             }
             catch (Exception ex) { MessageBox.Show(this, Localizer.Error(ex), "SINH"); }
-            finally { IsEnabled = true; }
+            finally { saving = false; IsEnabled = true; }
         };
     }
 }

@@ -8,6 +8,15 @@ internal static class ExclusionSafetyChecks
         {
             var root = Path.Combine(temp, Guid.NewGuid().ToString("N")); var a = Path.Combine(root, "A"); var b = Path.Combine(root, "B"); Directory.CreateDirectory(a); Directory.CreateDirectory(b); return (a, b, Path.Combine(root, "data"));
         }
+        await check("internal temporary namespace is excluded without hiding ordinary user tmp files", async () =>
+        {
+            var (a, b, data) = Setup(); var internalName = ".sinh-" + Guid.NewGuid().ToString("N") + ".tmp"; var restoreName = ".sinh-restore-" + Guid.NewGuid().ToString("N") + ".tmp";
+            await File.WriteAllTextAsync(Path.Combine(a, internalName), "unfinished"); await File.WriteAllTextAsync(Path.Combine(a, restoreName), "unfinished restore"); await File.WriteAllTextAsync(Path.Combine(a, ".sinh-user.tmp"), "ordinary user file");
+            Directory.CreateDirectory(Path.Combine(b, internalName)); await File.WriteAllTextAsync(Path.Combine(b, internalName, "keep"), "protected counterpart");
+            var request = new SyncRequest(Guid.NewGuid(), a, b, SyncMode.Mirror, true); var plan = await new ComparisonService().CompareAsync(request);
+            require(plan.SkippedPaths.Contains(internalName) && plan.SkippedPaths.Contains(restoreName), "Internal temporary paths not reported"); await new SyncExecutor(new(data)).ApplyAsync(plan);
+            require(await File.ReadAllTextAsync(Path.Combine(b, ".sinh-user.tmp")) == "ordinary user file" && !File.Exists(Path.Combine(b, restoreName)) && await File.ReadAllTextAsync(Path.Combine(b, internalName, "keep")) == "protected counterpart", "Temporary exclusion copied internal data or lost user data");
+        });
         await check("mirror preserves excluded file and its necessary container", async () =>
         {
             var (a, b, data) = Setup(); Directory.CreateDirectory(Path.Combine(b, "parent")); await File.WriteAllTextAsync(Path.Combine(b, "parent", "keep.tmp"), "excluded"); await File.WriteAllTextAsync(Path.Combine(b, "parent", "obsolete.txt"), "remove"); var r = new SyncRequest(Guid.NewGuid(), a, b, SyncMode.Mirror, true, ["*.tmp"]);

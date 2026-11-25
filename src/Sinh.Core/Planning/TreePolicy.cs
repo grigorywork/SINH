@@ -2,12 +2,18 @@ namespace Sinh.Core;
 
 internal static class TreePolicy
 {
-    private static bool Within(string root, string path) => string.Equals(root, path, StringComparison.OrdinalIgnoreCase) || path.StartsWith(root + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
     internal static (TreeSnapshot A, TreeSnapshot B) ProtectLinks(TreeSnapshot a, TreeSnapshot b)
     {
         var links = (a.LinkPaths ?? []).Concat(b.LinkPaths ?? []).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
         if (links.Length == 0) return (a, b);
-        TreeSnapshot Filter(TreeSnapshot tree) => TreeSnapshot.Create(tree.Root, tree.Entries.Values.Where(e => !links.Any(link => Within(link, e.RelativePath))), (tree.SkippedPaths ?? []).Concat(links), links);
+        var protectedPaths = links.ToHashSet(StringComparer.OrdinalIgnoreCase);
+        bool IsProtected(string path)
+        {
+            for (var current = path; !string.IsNullOrEmpty(current); current = Path.GetDirectoryName(current))
+                if (protectedPaths.Contains(current)) return true;
+            return false;
+        }
+        TreeSnapshot Filter(TreeSnapshot tree) => TreeSnapshot.Create(tree.Root, tree.Entries.Values.Where(e => !IsProtected(e.RelativePath)), (tree.SkippedPaths ?? []).Concat(links), links);
         return (Filter(a), Filter(b));
     }
     internal static HashSet<string> ProtectedParents(params TreeSnapshot[] trees)

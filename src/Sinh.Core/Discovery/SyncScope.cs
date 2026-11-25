@@ -2,6 +2,12 @@ namespace Sinh.Core;
 
 public static class SyncScope
 {
+    public static bool IsInternalTemporaryName(string path)
+    {
+        var name = Path.GetFileName(path).AsSpan();
+        var prefix = name.StartsWith(".sinh-restore-", StringComparison.OrdinalIgnoreCase) ? 14 : name.StartsWith(".sinh-", StringComparison.OrdinalIgnoreCase) ? 6 : 0;
+        return prefix > 0 && name.Length == prefix + 32 + 4 && name.EndsWith(".tmp", StringComparison.OrdinalIgnoreCase) && Guid.TryParseExact(name.Slice(prefix, 32), "N", out _);
+    }
     public static SyncRequest ExcludeInternalDirectory(SyncRequest request, string dataDirectory)
     {
         var patterns = (request.Exclusions ?? []).ToList();

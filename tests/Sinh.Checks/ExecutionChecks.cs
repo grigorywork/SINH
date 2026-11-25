@@ -42,6 +42,20 @@ internal static class ExecutionChecks
             var result = await new SyncExecutor(new(data)).ApplyAsync(plan, new(SpeedLimitMiB: 4), progress);
             require(observed && result.Source.SameContent(result.Destination), "Streaming backup integrity failed");
         });
+        await check("case rename stages only mutable USB extras and streams unchanged source root", async () =>
+        {
+            var (a, b, data) = Roots(); Directory.CreateDirectory(Path.Combine(a, "Folder")); Directory.CreateDirectory(Path.Combine(b, "folder"));
+            await File.WriteAllBytesAsync(Path.Combine(a, "Folder", "big.bin"), new byte[2 * 1024 * 1024]); await File.WriteAllTextAsync(Path.Combine(b, "folder", "extra.txt"), "USB extra");
+            var plan = await new ComparisonService().CompareAsync(new(Guid.NewGuid(), a, b)); var observed = false;
+            var progress = new InlineProgress(p =>
+            {
+                if (p.Stage != "Копирование" || p.Completed <= 0) return; observed = true;
+                var staged = Directory.EnumerateFiles(Path.Combine(data, "work"), "*.data", SearchOption.AllDirectories).Sum(path => new FileInfo(path).Length);
+                require(staged < 1024, "Read-only source root was duplicated while preserving USB extras");
+            });
+            await new SyncExecutor(new(data)).ApplyAsync(plan, new(SpeedLimitMiB: 4), progress);
+            require(observed && await File.ReadAllTextAsync(Path.Combine(b, "Folder", "extra.txt")) == "USB extra" && new FileInfo(Path.Combine(b, "Folder", "big.bin")).Length == 2 * 1024 * 1024, "Case rename lost source or USB extra data");
+        });
         await check("history limit stops replacement without loss", async () =>
         {
             var (a, b, data) = Roots(); await File.WriteAllTextAsync(Path.Combine(a, "f"), "new"); await File.WriteAllTextAsync(Path.Combine(b, "f"), "old version"); var plan = await new ComparisonService().CompareAsync(new(Guid.NewGuid(), a, b)); var failed = false;

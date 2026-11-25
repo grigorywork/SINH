@@ -1,0 +1,12 @@
+{
+  "Version": "0.5.0-preview.1",
+  "CodeCommit": "bc5ba436fbfc5c03f73e048a738c8f418fc4094c",
+  "WindowsRun": 45697650398,
+  "WindowsRunURL": "https://github.com/grigorywork/SINH/actions/runs/45697650398",
+  "LinuxCore": "60/60 PASS",
+  "WindowsServer2025Core": "63/63 PASS",
+  "WPF": "All groups PASS including multi-selection, ordered batch/stop/decline and USB source remapping",
+  "Win10Client": "NOT TESTED",
+  "Win11Client": "NOT TESTED",
+  "PhysicalUSB_SMB_DPI": "NOT TESTED"
+}

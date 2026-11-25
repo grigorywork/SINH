@@ -1,6 +1,4 @@
-using System.Runtime.InteropServices;
 using System.Windows;
-using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Microsoft.Win32;
@@ -12,71 +10,105 @@ namespace Sinh.App;
 
 internal sealed class AppearanceService : IDisposable
 {
+    private static WeakReference<AppearanceService>? active;
     private readonly SettingsStore store;
+    private Appearance? applied;
+    private bool appliedDark;
+    private Color appliedAccent;
+
+    static AppearanceService() => EventManager.RegisterClassHandler(typeof(Window), FrameworkElement.LoadedEvent, new RoutedEventHandler(WindowLoaded));
     public AppearanceService(SettingsStore store)
     {
-        this.store = store; store.Changed += Changed;
+        this.store = store;
+        active = new(this);
+        store.Changed += Changed;
         SystemEvents.UserPreferenceChanged += SystemChanged;
-        System.Windows.Application.Current.Activated += Activated;
         Apply();
     }
-    private void Activated(object? sender, EventArgs e) => Apply();
-    private void Changed(object? sender, AppSettings e) => System.Windows.Application.Current.Dispatcher.InvokeAsync(Apply);
-    private void SystemChanged(object sender, UserPreferenceChangedEventArgs e) => System.Windows.Application.Current.Dispatcher.InvokeAsync(Apply);
-    private bool IsDark(Appearance a)
+    private static void WindowLoaded(object sender, RoutedEventArgs e)
     {
-        if (a.Theme != Theme.System) return a.Theme == Theme.Dark;
-        return Registry.GetValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize", "AppsUseLightTheme", 1) is 0;
+        if (active == null || !active.TryGetTarget(out var service)) return;
+        var window = (Window)sender;
+        NativeAppearance.Apply(window, service.store.Current.Appearance, service.IsDark(service.store.Current.Appearance));
+        NativeAppearance.FitInitialWindow(window);
     }
+    private void Changed(object? sender, AppSettings settings) => System.Windows.Application.Current.Dispatcher.InvokeAsync(Apply);
+    private void SystemChanged(object sender, UserPreferenceChangedEventArgs e) => System.Windows.Application.Current.Dispatcher.InvokeAsync(Apply);
+    private bool IsDark(Appearance a) => a.Theme == Theme.System
+        ? Registry.GetValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize", "AppsUseLightTheme", 1) is 0
+        : a.Theme == Theme.Dark;
     private void Apply()
     {
-        var app = System.Windows.Application.Current; var a = store.Current.Appearance; var dark = IsDark(a);
-        app.Resources["Surface"] = Brush(dark ? "#171923" : "#F5F6FA");
+        var app = System.Windows.Application.Current;
+        var a = store.Current.Appearance;
+        var dark = IsDark(a);
+        var accent = a.Accent switch
+        {
+            "Purple" => ColorOf("#8271E8"),
+            "Blue" => ColorOf("#4584E5"),
+            "Green" => ColorOf("#39966F"),
+            "Orange" => ColorOf("#D38638"),
+            "Pink" => ColorOf("#CC6B9C"),
+            "Teal" => ColorOf("#299FAD"),
+            _ => SystemParameters.WindowGlassColor
+        };
+        if (applied == a && appliedDark == dark && appliedAccent == accent) return;
+        var surface = ColorOf(dark ? "#171923" : "#F5F6FA");
+        app.Resources["Surface"] = Frozen(new SolidColorBrush(surface));
         app.Resources["Panel"] = Brush(dark ? "#222533" : "#FFFFFF");
         app.Resources["Ink"] = Brush(dark ? "#F0F1F8" : "#202235");
         app.Resources["Muted"] = Brush(dark ? "#B2B6CA" : "#62667D");
         app.Resources["Line"] = Brush(dark ? "#42465C" : "#DDE0EA");
-        var accent = a.Accent switch { "Purple" => "#8271E8", "Blue" => "#4584E5", "Green" => "#39966F", "Orange" => "#D38638", "Pink" => "#CC6B9C", "Teal" => "#299FAD", _ => null };
-        app.Resources["Accent"] = accent != null ? Brush(accent) : SystemParameters.WindowGlassBrush;
-        var palette = new MaterialDesignThemes.Wpf.PaletteHelper();
-        var materialTheme = palette.GetTheme();
-        materialTheme.SetBaseTheme(dark ? MaterialDesignThemes.Wpf.BaseTheme.Dark : MaterialDesignThemes.Wpf.BaseTheme.Light);
-        materialTheme.SetPrimaryColor(((SolidColorBrush)app.Resources["Accent"]).Color);
-        palette.SetTheme(materialTheme);
-        foreach (Window window in app.Windows) ApplyWindow(window);
+        app.Resources["Accent"] = Frozen(new SolidColorBrush(accent));
+        app.Resources["AppFontFamily"] = FontCatalog.Resolve(a.Font);
+        app.Resources["AppFontSize"] = 14 * a.Scale;
+        if (applied?.Icon != a.Icon) app.Resources["AppIcon"] = BitmapFrame.Create(new Uri($"pack://application:,,,/Assets/{a.Icon.ToString().ToLowerInvariant()}.ico"));
+        var tint = Tint(a, dark);
+        var density = Math.Clamp((100 - a.Transparency) / 100 * .65 + a.Frost / 100 * .2, 0, .9);
+        var mixed = Color.FromRgb((byte)(surface.R * (1 - density) + tint.R * density), (byte)(surface.G * (1 - density) + tint.G * density), (byte)(surface.B * (1 - density) + tint.B * density));
+        app.Resources["WindowSurface"] = a.Glass ? CreatePattern(a.Background, surface, mixed) : (Brush)app.Resources["Surface"];
+        var alpha = (byte)Math.Clamp(255 * (100 - a.Transparency) / 100 + a.Frost * .35, 0, 255);
+        app.Resources["GlassSurface"] = CreatePattern(a.Background, Color.FromArgb((byte)(alpha / 2), surface.R, surface.G, surface.B), Color.FromArgb(alpha, tint.R, tint.G, tint.B));
+        var palette = new PaletteHelper();
+        var theme = palette.GetTheme();
+        theme.SetBaseTheme(dark ? BaseTheme.Dark : BaseTheme.Light);
+        theme.SetPrimaryColor(accent);
+        palette.SetTheme(theme);
+        applied = a;
+        appliedDark = dark;
+        appliedAccent = accent;
+        foreach (Window window in app.Windows) NativeAppearance.Apply(window, a, dark);
     }
-    private void ApplyWindow(Window w)
+    private static Color Tint(Appearance a, bool dark) => ColorOf(a.Tint switch
     {
-        var a = store.Current.Appearance;
-        w.FontSize = 14 * a.Scale; // DPI scaling remains WPF's responsibility; hit targets stay at least 38 DIPs.
-        try { w.FontFamily = new FontFamily(a.Font); } catch { w.FontFamily = new FontFamily("Segoe UI"); }
-        var icon = a.Icon.ToString().ToLowerInvariant();
-        w.Icon = BitmapFrame.Create(new Uri($"pack://application:,,,/Assets/{icon}.ico"));
-        if (a.Glass)
+        "Blue" => "#729AD4",
+        "Teal" => "#69BFBD",
+        "Lilac" => "#B79BDE",
+        "Pink" => "#DEA9CC",
+        "Amber" => "#DCBE81",
+        "Green" => "#8EC2A0",
+        "Graphite" => "#7D8593",
+        _ => dark ? "#34334B" : "#E5E4F3"
+    });
+    private static Brush CreatePattern(string pattern, Color background, Color tint)
+    {
+        if (pattern == "Solid") return Frozen(new SolidColorBrush(tint));
+        if (pattern == "Stripes")
         {
-            var tint = a.Tint switch { "Blue" => "#729AD4", "Teal" => "#69BFBD", "Lilac" => "#B79BDE", "Pink" => "#DEA9CC", "Amber" => "#DCBE81", "Green" => "#8EC2A0", "Graphite" => "#7D8593", _ => IsDark(a) ? "#34334B" : "#E5E4F3" };
-            var color = (Color)ColorConverter.ConvertFromString(tint);
-            // Text is never blurred. This lightweight surface is the fallback on Windows 10 / unsupported GPUs.
-            var baseColor = (Color)ColorConverter.ConvertFromString(IsDark(a) ? "#171923" : "#F5F6FA");
-            var factor = (100 - a.Transparency) / 100 * .65;
-            Color Mix(Color c) => Color.FromRgb((byte)(baseColor.R * (1 - factor) + c.R * factor), (byte)(baseColor.G * (1 - factor) + c.G * factor), (byte)(baseColor.B * (1 - factor) + c.B * factor));
-            w.Background = a.Background == "Solid" ? new SolidColorBrush(Mix(color)) : new LinearGradientBrush(Mix(color), baseColor, a.Background == "Stripes" ? 0 : 35);
+            var drawing = new DrawingGroup();
+            drawing.Children.Add(new GeometryDrawing(new SolidColorBrush(background), null, new RectangleGeometry(new Rect(0, 0, 64, 64))));
+            drawing.Children.Add(new GeometryDrawing(new SolidColorBrush(tint), null, Geometry.Parse("M0,0 L32,0 L64,32 L64,64 Z M0,32 L32,64 L0,64 Z")));
+            return Frozen(new DrawingBrush(drawing) { TileMode = TileMode.Tile, Viewport = new Rect(0, 0, 64, 64), ViewportUnits = BrushMappingMode.Absolute, Stretch = Stretch.None });
         }
-        else w.SetResourceReference(Window.BackgroundProperty, "Surface");
-        var handle = new WindowInteropHelper(w).Handle;
-        if (handle != IntPtr.Zero)
-        {
-            var dark = IsDark(a) ? 1 : 0; NativeIdentity.DwmSetWindowAttribute(handle, 20, ref dark, sizeof(int));
-        }
+        return Frozen(new LinearGradientBrush(new GradientStopCollection { new(tint, 0), new(background, .55), new(tint, 1) }, 35));
     }
-    private static SolidColorBrush Brush(string s) => new((Color)ColorConverter.ConvertFromString(s));
-    public void Dispose() { store.Changed -= Changed; SystemEvents.UserPreferenceChanged -= SystemChanged; System.Windows.Application.Current.Activated -= Activated; }
-}
-
-internal static class NativeIdentity
-{
-    internal const string AppId = "SINH.FolderSync.Desktop";
-    [DllImport("shell32.dll", CharSet = CharSet.Unicode)] private static extern int SetCurrentProcessExplicitAppUserModelID(string id);
-    [DllImport("dwmapi.dll")] internal static extern int DwmSetWindowAttribute(IntPtr hwnd, int attribute, ref int value, int size);
-    internal static void SetIdentity() => SetCurrentProcessExplicitAppUserModelID(AppId);
+    private static Color ColorOf(string value) => (Color)ColorConverter.ConvertFromString(value);
+    private static SolidColorBrush Brush(string value) => Frozen(new SolidColorBrush(ColorOf(value)));
+    private static T Frozen<T>(T value) where T : Freezable { value.Freeze(); return value; }
+    public void Dispose()
+    {
+        store.Changed -= Changed;
+        SystemEvents.UserPreferenceChanged -= SystemChanged;
+        if (active?.TryGetTarget(out var service) == true && ReferenceEquals(service, this)) active = null;
+    }
 }

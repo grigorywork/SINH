@@ -1,0 +1,23 @@
+name: Windows checks
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['src/**', 'tests/**', '*.props', '*.json', '*.sln', '.github/workflows/windows-checks.yml']
+permissions:
+  contents: read
+jobs:
+  windows:
+    runs-on: windows-2025
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
+        with:
+          global-json-file: global.json
+      - name: Build
+        run: dotnet build SINH.sln -c Release --nologo -warnaserror
+      - name: File engine on Windows temporary folders
+        run: dotnet run --no-build --project tests/Sinh.Checks -c Release
+      - name: WPF runtime checks
+        run: dotnet run --no-build --project tests/Sinh.WindowsChecks -c Release

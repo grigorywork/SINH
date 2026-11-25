@@ -1,0 +1,188 @@
+[
+  {
+    "path": "src/Sinh.App/Assets/Fonts/roboto/roboto_regular.ttf",
+    "url": "https://raw.githubusercontent.com/grigorywork/NoteLS/b1f4b1f8be850c5d63349cc63618b4a478cf3eff/app/src/main/res/font/roboto_regular.ttf",
+    "sha256": "95f616f7dec902282f852a04ff17ce9583d8838c976279ad455750d8b146fcb5",
+    "bytes": 118748
+  },
+  {
+    "path": "src/Sinh.App/Assets/Fonts/roboto/roboto_bold.ttf",
+    "url": "https://raw.githubusercontent.com/grigorywork/NoteLS/b1f4b1f8be850c5d63349cc63618b4a478cf3eff/app/src/main/res/font/roboto_bold.ttf",
+    "sha256": "62a85dc86f040d7fbdd37a199ce519880e3b8d5322ab51d51f4b8ec3212f2813",
+    "bytes": 119424
+  },
+  {
+    "path": "src/Sinh.App/Assets/Fonts/roboto/LICENSE.txt",
+    "url": "https://raw.githubusercontent.com/grigorywork/NoteLS/b1f4b1f8be850c5d63349cc63618b4a478cf3eff/app/src/main/assets/font-licenses/roboto.txt",
+    "sha256": "061402327a96aadb0bfb694a960ed289ecd38d383e396243831ab81feb109c41",
+    "bytes": 4394
+  },
+  {
+    "path": "src/Sinh.App/Assets/Fonts/open_sans/open_sans_regular.ttf",
+    "url": "https://raw.githubusercontent.com/grigorywork/NoteLS/b1f4b1f8be850c5d63349cc63618b4a478cf3eff/app/src/main/res/font/open_sans_regular.ttf",
+    "sha256": "6ac431098027668b083c6002b2b2ddc029a10e68241a8172617ac6eeb46d147a",
+    "bytes": 82980
+  },
+  {
+    "path": "src/Sinh.App/Assets/Fonts/open_sans/open_sans_bold.ttf",
+    "url": "https://raw.githubusercontent.com/grigorywork/NoteLS/b1f4b1f8be850c5d63349cc63618b4a478cf3eff/app/src/main/res/font/open_sans_bold.ttf",
+    "sha256": "4e1f5415101fe653711bad405d4f0c4394142edd9de2beda770c60218ed6eb88",
+    "bytes": 83136
+  },
+  {
+    "path": "src/Sinh.App/Assets/Fonts/open_sans/LICENSE.txt",
+    "url": "https://raw.githubusercontent.com/grigorywork/NoteLS/b1f4b1f8be850c5d63349cc63618b4a478cf3eff/app/src/main/assets/font-licenses/open_sans.txt",
+    "sha256": "fbbbcfef55318de350562559b671360de6d597112ecc5c73881b05092db89602",
+    "bytes": 4389
+  },
+  {
+    "path": "src/Sinh.App/Assets/Fonts/montserrat/montserrat_regular.ttf",
+    "url": "https://raw.githubusercontent.com/grigorywork/NoteLS/b1f4b1f8be850c5d63349cc63618b4a478cf3eff/app/src/main/res/font/montserrat_regular.ttf",
+    "sha256": "34117b9206d89ae9c4ab198f0bae9556f48122c9270c3195cb8d82efeab2f028",
+    "bytes": 189520
+  },
+  {
+    "path": "src/Sinh.App/Assets/Fonts/montserrat/montserrat_bold.ttf",
+    "url": "https://raw.githubusercontent.com/grigorywork/NoteLS/b1f4b1f8be850c5d63349cc63618b4a478cf3eff/app/src/main/res/font/montserrat_bold.ttf",
+    "sha256": "cf77092e7c4d4d1d340fb8459b162a76595345d4d414ef6bb6e3cf603e7ca17a",
+    "bytes": 195048
+  },
+  {
+    "path": "src/Sinh.App/Assets/Fonts/montserrat/LICENSE.txt",
+    "url": "https://raw.githubusercontent.com/grigorywork/NoteLS/b1f4b1f8be850c5d63349cc63618b4a478cf3eff/app/src/main/assets/font-licenses/montserrat.txt",
+    "sha256": "8b7141c03fa4f8d44e6345d5d4931709290f0f67875e452e95ac1fd3a027802e",
+    "bytes": 4400
+  },
+  {
+    "path": "src/Sinh.App/Assets/Fonts/inter/inter_regular.ttf",
+    "url": "https://raw.githubusercontent.com/grigorywork/NoteLS/b1f4b1f8be850c5d63349cc63618b4a478cf3eff/app/src/main/res/font/inter_regular.ttf",
+    "sha256": "4ade112d84aafb1ec980e8a4d1873cb18890651b5ab63582121318e9e4521a84",
+    "bytes": 151832
+  },
+  {
+    "path": "src/Sinh.App/Assets/Fonts/inter/inter_bold.ttf",
+    "url": "https://raw.githubusercontent.com/grigorywork/NoteLS/b1f4b1f8be850c5d63349cc63618b4a478cf3eff/app/src/main/res/font/inter_bold.ttf",
+    "sha256": "5581af0ff66318abdadd6beb85854ddc28dc1c786557f59550292b519d83ad8b",
+    "bytes": 152440
+  },
+  {
+    "path": "src/Sinh.App/Assets/Fonts/inter/LICENSE.txt",
+    "url": "https://raw.githubusercontent.com/grigorywork/NoteLS/b1f4b1f8be850c5d63349cc63618b4a478cf3eff/app/src/main/assets/font-licenses/inter.txt",
+    "sha256": "5b9321a4298cfeb6b34354164a1c3afc3db114569984c502b9b35d988fd58c57",
+    "bytes": 4377
+  },
+  {
+    "path": "src/Sinh.App/Assets/Fonts/pt_sans/pt_sans_regular.ttf",
+    "url": "https://raw.githubusercontent.com/grigorywork/NoteLS/b1f4b1f8be850c5d63349cc63618b4a478cf3eff/app/src/main/res/font/pt_sans_regular.ttf",
+    "sha256": "a2d297e8730c5129411e0c54ab289cc45bd65b4f5e04a3a2d22e9de5f791fb1a",
+    "bytes": 242460
+  },
+  {
+    "path": "src/Sinh.App/Assets/Fonts/pt_sans/pt_sans_bold.ttf",
+    "url": "https://raw.githubusercontent.com/grigorywork/NoteLS/b1f4b1f8be850c5d63349cc63618b4a478cf3eff/app/src/main/res/font/pt_sans_bold.ttf",
+    "sha256": "f7a863e869a742f658b8c0b7208d17e4bddbea4d835e4598e418147f59e90721",
+    "bytes": 250236
+  },
+  {
+    "path": "src/Sinh.App/Assets/Fonts/pt_sans/LICENSE.txt",
+    "url": "https://raw.githubusercontent.com/grigorywork/NoteLS/b1f4b1f8be850c5d63349cc63618b4a478cf3eff/app/src/main/assets/font-licenses/pt_sans.txt",
+    "sha256": "2758cf7a872827f39661cf8cc24188113c030447aefb5ca7145993650076ca8c",
+    "bytes": 4425
+  },
+  {
+    "path": "src/Sinh.App/Assets/Fonts/nunito/nunito_regular.ttf",
+    "url": "https://raw.githubusercontent.com/grigorywork/NoteLS/b1f4b1f8be850c5d63349cc63618b4a478cf3eff/app/src/main/res/font/nunito_regular.ttf",
+    "sha256": "43a09275cd37379fe973599460766208f01b0ee47bbb8bf843b7e49dbcaa1444",
+    "bytes": 87240
+  },
+  {
+    "path": "src/Sinh.App/Assets/Fonts/nunito/nunito_bold.ttf",
+    "url": "https://raw.githubusercontent.com/grigorywork/NoteLS/b1f4b1f8be850c5d63349cc63618b4a478cf3eff/app/src/main/res/font/nunito_bold.ttf",
+    "sha256": "2f5b4b5a8317bb92133eff285ba58c9dcc5a3f00bd79e4dec823c56e93c3bb55",
+    "bytes": 87068
+  },
+  {
+    "path": "src/Sinh.App/Assets/Fonts/nunito/LICENSE.txt",
+    "url": "https://raw.githubusercontent.com/grigorywork/NoteLS/b1f4b1f8be850c5d63349cc63618b4a478cf3eff/app/src/main/assets/font-licenses/nunito.txt",
+    "sha256": "580df76c95a1ec5ab878ceb25bb3d85c6a076804e9c970c8c6972aea775fdf65",
+    "bytes": 4385
+  },
+  {
+    "path": "src/Sinh.App/Assets/Fonts/rubik/rubik_regular.ttf",
+    "url": "https://raw.githubusercontent.com/grigorywork/NoteLS/b1f4b1f8be850c5d63349cc63618b4a478cf3eff/app/src/main/res/font/rubik_regular.ttf",
+    "sha256": "2d4d6b200a71e97abf86cb5a20306659f2138a31f7d4b7ece3f68369a9f530f0",
+    "bytes": 90288
+  },
+  {
+    "path": "src/Sinh.App/Assets/Fonts/rubik/rubik_bold.ttf",
+    "url": "https://raw.githubusercontent.com/grigorywork/NoteLS/b1f4b1f8be850c5d63349cc63618b4a478cf3eff/app/src/main/res/font/rubik_bold.ttf",
+    "sha256": "dcbbeb600e955bbcc62eb736958f0c6f7b39a39dc79ef575e61f1f6f0df30fe9",
+    "bytes": 90592
+  },
+  {
+    "path": "src/Sinh.App/Assets/Fonts/rubik/LICENSE.txt",
+    "url": "https://raw.githubusercontent.com/grigorywork/NoteLS/b1f4b1f8be850c5d63349cc63618b4a478cf3eff/app/src/main/assets/font-licenses/rubik.txt",
+    "sha256": "472cbe7c25441df63e9c7864b43eb3c0f4b3df950c66a76224e6cfe1eae843fb",
+    "bytes": 4384
+  },
+  {
+    "path": "src/Sinh.App/Assets/Fonts/manrope/manrope_regular.ttf",
+    "url": "https://raw.githubusercontent.com/grigorywork/NoteLS/b1f4b1f8be850c5d63349cc63618b4a478cf3eff/app/src/main/res/font/manrope_regular.ttf",
+    "sha256": "80860fcbe2fc2e075dc686d536c133fa4e26f97d330ccee0287832760bf0b9c1",
+    "bytes": 63396
+  },
+  {
+    "path": "src/Sinh.App/Assets/Fonts/manrope/manrope_bold.ttf",
+    "url": "https://raw.githubusercontent.com/grigorywork/NoteLS/b1f4b1f8be850c5d63349cc63618b4a478cf3eff/app/src/main/res/font/manrope_bold.ttf",
+    "sha256": "7829dba3c1b28a2ba8fdb2e3a9130c1d695c3a220d1f8422a150691284094bd9",
+    "bytes": 63380
+  },
+  {
+    "path": "src/Sinh.App/Assets/Fonts/manrope/LICENSE.txt",
+    "url": "https://raw.githubusercontent.com/grigorywork/NoteLS/b1f4b1f8be850c5d63349cc63618b4a478cf3eff/app/src/main/assets/font-licenses/manrope.txt",
+    "sha256": "58172e0c0fac2cda8a37b348164bb55e44b0e69051e557e92b1d3f6910141f7b",
+    "bytes": 4387
+  },
+  {
+    "path": "src/Sinh.App/Assets/Fonts/playfair/playfair_regular.ttf",
+    "url": "https://raw.githubusercontent.com/grigorywork/NoteLS/b1f4b1f8be850c5d63349cc63618b4a478cf3eff/app/src/main/res/font/playfair_regular.ttf",
+    "sha256": "52a259c66dead52b9c93d1337c4e9323af47cc122c3703ddd82ae69757e0594d",
+    "bytes": 152260
+  },
+  {
+    "path": "src/Sinh.App/Assets/Fonts/playfair/playfair_bold.ttf",
+    "url": "https://raw.githubusercontent.com/grigorywork/NoteLS/b1f4b1f8be850c5d63349cc63618b4a478cf3eff/app/src/main/res/font/playfair_bold.ttf",
+    "sha256": "965d9b77653ec8958bb7e1a917a2890de239f95cf54c29f547da09998ef6b50f",
+    "bytes": 152524
+  },
+  {
+    "path": "src/Sinh.App/Assets/Fonts/playfair/LICENSE.txt",
+    "url": "https://raw.githubusercontent.com/grigorywork/NoteLS/b1f4b1f8be850c5d63349cc63618b4a478cf3eff/app/src/main/assets/font-licenses/playfair.txt",
+    "sha256": "566be814f8e96e93dfa16101331557eb6b5467e9e03f627c0910fe93ca12300e",
+    "bytes": 4449
+  },
+  {
+    "path": "src/Sinh.App/Assets/Fonts/merriweather/merriweather_regular.ttf",
+    "url": "https://raw.githubusercontent.com/grigorywork/NoteLS/b1f4b1f8be850c5d63349cc63618b4a478cf3eff/app/src/main/res/font/merriweather_regular.ttf",
+    "sha256": "9a7b87766002a5968968a6faa5cdafa03cf84bfe0c8e908ba8acf0991f88b401",
+    "bytes": 827672
+  },
+  {
+    "path": "src/Sinh.App/Assets/Fonts/merriweather/merriweather_bold.ttf",
+    "url": "https://raw.githubusercontent.com/grigorywork/NoteLS/b1f4b1f8be850c5d63349cc63618b4a478cf3eff/app/src/main/res/font/merriweather_bold.ttf",
+    "sha256": "1ebb979923f83a6251433eb8a8ee28aaceaec3c20dd9e1270c58e699a089ee91",
+    "bytes": 827652
+  },
+  {
+    "path": "src/Sinh.App/Assets/Fonts/merriweather/LICENSE.txt",
+    "url": "https://raw.githubusercontent.com/grigorywork/NoteLS/b1f4b1f8be850c5d63349cc63618b4a478cf3eff/app/src/main/assets/font-licenses/merriweather.txt",
+    "sha256": "715bd349bfa6116f99e351e1548321dcfa25b91df65502d22ca8d624557697d2",
+    "bytes": 4438
+  },
+  {
+    "path": "src/Sinh.App/Assets/Fonts/SOURCES.md",
+    "url": "https://raw.githubusercontent.com/grigorywork/NoteLS/b1f4b1f8be850c5d63349cc63618b4a478cf3eff/app/src/main/assets/font-licenses/SOURCES.md",
+    "sha256": "187b5fd0e5ab3ce84917537c909e07b4a2b68f6ff626226d9ecd9211fbbc4062",
+    "bytes": 752
+  }
+]

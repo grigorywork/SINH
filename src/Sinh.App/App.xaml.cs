@@ -11,6 +11,7 @@ public partial class App : System.Windows.Application
     internal static string DataDirectory => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "SINH");
     internal SettingsStore Store { get; private set; } = null!;
     private AppearanceService? appearance;
+    private LocalizationService? localization;
     private InstanceGuard? instance;
     private TrayService? tray;
     internal bool ExitRequested { get; private set; }
@@ -36,6 +37,7 @@ public partial class App : System.Windows.Application
             NativeIdentity.SetIdentity();
             Store = new SettingsStore(Path.Combine(DataDirectory, "settings.json"));
             await Task.Run(Store.LoadAsync);
+            localization = new LocalizationService(Store);
             var recovered = await Task.Run(() => new Sinh.Core.SyncExecutor(new Sinh.Core.StateStore(DataDirectory)).RecoverAsync());
             appearance = new AppearanceService(Store);
             var model = new MainViewModel(Store);
@@ -50,5 +52,5 @@ public partial class App : System.Windows.Application
         }
         catch (Exception ex) { MessageBox.Show(ex.Message, "SINH — ошибка запуска"); Shutdown(1); }
     }
-    protected override void OnExit(ExitEventArgs e) { tray?.Dispose(); appearance?.Dispose(); Store?.Dispose(); instance?.Dispose(); base.OnExit(e); }
+    protected override void OnExit(ExitEventArgs e) { tray?.Dispose(); appearance?.Dispose(); localization?.Dispose(); Store?.Dispose(); instance?.Dispose(); base.OnExit(e); }
 }

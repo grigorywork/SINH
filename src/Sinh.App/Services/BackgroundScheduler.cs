@@ -31,7 +31,7 @@ internal sealed class BackgroundScheduler : IDisposable
         if (disposed || Interlocked.Exchange(ref polling, 1) != 0) return;
         try
         {
-            if(isBusy())return;
+            if (isBusy()) return;
             var settings = store.Current;
             foreach (var removed in schedules.Keys.Except(settings.Pairs.Select(p => p.Id)).ToArray()) { schedules[removed].Dispose(); schedules.Remove(removed); }
             foreach (var pair in settings.Pairs)
@@ -56,7 +56,7 @@ internal sealed class BackgroundScheduler : IDisposable
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException or System.ComponentModel.Win32Exception)
         { System.Diagnostics.Debug.WriteLine("SINH scheduler: " + ex.Message); }
-        catch(OperationCanceledException) when(disposed) { }
+        catch (OperationCanceledException) when (disposed) { }
         finally { if (disposed) { foreach (var schedule in schedules.Values) schedule.Dispose(); schedules.Clear(); } Interlocked.Exchange(ref polling, 0); }
     }
     private void SetWatchers(Schedule schedule, FolderPair pair, bool enabled)

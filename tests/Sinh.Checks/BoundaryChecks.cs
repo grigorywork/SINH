@@ -32,15 +32,21 @@ internal static class BoundaryChecks
         {
             var (a, b, data) = Setup(); Directory.CreateDirectory(Path.Combine(a, "parent")); await File.WriteAllTextAsync(Path.Combine(a, "parent", "note"), "initial"); var r = new SyncRequest(Guid.NewGuid(), a, b, SyncMode.TwoWay, true); var executor = new SyncExecutor(new(data)); var state = await executor.ApplyAsync(await new ComparisonService().CompareAsync(r)); Directory.Delete(Path.Combine(a, "parent"), true); await File.WriteAllTextAsync(Path.Combine(b, "parent", "note"), "USB edit"); state = await executor.ApplyAsync(await new ComparisonService().CompareAsync(r, state)); require(await File.ReadAllTextAsync(Path.Combine(a, "parent", "note")) == "USB edit" && state.Source.SameContent(state.Destination), "Edited child lost with parent");
         });
-        await check("two-way replacing a directory with a file retains the original whole directory",async()=>
+        await check("two-way replacing a directory with a file retains the original whole directory", async () =>
         {
-            var(a,b,data)=Setup();Directory.CreateDirectory(Path.Combine(a,"kind"));await File.WriteAllTextAsync(Path.Combine(a,"kind","child.txt"),"original folder contents");
-            var request=new SyncRequest(Guid.NewGuid(),a,b,SyncMode.TwoWay,true);var executor=new SyncExecutor(new(data));
-            var state=await executor.ApplyAsync(await new ComparisonService().CompareAsync(request));
-            Directory.Delete(Path.Combine(b,"kind"),true);await File.WriteAllTextAsync(Path.Combine(b,"kind"),"replacement USB file");
-            var plan=await new ComparisonService().CompareAsync(request,state);state=await executor.ApplyAsync(plan);
-            require(File.Exists(Path.Combine(a,"kind","child.txt")),"Type conflict removed the original directory contents");
-            require(state.Source.SameContent(state.Destination),"Type conflict left unequal sides");
+            var (a, b, data) = Setup(); Directory.CreateDirectory(Path.Combine(a, "kind")); await File.WriteAllTextAsync(Path.Combine(a, "kind", "child.txt"), "original folder contents");
+            var request = new SyncRequest(Guid.NewGuid(), a, b, SyncMode.TwoWay, true); var executor = new SyncExecutor(new(data));
+            var state = await executor.ApplyAsync(await new ComparisonService().CompareAsync(request));
+            Directory.Delete(Path.Combine(b, "kind"), true); await File.WriteAllTextAsync(Path.Combine(b, "kind"), "replacement USB file");
+            var plan = await new ComparisonService().CompareAsync(request, state); state = await executor.ApplyAsync(plan);
+            require(File.Exists(Path.Combine(a, "kind", "child.txt")), "Type conflict removed the original directory contents");
+            require(state.Source.SameContent(state.Destination), "Type conflict left unequal sides");
+        });
+        if (OperatingSystem.IsWindows()) await check("Windows extended-path alias cannot bypass nested-root protection", async () =>
+        {
+            var (a, b, data) = Setup(); var child = Path.Combine(a, "nested"); Directory.CreateDirectory(child); var failed = false;
+            try { await new ComparisonService().CompareAsync(new(Guid.NewGuid(), a, @"\\?\" + child)); } catch (IOException) { failed = true; }
+            require(failed, "Extended path bypassed overlap protection");
         });
     }
 }

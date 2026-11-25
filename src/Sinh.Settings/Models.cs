@@ -12,7 +12,7 @@ public sealed record Appearance
     public bool Glass { get; init; }
     public double Scale { get; init; } = 1;
     public string Accent { get; init; } = "System";
-    public string Font { get; init; } = "Segoe UI";
+    public string Font { get; init; } = "System";
     public double Transparency { get; init; } = 50;
     public double Frost { get; init; }
     public string Tint { get; init; } = "Theme";

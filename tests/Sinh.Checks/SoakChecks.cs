@@ -36,12 +36,12 @@ internal static class SoakChecks
             catch (Exception ex)
             {
                 failureCount++;
-                if(failures.Count<10)
+                if (failures.Count < 10)
                 {
                     failures.Add(new { Seed = caseSeed, Fixture = folder, Error = ex.ToString() });
                     Console.WriteLine($"SOAK FAIL seed={caseSeed} fixture={folder} {ex}");
                 }
-                else if(Directory.Exists(folder))Directory.Delete(folder,true);
+                else if (Directory.Exists(folder)) Directory.Delete(folder, true);
             }
             iterations++;
             if (clock.Elapsed - lastReport >= TimeSpan.FromSeconds(30))
@@ -94,13 +94,13 @@ internal static class SoakChecks
         for (var i = 0; i < 7; i++) Mutate(random.Next(2) == 0 ? a : b);
         var beforeA = await scanner.ScanAsync(a); var beforeB = await scanner.ScanAsync(b);
         var protectedTypeCollisionHashes = new HashSet<string>();
-        if(mode==SyncMode.TwoWay)
+        if (mode == SyncMode.TwoWay)
         {
-            foreach(var e in beforeA.Entries.Values)
+            foreach (var e in beforeA.Entries.Values)
             {
-                var other=beforeB.Find(e.RelativePath);
-                if(other==null||other.Directory==e.Directory)continue;
-                foreach(var v in beforeA.Entries.Values.Concat(beforeB.Entries.Values).Where(v=>!v.Directory&&(v.RelativePath==e.RelativePath||v.RelativePath.StartsWith(e.RelativePath+Path.DirectorySeparatorChar,StringComparison.Ordinal))))protectedTypeCollisionHashes.Add(v.Hash);
+                var other = beforeB.Find(e.RelativePath);
+                if (other == null || other.Directory == e.Directory) continue;
+                foreach (var v in beforeA.Entries.Values.Concat(beforeB.Entries.Values).Where(v => !v.Directory && (v.RelativePath == e.RelativePath || v.RelativePath.StartsWith(e.RelativePath + Path.DirectorySeparatorChar, StringComparison.Ordinal)))) protectedTypeCollisionHashes.Add(v.Hash);
             }
         }
         SyncPlan plan;
@@ -124,7 +124,7 @@ internal static class SoakChecks
             if (saved?.ConfirmedAt != state.ConfirmedAt) throw new Exception("Cancellation advanced confirmed baseline");
             await executor.RecoverAsync(); return "cancelled";
         }
-        if(mode==SyncMode.TwoWay && !protectedTypeCollisionHashes.IsSubsetOf(afterA.Entries.Values.Where(e=>!e.Directory).Select(e=>e.Hash)))throw new Exception("Two-way type collision lost a file/folder version from the visible trees");
+        if (mode == SyncMode.TwoWay && !protectedTypeCollisionHashes.IsSubsetOf(afterA.Entries.Values.Where(e => !e.Directory).Select(e => e.Hash))) throw new Exception("Two-way type collision lost a file/folder version from the visible trees");
         if (mode == SyncMode.TwoWay || mode == SyncMode.Mirror && allowDeletes)
         { if (!afterA.SameContent(afterB)) throw new Exception("Completed exact sync left different trees"); }
         else

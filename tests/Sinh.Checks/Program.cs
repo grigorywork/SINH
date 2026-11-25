@@ -1,11 +1,13 @@
 using Sinh.Settings;
 
-if(args.Length>0 && args[0]=="--soak")
+if(args.Length>0&&args[0]=="--benchmark")return await BenchmarkChecks.RunAsync(args.Length>1?args[1]:"artifacts/benchmark.json",args.Contains("--planner-only"));
+
+if (args.Length > 0 && args[0] == "--soak")
 {
-    var seconds=args.Length>1?int.Parse(args[1]):3600;
-    var seed=args.Length>2?int.Parse(args[2]):900000;
-    var report=args.Length>3?args[3]:"artifacts/soak-report.json";
-    return await SoakChecks.RunAsync(seconds,seed,report);
+    var seconds = args.Length > 1 ? int.Parse(args[1]) : 3600;
+    var seed = args.Length > 2 ? int.Parse(args[2]) : 900000;
+    var report = args.Length > 3 ? args[3] : "artifacts/soak-report.json";
+    return await SoakChecks.RunAsync(seconds, seed, report);
 }
 
 var failures = 0;
@@ -65,6 +67,7 @@ try
     await ExecutionChecks.Run(Check, Require, temp);
     await TwoWayChecks.Run(Check, Require, temp);
     await BoundaryChecks.Run(Check, Require, temp);
+    await PolicyAndFaultChecks.Run(Check,Require,temp);
 }
 finally { Directory.Delete(temp, true); }
 Console.WriteLine($"{count - failures}/{count} passed");

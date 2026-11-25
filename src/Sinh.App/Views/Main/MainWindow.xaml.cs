@@ -16,7 +16,7 @@ public partial class MainWindow : Window
             if (!model.Busy && !model.Store.HasPendingSaves) return;
             e.Cancel = true; model.CancelRun?.Invoke();
             await coordinator.Completion;
-            try {await model.Store.FlushAsync();} catch(Exception ex) {System.Diagnostics.Debug.WriteLine(ex);}
+            try { await model.Store.FlushAsync(); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
             Close();
         };
         Closed += (_, _) => { scheduler.Dispose(); coordinator.Dispose(); model.Dispose(); };

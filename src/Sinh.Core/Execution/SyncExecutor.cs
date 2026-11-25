@@ -11,7 +11,7 @@ public sealed class SyncExecutor(StateStore store)
     public async Task<ConfirmedState> ApplyAsync(SyncPlan plan, ExecutionOptions? options = null, IProgress<SyncProgress>? progress = null, CancellationToken token = default)
     {
         options ??= new(); var request = plan.Request;
-        void CheckContext() { if(options.ContextAvailable?.Invoke()==false)throw new IOException("Носитель отключён или на его месте появился другой диск. Операция остановлена."); }
+        void CheckContext() { if (options.ContextAvailable?.Invoke() == false) throw new IOException("Носитель отключён или на его месте появился другой диск. Операция остановлена."); }
         CheckContext();
         PathRules.ValidatePair(request.Source, request.Destination);
         if (PathRules.Contains(request.Source, store.DirectoryPath) || PathRules.Contains(request.Destination, store.DirectoryPath)) throw new IOException("Служебная область SINH находится внутри выбранной пары. Выберите более узкую папку.");
@@ -32,6 +32,8 @@ public sealed class SyncExecutor(StateStore store)
             {
                 token.ThrowIfCancellationRequested(); var entry = operation.After!;
                 if (staged.ContainsKey(entry.Hash)) continue;
+                var origin = operation.SourceRoot == plan.Source.Root ? plan.Source : operation.SourceRoot == plan.Destination.Root ? plan.Destination : null;
+                if (origin == null || operation.SourceRelativePath == null || !entry.SameContent(origin.Find(operation.SourceRelativePath))) throw new IOException("Источник операции не входит в подтверждённый снимок пары.");
                 var source = PathRules.Under(operation.SourceRoot!, operation.SourceRelativePath!);
                 var path = Path.Combine(work, entry.Hash + ".data");
                 await VerifiedCopy.CopyAsync(source, path, entry, options.SpeedLimitMiB, progress, "Подготовка копии", token).ConfigureAwait(false);

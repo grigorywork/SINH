@@ -13,3 +13,5 @@ PNG сохранены без правок. ICO получены ресайзо�
 MaterialDesignInXamlToolkit: https://github.com/MaterialDesignInXAML/MaterialDesignInXamlToolkit, MIT. Версия NuGet 5.4.0. Лицензии зависимостей включаются в portable-пакет.
 
 `design/sinh-mirror-concept.png`: эскиз собственного значка SINH, получен image_gen 2026-11-24 по референсу владельца и уточнению «элементы должны быть зеркальны». Прозрачный PNG. Сохранён как концепт, не заменяет утверждённые ресурсы и не является точным векторным мастер-файлом.
+
+Десять шрифтов (regular/bold) взяты без изменений из того же закреплённого NoteLS-исходника `app/src/main/res/font`. Лицензии из `app/src/main/assets/font-licenses` сохранены рядом и включаются в portable-пакет. URL и SHA256 каждого файла записаны в `src/Sinh.App/Assets/Fonts/manifest.json`. Семейства встроены как WPF resources, FontFamily создаётся/кешируется только по выбору.

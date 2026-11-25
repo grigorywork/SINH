@@ -97,7 +97,7 @@ public sealed class SettingsStore : IDisposable
             {
                 Language = a.Language == "en" ? "en" : "ru",
                 Scale = a.Scale is .85 or 1 or 1.15 ? a.Scale : 1,
-                Font = string.IsNullOrWhiteSpace(a.Font) ? "Segoe UI" : a.Font,
+                Font = string.IsNullOrWhiteSpace(a.Font) ? "System" : a.Font,
                 Transparency = double.IsFinite(a.Transparency) ? Math.Clamp(a.Transparency, 0, 100) : 50,
                 Frost = double.IsFinite(a.Frost) ? Math.Clamp(a.Frost, 0, 100) : 0
             },

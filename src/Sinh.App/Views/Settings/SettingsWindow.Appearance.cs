@@ -21,14 +21,15 @@ public sealed partial class SettingsWindow
             }
             panel.Children.Add(pills);
         }
+        Choices("Язык", new[] { ("Русский", "ru"), ("English", "en") }, a.Language, v => Save(s => s with { Appearance = s.Appearance with { Language = v } }));
         Choices("Тема", new[] { ("Системная", Theme.System), ("Светлая", Theme.Light), ("Тёмная", Theme.Dark) }, a.Theme, v => Save(s => s with { Appearance = s.Appearance with { Theme = v } }));
         Choices("Стиль", new[] { ("Классика", false), ("Матовое стекло", true) }, a.Glass, v => Save(s => s with { Appearance = s.Appearance with { Glass = v } }));
         Choices("Размер шрифта", new[] { ("Компактный", .85), ("Обычный", 1d), ("Крупный", 1.15) }, a.Scale, v => Save(s => s with { Appearance = s.Appearance with { Scale = v } }));
         Choices("Акцент", new[] { ("Системный", "System"), ("Фиолетовый", "Purple"), ("Синий", "Blue"), ("Зелёный", "Green"), ("Оранжевый", "Orange"), ("Розовый", "Pink"), ("Бирюзовый", "Teal") }, a.Accent, v => Save(s => s with { Appearance = s.Appearance with { Accent = v } }));
-        panel.Children.Add(Text("Шрифт · системные семейства"));
-        var font = new ComboBox { ItemsSource = Fonts.SystemFontFamilies.Select(f => f.Source).Order().ToArray(), SelectedItem = a.Font };
-        font.SelectionChanged += (_, _) => { if (font.SelectedItem is string f) Save(s => s with { Appearance = s.Appearance with { Font = f } }); }; panel.Children.Add(font);
-        panel.Children.Add(Text("Встроенные семейства NoteLS и английская локализация пока не включены в этот этап."));
+        panel.Children.Add(Text("Шрифт · встроенные и системные семейства"));
+        var font = new ComboBox { ItemsSource = FontCatalog.Choices().ToArray(), DisplayMemberPath = "Label", SelectedValuePath = "Key", SelectedValue = a.Font, IsTextSearchEnabled = true };
+        font.SelectionChanged += (_, _) => { if (font.SelectedValue is string f) Save(s => s with { Appearance = s.Appearance with { Font = f } }); }; panel.Children.Add(font);
+        panel.Children.Add(Text("Шрифты доступны без интернета; загружается выбранное семейство. Лицензии находятся в пакете приложения."));
         var glass = new Button { Content = "Редактор стекла…", HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(0, 8, 0, 0) };
         glass.Click += async (_, _) =>
         {

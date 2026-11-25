@@ -29,6 +29,8 @@ internal sealed class TrayService : IDisposable
     private void SettingsChanged(object? sender, AppSettings e) => System.Windows.Application.Current.Dispatcher.InvokeAsync(ApplyIcon);
     private void ApplyIcon()
     {
+        var menu=tray.ContextMenuStrip;
+        if(menu!=null){menu.Items[0].Text=Localizer.T("Открыть SINH");menu.Items[1].Text=Localizer.T("Пауза всех пар");menu.Items[3].Text=Localizer.T("Выход");}
         var icon = store.Current.Appearance.Icon;
         if (currentIcon == icon) return;
         var resource = System.Windows.Application.GetResourceStream(new Uri($"pack://application:,,,/Assets/{icon.ToString().ToLowerInvariant()}.ico"));
@@ -39,7 +41,7 @@ internal sealed class TrayService : IDisposable
     {
         var s = store.Current;
         if (kind == "success" && !s.NotifySuccess || kind == "error" && !s.NotifyError || kind == "conflict" && !s.NotifyConflict) return;
-        tray.ShowBalloonTip(5000, "SINH · " + title, message.Length > 240 ? message[..240] : message, kind == "error" ? Forms.ToolTipIcon.Error : kind == "conflict" ? Forms.ToolTipIcon.Warning : Forms.ToolTipIcon.Info);
+        tray.ShowBalloonTip(5000, "SINH · " + Localizer.T(title), message.Length > 240 ? message[..240] : message, kind == "error" ? Forms.ToolTipIcon.Error : kind == "conflict" ? Forms.ToolTipIcon.Warning : Forms.ToolTipIcon.Info);
     }
     public void Dispose() { store.Changed -= SettingsChanged; tray.Visible = false; var icon = tray.Icon; var menu = tray.ContextMenuStrip; tray.Dispose(); icon?.Dispose(); menu?.Dispose(); }
 }

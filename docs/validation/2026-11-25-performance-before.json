@@ -1,0 +1,55 @@
+{
+  "StartedAt": "2026-11-25T06:12:13.9543185+00:00",
+  "FinishedAt": "2026-11-25T06:12:26.2442551+00:00",
+  "OS": "Debian GNU/Linux 13 (trixie)",
+  "Architecture": "X64",
+  "Runtime": "10.0.15",
+  "Seed": 91827,
+  "BufferBytes": 131072,
+  "Measurements": [
+    {
+      "Scenario": "planner-identical",
+      "FileCount": 1000,
+      "DirectoryCount": 10,
+      "Milliseconds": 69.9743,
+      "AllocatedBytes": 443568,
+      "WorkingSetBytes": 38838272
+    },
+    {
+      "Scenario": "planner-identical",
+      "FileCount": 5000,
+      "DirectoryCount": 50,
+      "Milliseconds": 862.6477,
+      "AllocatedBytes": 2118976,
+      "WorkingSetBytes": 50606080
+    },
+    {
+      "Scenario": "planner-identical",
+      "FileCount": 10000,
+      "DirectoryCount": 100,
+      "Milliseconds": 1974.9714,
+      "AllocatedBytes": 4259768,
+      "WorkingSetBytes": 61431808
+    },
+    {
+      "Scenario": "small-files",
+      "FileCount": 1000,
+      "TotalBytes": 4096000,
+      "CompareMilliseconds": 173.6287,
+      "ApplyMilliseconds": 5897.5721,
+      "RepeatCompareMilliseconds": 154.0452,
+      "WorkingSetBytes": 70623232,
+      "ManagedBytes": 4217552
+    },
+    {
+      "Scenario": "large-streams",
+      "FileCount": 2,
+      "TotalBytes": 134217728,
+      "CompareMilliseconds": 103.2062,
+      "ApplyMilliseconds": 2202.9738,
+      "RepeatCompareMilliseconds": 199.244,
+      "WorkingSetBytes": 73547776,
+      "ManagedBytes": 4617352
+    }
+  ]
+}

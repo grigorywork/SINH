@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+ <PropertyGroup>
+  <OutputType>Exe</OutputType><TargetFramework>net10.0-windows</TargetFramework>
+  <UseWPF>true</UseWPF><EnableWindowsTargeting>true</EnableWindowsTargeting>
+  <RuntimeIdentifier>win-x64</RuntimeIdentifier><AssemblyName>Sinh.WindowsChecks</AssemblyName>
+  <SelfContained>true</SelfContained>
+ </PropertyGroup>
+ <ItemGroup><ProjectReference Include="../../src/Sinh.App/Sinh.App.csproj"/></ItemGroup>
+</Project>

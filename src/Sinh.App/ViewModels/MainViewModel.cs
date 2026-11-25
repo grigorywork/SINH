@@ -15,10 +15,13 @@ public sealed class PairViewModel(FolderPair pair) : Observable
     }
     public string Name => Pair.Name;
     public string Paths => Pair.Source + "\n↓\n" + Pair.Destination;
-    public string Mode => Pair.Mode switch { SyncMode.Mirror => "Зеркало A → B", SyncMode.TwoWay => "Двусторонний обмен", _ => "Копирование обновлений A → B" };
-    public string Last => Pair.LastSuccess?.ToLocalTime().ToString("g") ?? "Ещё не запускалась";
+    public string Mode => Localizer.T(Pair.Mode switch { SyncMode.Mirror => "Зеркало A → B", SyncMode.TwoWay => "Двусторонний обмен", _ => "Копирование обновлений A → B" });
+    public string Last => Pair.LastSuccess?.ToLocalTime().ToString("g") ?? Localizer.T("Ещё не запускалась");
     private string status = pair.Paused ? "На паузе" : "Ручной запуск";
-    public string Status { get => status; set => Set(ref status, value); }
+    private object?[] statusArgs = [];
+    public string Status { get => Localizer.Format(status, statusArgs.ToArray()); set { statusArgs = []; Set(ref status, value); } }
+    public void SetStatus(string key, params object?[] args) { status = key; statusArgs = args; Raise(nameof(Status)); }
+    public void RefreshLanguage() { Raise(nameof(Mode)); Raise(nameof(Last)); Raise(nameof(Status)); }
 }
 
 public sealed class MainViewModel : Observable, IDisposable
@@ -44,41 +47,52 @@ public sealed class MainViewModel : Observable, IDisposable
     public Guid? ActivePairId { get; set; }
     public void RefreshCommands() { Add.Refresh(); Edit.Refresh(); Pause.Refresh(); Compare.Refresh(); Sync.Refresh(); Stop.Refresh(); History.Refresh(); }
     private string status = "Создайте пару папок. Новые пары запускаются вручную.";
-    public string Status { get => status; set => Set(ref status, value); }
+    private object?[] statusArgs = [];
+    private Exception? error;
+    public string Status { get => error != null ? Localizer.Error(error) : Localizer.Format(status, statusArgs.ToArray()); set { error = null; statusArgs = []; Set(ref status, value); } }
+    public void SetStatus(string key, params object?[] args) { error = null; status = key; statusArgs = args; Raise(nameof(Status)); }
+    public void SetError(Exception value) { error = value; Raise(nameof(Status)); }
+    private Sinh.Core.SyncProgress progress = new("", "");
+    public double ProgressValue => progress.Total > 0 ? Math.Clamp(progress.Completed * 100d / progress.Total, 0, 100) : 0;
+    public bool ProgressIndeterminate => progress.Total <= 0;
+    public string ProgressInfo => progress.Stage == "Применение" ? Localizer.Format("ProgressOperations", progress.Completed, progress.Total) : progress.Total > 0 ? Localizer.Format("ProgressBytes", progress.Completed / 1048576d, progress.Total / 1048576d) : Localizer.Format("ProgressScan", progress.Completed / 1048576d);
+    public void ReportProgress(Sinh.Core.SyncProgress value) { progress = value; SetStatus("StagePath", value.Stage, value.Path); Raise(nameof(ProgressValue)); Raise(nameof(ProgressIndeterminate)); Raise(nameof(ProgressInfo)); }
     public MainViewModel(SettingsStore store)
     {
         Store = store;
         Add = new(() => EditPair(null), () => !Busy);
         Edit = new(() => EditPair(Selected?.Pair), () => Selected != null && !Busy);
-        Pause = new(async () => { var id = Selected!.Pair.Id; if(ActivePairId==id) CancelRun?.Invoke(); await Store.UpdateAsync(s => s with { Pairs = s.Pairs.Select(p => p.Id == id ? p with { Paused = !p.Paused } : p).ToArray() }); }, () => Selected != null && (!Busy || ActivePairId==Selected.Pair.Id));
+        Pause = new(async () => { var id = Selected!.Pair.Id; if (ActivePairId == id) CancelRun?.Invoke(); await Store.UpdateAsync(s => s with { Pairs = s.Pairs.Select(p => p.Id == id ? p with { Paused = !p.Paused } : p).ToArray() }); }, () => Selected != null && (!Busy || ActivePairId == Selected.Pair.Id));
         Compare = new(async () => { if (RunPair != null) await RunPair(Selected!, false); }, () => Selected != null && RunPair != null && !Busy);
         Sync = new(async () => { if (RunPair != null) await RunPair(Selected!, true); }, () => Selected != null && RunPair != null && !Busy && Selected.Pair.Paused == false);
         Stop = new(() => { CancelRun?.Invoke(); return Task.CompletedTask; }, () => Busy);
         Settings = new(() => { ShowModal(new SettingsWindow(Store)); return Task.CompletedTask; });
         History = new(() => { ShowModal(new HistoryWindow(Selected!.Pair, Store.Current.HistoryLimitMiB * 1048576)); return Task.CompletedTask; }, () => Selected != null && !Busy);
         Store.Changed += OnChanged;
+        Localizer.Current.PropertyChanged += LocaleChanged;
         Load(store.Current);
     }
     private void OnChanged(object? sender, AppSettings s) => System.Windows.Application.Current.Dispatcher.InvokeAsync(() => Load(Store.Current));
+    private void LocaleChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e) { Raise(nameof(Status)); Raise(nameof(ProgressInfo)); foreach (var pair in Pairs) pair.RefreshLanguage(); }
     private void Load(AppSettings s)
     {
         var id = Selected?.Pair.Id;
         // Appearance changes do not rebuild pairs or schedule scans.
         if (Pairs.Select(p => p.Pair).SequenceEqual(s.Pairs)) return;
-        foreach (var obsolete in Pairs.Where(row=>!s.Pairs.Any(p=>p.Id==row.Pair.Id)).ToArray()) Pairs.Remove(obsolete);
-        for(var index=0;index<s.Pairs.Length;index++)
+        foreach (var obsolete in Pairs.Where(row => !s.Pairs.Any(p => p.Id == row.Pair.Id)).ToArray()) Pairs.Remove(obsolete);
+        for (var index = 0; index < s.Pairs.Length; index++)
         {
-            var p=s.Pairs[index];var row=Pairs.FirstOrDefault(x=>x.Pair.Id==p.Id);
-            if(row==null)Pairs.Insert(index,new(p));
-            else {row.Update(p);var oldIndex=Pairs.IndexOf(row);if(oldIndex!=index)Pairs.Move(oldIndex,index);}
+            var p = s.Pairs[index]; var row = Pairs.FirstOrDefault(x => x.Pair.Id == p.Id);
+            if (row == null) Pairs.Insert(index, new(p));
+            else { row.Update(p); var oldIndex = Pairs.IndexOf(row); if (oldIndex != index) Pairs.Move(oldIndex, index); }
         }
         Selected = Pairs.FirstOrDefault(p => p.Pair.Id == id) ?? Pairs.FirstOrDefault();
     }
     private bool? ShowModal(Window window)
     {
-        dialogOpen=true;
-        try {window.Owner=System.Windows.Application.Current.MainWindow;return window.ShowDialog();}
-        finally {dialogOpen=false;}
+        dialogOpen = true;
+        try { window.Owner = System.Windows.Application.Current.MainWindow; return window.ShowDialog(); }
+        finally { dialogOpen = false; }
     }
     private async Task EditPair(FolderPair? pair)
     {
@@ -94,5 +108,5 @@ public sealed class MainViewModel : Observable, IDisposable
         });
         await Store.UpdateAsync(s => s with { Pairs = pair == null ? [.. s.Pairs, result] : s.Pairs.Select(p => p.Id == result.Id ? result : p).ToArray() });
     }
-    public void Dispose() => Store.Changed -= OnChanged;
+    public void Dispose() { Store.Changed -= OnChanged; Localizer.Current.PropertyChanged -= LocaleChanged; }
 }

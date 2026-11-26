@@ -33,11 +33,11 @@
     </Grid>
   </DataTemplate>
   <ControlTemplate x:Key="ExpandedFolderGroup" TargetType="GroupItem">
-    <Expander IsExpanded="{Binding Name.Expanded, Mode=TwoWay}" Margin="0,0,0,8" Padding="0" HorizontalContentAlignment="Stretch">
+    <Expander Foreground="{DynamicResource Ink}" IsExpanded="{Binding Name.Expanded, Mode=TwoWay}" Margin="0,0,0,8" Padding="0" HorizontalContentAlignment="Stretch">
       <Expander.Header>
         <Grid MinHeight="40" HorizontalAlignment="Stretch" ToolTip="{Binding Name.Path}">
           <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-          <TextBlock Text="{Binding Name.Path}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+          <TextBlock Text="{Binding Name.Path}" Foreground="{DynamicResource Ink}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
           <TextBlock Grid.Column="1" Text="{Binding Name.Summary}" Foreground="{DynamicResource Muted}" Margin="16,0,8,0" VerticalAlignment="Center"/>
         </Grid>
       </Expander.Header>

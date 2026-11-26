@@ -2,6 +2,7 @@ using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Media;
 using System.Windows.Threading;
 using Sinh.App;
 using Sinh.Settings;
@@ -36,6 +37,13 @@ internal static class PresentationChecks
         var list = (ListBox)window.FindName("PairsList");
         var header = Program.Children<Expander>(list).Single(e => e.DataContext is CollectionViewGroup);
         Require(((FrameworkElement)header.Header).ActualWidth <= list.ActualWidth, "Long destination header exceeds the viewport");
+        foreach (var theme in new[] { Theme.Light, Theme.Dark })
+        {
+            await store.UpdateAsync(s => s with { Appearance = s.Appearance with { Theme = theme } }); await Layout(window);
+            var caption = Program.Children<TextBlock>(header).First(t => t.Text == group.Path);
+            Require(((SolidColorBrush)caption.Foreground).Color == ((SolidColorBrush)window.FindResource("Ink")).Color, "Group heading lost readable theme foreground");
+        }
+        Program.Capture(window, "folders-collapsed");
         group.Expanded = true; await Layout(window); model.Selected = model.Pairs[0];
         var compact = Program.Children<ListBoxItem>(list).First(e => e.DataContext == model.Pairs[0]).ActualHeight;
         Require(compact >= 40, "Compact view shrank touch targets");

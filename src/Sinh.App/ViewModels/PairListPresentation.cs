@@ -49,8 +49,8 @@ public sealed class PairListPresentation : Observable, IDisposable
                 foreach (var row in members) row.SetGroup(group);
             }
             foreach (var key in groups.Keys.Except(used).ToArray()) groups.Remove(key);
-            View.Refresh();
         }
+        View.Refresh();
     }
     private void RowChanged(object? sender, PropertyChangedEventArgs e)
     {

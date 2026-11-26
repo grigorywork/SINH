@@ -27,31 +27,7 @@ public sealed class PairWindow : Window
         var pc = new RadioButton { Content = "ПК → USB", GroupName = "Direction", IsChecked = pair.UsbSide == UsbSide.Destination, Margin = new Thickness(0, 12, 20, 8), MinHeight = 40 };
         var usb = new RadioButton { Content = "USB → ПК", GroupName = "Direction", IsChecked = pair.UsbSide == UsbSide.Source, MinHeight = 40 };
         direction.Children.Add(pc); direction.Children.Add(usb);
-        var source = Field("Источник", pair.Source);
-        var selection = new StackPanel(); panel.Children.Add(selection);
-        var choices = new List<CheckBox>(); var grouped = false;
-        var pickA = new Button { Content = original == null ? "Добавить папки…" : "Выбрать папку…", HorizontalAlignment = HorizontalAlignment.Left };
-        pickA.Click += (_, _) =>
-        {
-            var picker = new OpenFolderDialog { Title = Localizer.T("Выберите папки"), Multiselect = original == null };
-            if (picker.ShowDialog(this) != true) return;
-            try
-            {
-            if (original != null) { source.Text = picker.FolderName; return; }
-            var previous = choices.ToDictionary(c => (string)c.Tag, c => c.IsChecked == true, StringComparer.Ordinal);
-            var paths = FolderSelection.Accumulate(choices.Count > 0 ? choices.Select(c => (string)c.Tag) : string.IsNullOrWhiteSpace(source.Text) ? [] : [source.Text], picker.FolderNames);
-            choices.Clear(); selection.Children.Clear(); grouped = paths.Count > 1;
-            source.IsReadOnly = grouped;
-            if (!grouped) { source.Text = paths[0]; return; }
-            source.Text = "";
-            foreach (var path in paths)
-            {
-                var check = new CheckBox { Content = path, Tag = path, IsChecked = !previous.TryGetValue(path, out var enabled) || enabled, MinHeight = 40 };
-                choices.Add(check); selection.Children.Add(check);
-            }
-            }
-            catch (Exception ex) { MessageBox.Show(this, Localizer.Error(ex), "SINH"); }
-        }; panel.Children.Add(pickA);
+        var sources = new FolderSources(pair.Source, original == null); panel.Children.Add(sources);
         var target = Field("Назначение", pair.Destination);
         var pickB = new Button { Content = "Выбрать назначение…", HorizontalAlignment = HorizontalAlignment.Left };
         pickB.Click += (_, _) => { var picker = new OpenFolderDialog(); if (picker.ShowDialog(this) == true) target.Text = picker.FolderName; }; panel.Children.Add(pickB);
@@ -74,7 +50,7 @@ public sealed class PairWindow : Window
             try
             {
                 if (string.IsNullOrWhiteSpace(name.Text) || string.IsNullOrWhiteSpace(target.Text)) throw new ArgumentException("Заполните название и оба пути.");
-                var roots = FolderSelection.Map(grouped ? choices.Where(c => c.IsChecked == true).Select(c => (string)c.Tag) : [source.Text], target.Text, grouped);
+                var roots = FolderSelection.Map(sources.SelectedPaths, target.Text, sources.Grouped);
                 if (!int.TryParse(interval.Text, out var minutes) || minutes < 0 || minutes > 10080) throw new ArgumentException("Интервал: целое число от 0 до 10080 минут.");
                 var side = usb.IsChecked == true ? UsbSide.Source : UsbSide.Destination;
                 var automatic = connect.IsChecked == true;
@@ -82,7 +58,7 @@ public sealed class PairWindow : Window
                 var keepHistory = history.IsChecked == true; var watchChanges = watch.IsChecked == true;
                 var title = name.Text.Trim(); var patterns = exclusions.Text.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
                 var parent = Path.GetFullPath(target.Text);
-                var draft = new FolderPairDraft(pair, original == null, title, roots, parent, grouped, side, selectedMode, allowDeletes, keepHistory, automatic, watchChanges, minutes, patterns);
+                var draft = new FolderPairDraft(pair, original == null, title, roots, parent, sources.Grouped, side, selectedMode, allowDeletes, keepHistory, automatic, watchChanges, minutes, patterns);
                 saving = true; IsEnabled = false;
                 var results = await Task.Run(() => draft.Build(existing ?? []));
                 saving = false;

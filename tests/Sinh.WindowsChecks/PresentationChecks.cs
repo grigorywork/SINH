@@ -12,6 +12,11 @@ internal static class PresentationChecks
     private static async Task Layout(Window window) { await Dispatcher.Yield(DispatcherPriority.ApplicationIdle); window.UpdateLayout(); }
     internal static async Task RunAsync(SettingsStore store, MainViewModel model, Window window, string directory)
     {
+        var sources = new FolderSources(Path.Combine(directory, "first", "A"), true);
+        sources.AddPaths([Path.Combine(directory, "second", "B")]);
+        Program.Children<CheckBox>(sources).First().IsChecked = false;
+        sources.AddPaths([Path.Combine(directory, "third", "C")]);
+        Require(sources.Grouped && sources.SelectedPaths.SequenceEqual(new[] { Path.Combine(directory, "second", "B"), Path.Combine(directory, "third", "C") }), "Adding folders from different locations reset unchecked choices");
         var target = Path.Combine(directory, "USB копии " + new string('Ж', 60));
         var pairs = Enumerable.Range(0, 6).Select(i => new FolderPair
         {

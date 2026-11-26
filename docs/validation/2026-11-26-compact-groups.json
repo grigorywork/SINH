@@ -1,0 +1,21 @@
+{
+  "Version": "0.6.0-preview.1",
+  "CodeCommit": "86e9b7d25af925d6eb8674e19b6dd3578e1ac6f2",
+  "ValidationRun": 45767315296,
+  "LinuxCore": "64/64 PASS",
+  "WindowsServer2025Core": "67/67 PASS",
+  "WPF": "All groups PASS; six-folder collapse, compact/detailed density, long header, live errors/checks, hidden selection, batch, removal without file deletion, source accumulation and theme contrast",
+  "ImagesReviewed": [
+    "folders-collapsed",
+    "folders-compact-expanded"
+  ],
+  "PriorFailure": {
+    "Run": 45709192795,
+    "Issue": "Refresh inside DeferRefresh",
+    "FixedIn": "bd55646"
+  },
+  "KnownUserRootIssue": "Still not reproduced; local diagnostics retained",
+  "Windows10Client": "NOT TESTED",
+  "Windows11Client": "NOT TESTED",
+  "PhysicalUSB_SMB_DPI": "NOT TESTED"
+}

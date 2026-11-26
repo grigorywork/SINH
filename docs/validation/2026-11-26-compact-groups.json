@@ -17,5 +17,19 @@
   "KnownUserRootIssue": "Still not reproduced; local diagnostics retained",
   "Windows10Client": "NOT TESTED",
   "Windows11Client": "NOT TESTED",
-  "PhysicalUSB_SMB_DPI": "NOT TESTED"
+  "PhysicalUSB_SMB_DPI": "NOT TESTED",
+  "PublisherRun": 45767875096,
+  "PublicExeHEAD": 200,
+  "PublicAssetDigests": "MATCH",
+  "PackagedSmoke": {
+    "PackagedExe": "Launched SINH window and closed normally",
+    "Authenticode": "UnknownError",
+    "AtUTC": "2026-11-26T06:24:00.5551188Z",
+    "ExecutableSHA256": "F90BDF3CDCD589CEF0D0AF8202DF28A774D7C0831A81ADE7603A4297726926AF",
+    "OS": "Microsoft Windows NT 10.0.26100.0",
+    "ValidationRun": 45767315296,
+    "TrustStoreModified": false,
+    "Architecture": "x64"
+  },
+  "ReleaseURL": "https://github.com/grigorywork/SINH/releases/tag/v0.6.0-preview.1"
 }
